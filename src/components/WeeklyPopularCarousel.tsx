@@ -174,7 +174,12 @@ export const WeeklyPopularCarousel = memo(function WeeklyPopularCarousel({
       if (card.source === 'community') {
         router.push(`/event/${card.id}` as any)
       } else if (card.infoUrl) {
-        Linking.openURL(card.infoUrl).catch(() => {})
+        try {
+          const u = new URL(card.infoUrl)
+          if (u.protocol === 'http:' || u.protocol === 'https:') {
+            Linking.openURL(card.infoUrl).catch((e) => { if (__DEV__) console.warn('[carousel] link failed:', e) })
+          }
+        } catch {}
       }
     },
     [router],

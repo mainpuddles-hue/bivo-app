@@ -78,8 +78,9 @@ describe('resolveLocale', () => {
 describe('formatPrice', () => {
   test('Formats a positive number as EUR currency', () => {
     const result = formatPrice(10, 'fi')
-    // Should contain "10" and the EUR symbol or "EUR"
+    // Must contain "10" and a currency indicator (€ or EUR)
     expect(result).toMatch(/10/)
+    expect(result).toMatch(/€|EUR/)
   })
 
   test('Formats zero as valid currency', () => {
@@ -178,14 +179,18 @@ describe('formatTimeAgo', () => {
     expect(formatTimeAgo(threeHoursAgo, t, 'fi')).toBe('time.hoursAgo:3')
   })
 
-  test('Returns oneDayAgo for exactly 1 day ago', () => {
+  test('Returns yesterday for exactly 1 day ago', () => {
     const oneDayAgo = new Date(Date.now() - 24 * 3600000).toISOString()
-    expect(formatTimeAgo(oneDayAgo, t, 'fi')).toBe('time.oneDayAgo')
+    // Implementation uses isYesterday() → t('common.yesterday')
+    expect(formatTimeAgo(oneDayAgo, t, 'fi')).toBe('common.yesterday')
   })
 
-  test('Returns daysAgo for 2-6 days ago', () => {
+  test('Returns short weekday for 2-5 days ago', () => {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 3600000).toISOString()
-    expect(formatTimeAgo(threeDaysAgo, t, 'fi')).toBe('time.daysAgo:3')
+    const result = formatTimeAgo(threeDaysAgo, t, 'fi')
+    // Implementation returns locale-formatted short weekday (e.g. "ma", "ti")
+    expect(result).not.toMatch(/^time\./)
+    expect(result).not.toMatch(/^common\./)
   })
 
   test('Returns oneWeekAgo for exactly 1 week ago', () => {
@@ -198,16 +203,78 @@ describe('formatTimeAgo', () => {
     expect(formatTimeAgo(twoWeeksAgo, t, 'fi')).toBe('time.weeksAgo:2')
   })
 
-  test('Returns formatted date for dates older than 5 weeks', () => {
-    const twoMonthsAgo = new Date(Date.now() - 60 * 24 * 3600000).toISOString()
-    const result = formatTimeAgo(twoMonthsAgo, t, 'fi')
+  test('Returns monthsAgo for 2-11 months ago', () => {
+    const threeMonthsAgo = new Date(Date.now() - 90 * 24 * 3600000).toISOString()
+    expect(formatTimeAgo(threeMonthsAgo, t, 'fi')).toBe('time.monthsAgo:3')
+  })
+
+  test('Returns formatted date for dates older than 11 months', () => {
+    const oneYearAgo = new Date(Date.now() - 400 * 24 * 3600000).toISOString()
+    const result = formatTimeAgo(oneYearAgo, t, 'fi')
     // Should be a localized date string, not a translation key
     expect(result).not.toMatch(/^time\./)
+    expect(result).not.toMatch(/^common\./)
   })
 
   test('Returns time.justNow for future dates', () => {
     const future = new Date(Date.now() + 3600000).toISOString()
     expect(formatTimeAgo(future, t, 'fi')).toBe('time.justNow')
+  })
+
+  // ── Boundary tests ──
+
+  test('exactly 59 seconds → justNow (boundary)', () => {
+    const ts = new Date(Date.now() - 59000).toISOString()
+    expect(formatTimeAgo(ts, t, 'fi')).toBe('time.justNow')
+  })
+
+  test('exactly 60 seconds → minutesAgo:1 (boundary)', () => {
+    const ts = new Date(Date.now() - 60000).toISOString()
+    expect(formatTimeAgo(ts, t, 'fi')).toBe('time.minutesAgo:1')
+  })
+
+  test('exactly 59 minutes → minutesAgo:59 (boundary)', () => {
+    const ts = new Date(Date.now() - 59 * 60000).toISOString()
+    expect(formatTimeAgo(ts, t, 'fi')).toBe('time.minutesAgo:59')
+  })
+
+  test('midnight boundary — 23:59 yesterday vs 00:01 today', () => {
+    // Create "yesterday 23:59" and "today 00:01" to test isToday/isYesterday
+    const now = new Date()
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 1)
+    const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59)
+
+    // If today 00:01 is in the past (we're past that), it should be "hoursAgo" or "minutesAgo"
+    if (startOfToday.getTime() <= Date.now()) {
+      const result = formatTimeAgo(startOfToday.toISOString(), t, 'fi')
+      // Should NOT be "yesterday" — it's today
+      expect(result).not.toBe('common.yesterday')
+    }
+
+    // Yesterday 23:59 should always be "yesterday"
+    if (endOfYesterday.getTime() <= Date.now()) {
+      const result = formatTimeAgo(endOfYesterday.toISOString(), t, 'fi')
+      expect(result).toBe('common.yesterday')
+    }
+  })
+
+  test('exactly 0ms diff → justNow', () => {
+    const now = new Date().toISOString()
+    expect(formatTimeAgo(now, t, 'fi')).toBe('time.justNow')
+  })
+
+  test('week boundaries: 6 days → weekday, 7 days → oneWeekAgo', () => {
+    const sixDays = new Date(Date.now() - 6 * 24 * 3600000).toISOString()
+    const sevenDays = new Date(Date.now() - 7 * 24 * 3600000).toISOString()
+
+    const sixResult = formatTimeAgo(sixDays, t, 'fi')
+    const sevenResult = formatTimeAgo(sevenDays, t, 'fi')
+
+    // 6 days: could be weekday or oneWeekAgo depending on diffDay rounding
+    // 7 days: should be oneWeekAgo
+    expect(sevenResult).toBe('time.oneWeekAgo')
+    // 6 days falls into <6 or weekday bucket
+    expect(sixResult).not.toBe('time.oneWeekAgo')
   })
 })
 

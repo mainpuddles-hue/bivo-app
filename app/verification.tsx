@@ -13,6 +13,7 @@ import { PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
 import { getCachedUserId } from '@/lib/authCache'
 import { PhoneVerificationModal } from '@/components/PhoneVerificationModal'
+import { AddressVerificationModal } from '@/components/AddressVerificationModal'
 
 // ── Types ──
 
@@ -23,6 +24,8 @@ interface VerificationProfile {
   naapurusto: string | null
   avatar_url: string | null
   id_verified: boolean | null
+  address_verified: boolean | null
+  verified_address: string | null
 }
 
 interface VerificationStep {
@@ -44,6 +47,7 @@ function VerificationScreenInner() {
   const [profile, setProfile] = useState<VerificationProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [phoneModalVisible, setPhoneModalVisible] = useState(false)
+  const [addressModalVisible, setAddressModalVisible] = useState(false)
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -52,7 +56,7 @@ function VerificationScreenInner() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('id, name, phone_verified, naapurusto, avatar_url, id_verified')
+        .select('id, name, phone_verified, naapurusto, avatar_url, id_verified, address_verified, verified_address')
         .eq('id', userId)
         .single()
 
@@ -85,8 +89,8 @@ function VerificationScreenInner() {
     {
       key: 'address',
       title: t('verification.stepAddress'),
-      subtitle: profile?.naapurusto || t('verification.stepAddressSub'),
-      done: !!profile?.naapurusto,
+      subtitle: profile?.address_verified ? (profile.verified_address || profile.naapurusto || t('verification.stepAddressSub')) : t('verification.stepAddressSub'),
+      done: profile?.address_verified === true,
     },
     {
       key: 'photo',
@@ -208,7 +212,7 @@ function VerificationScreenInner() {
                   </PressableOpacity>
                 ) : step.key === 'address' ? (
                   <PressableOpacity
-                    onPress={() => router.push('/settings' as any)}
+                    onPress={() => setAddressModalVisible(true)}
                     style={[s.stepActionPill, { backgroundColor: colors.foreground }]}
                     accessibilityLabel={`${t('verification.doNow')} ${step.title}`}
                     accessibilityRole="button"
@@ -241,6 +245,12 @@ function VerificationScreenInner() {
       <PhoneVerificationModal
         visible={phoneModalVisible}
         onClose={() => setPhoneModalVisible(false)}
+        onVerified={() => fetchProfile()}
+      />
+
+      <AddressVerificationModal
+        visible={addressModalVisible}
+        onClose={() => setAddressModalVisible(false)}
         onVerified={() => fetchProfile()}
       />
     </View>

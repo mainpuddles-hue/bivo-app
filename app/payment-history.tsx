@@ -13,6 +13,7 @@ import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { formatPrice } from '@/lib/format'
+import { isValidUUID } from '@/lib/validation'
 
 type PaymentStatus = 'paid' | 'refunded' | 'pending' | 'failed'
 
@@ -190,7 +191,7 @@ function PaymentHistoryScreenInner() {
             </View>
             {item.post_id && (
               <PressableOpacity
-                onPress={() => router.push(`/post/${item.post_id}` as any)}
+                onPress={() => item.post_id && isValidUUID(item.post_id) && router.push(`/post/${item.post_id}` as any)}
                 style={[styles.viewPostBtn, { backgroundColor: colors.foreground }]}
                 accessibilityLabel={t('post.viewPost') ?? 'View post'}
                 accessibilityRole="button"

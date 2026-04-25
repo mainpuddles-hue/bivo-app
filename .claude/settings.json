@@ -1,4 +1,12 @@
 {
+  "enabledPlugins": {
+    "everything-claude-code@everything-claude-code": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+    "claude-mem@thedotmack-claude-mem": true,
+    "superpowers@obra-superpowers": true,
+    "obsidian@kepano-obsidian-skills": true,
+    "frontend-design@claude-plugins-official": true
+  },
   "extraKnownMarketplaces": {
     "everything-claude-code": {
       "source": {
@@ -30,12 +38,5 @@
         "repo": "kepano/obsidian-skills"
       }
     }
-  },
-  "enabledPlugins": {
-    "everything-claude-code@everything-claude-code": true,
-    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
-    "claude-mem@thedotmack-claude-mem": true,
-    "superpowers@obra-superpowers": true,
-    "obsidian@kepano-obsidian-skills": true
   }
 }

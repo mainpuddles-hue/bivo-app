@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef, memo } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
   Pressable, Linking, ActionSheetIOS, Alert, Platform,
@@ -88,6 +88,105 @@ function PlaceCategoryIcon({ category, size, color }: { category: string; size: 
 function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
 }
+
+// ── Memoized event list row ──
+
+type ExploreEvent = {
+  id: string; title: string; date: string; location?: string | null;
+  isFree?: boolean; infoUrl?: string | null; isCity?: boolean; category: string;
+  source?: string; imageUrl?: string | null; latitude?: number; longitude?: number
+}
+
+interface EventListRowProps {
+  event: ExploreEvent
+  isLast: boolean
+  colors: ReturnType<typeof import('@/hooks/useTheme').useTheme>['colors']
+  isDark: boolean
+  locale: string
+  t: (k: string, p?: Record<string, string | number>) => string
+  onPress: (event: ExploreEvent) => void
+}
+
+const EventListRow = memo(function EventListRow({
+  event, isLast, colors, isDark, locale, t, onPress,
+}: EventListRowProps) {
+  return (
+    <PressableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={`${event.title}, ${formatEventDateShort(event.date, locale)}${event.location ? `, ${event.location}` : ''}${event.isFree ? `, ${t('events.free')}` : ''}`}
+
+      style={[
+        s.listRow,
+        !isLast && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+      ]}
+      onPress={() => onPress(event)}
+    >
+      <View style={[s.eventIconBox, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
+        <CalendarDays size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+      </View>
+      <View style={s.cardContent}>
+        <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
+          {event.title}
+        </Text>
+        <Text style={[s.cardDateText, { color: colors.mutedForeground }]}>
+          {formatEventDateShort(event.date, locale)}
+          {event.location ? ` \u00B7 ${event.location}` : ''}
+        </Text>
+        {event.isFree && (
+          <View style={[s.freeBadge, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
+            <Text style={[s.freeBadgeText, { color: colors.mutedForeground }]}>
+              {t('events.free')}
+            </Text>
+          </View>
+        )}
+      </View>
+      <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+    </PressableOpacity>
+  )
+})
+
+// ── Memoized place list row ──
+
+interface PlaceListRowProps {
+  place: LocalPlace & { _distance?: number }
+  isLast: boolean
+  colors: ReturnType<typeof import('@/hooks/useTheme').useTheme>['colors']
+  isDark: boolean
+  t: (k: string, p?: Record<string, string | number>) => string
+  onPress: (place: LocalPlace) => void
+}
+
+const PlaceListRow = memo(function PlaceListRow({
+  place, isLast, colors, isDark, t, onPress,
+}: PlaceListRowProps) {
+  const catLabel = t(PLACE_LABEL_KEYS[place.category] || 'common.other')
+  const dist = place._distance != null ? formatDistance(place._distance) : null
+
+  return (
+    <PressableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={`${place.name}, ${catLabel}${dist ? `, ${dist}` : ''}`}
+      style={[
+        s.listRow,
+        !isLast && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+      ]}
+      onPress={() => onPress(place)}
+    >
+      <View style={[s.placeIconBox, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
+        <PlaceCategoryIcon category={place.category} size={16} color={colors.mutedForeground} />
+      </View>
+      <View style={s.cardContent}>
+        <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
+          {place.name}
+        </Text>
+        <Text style={[s.cardMeta, { color: colors.mutedForeground }]}>
+          {catLabel}{dist ? ` \u00B7 ${dist}` : ''}
+        </Text>
+      </View>
+      <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
+    </PressableOpacity>
+  )
+})
 
 // ══════════════════════════════════════════════
 // ── Explore Screen ──
@@ -451,6 +550,18 @@ function ExploreScreenInner() {
     }
   }, [])
 
+  // ── Handle event row press ──
+  const handleEventPress = useCallback((event: ExploreEvent) => {
+    trackEventClick(event.id, event.category).then(() =>
+      getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))))
+    )
+    if (event.infoUrl) {
+      openExternalUrl(event.infoUrl)
+    } else {
+      router.push('/community-events' as any)
+    }
+  }, [openExternalUrl, router])
+
   // ── Filter action sheet (sort picker for active tab) ──
   const handleFilterAction = useCallback(() => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -779,46 +890,16 @@ function ExploreScreenInner() {
             ) : (
               <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 {allEvents.map((event, idx) => (
-                  <PressableOpacity
+                  <EventListRow
                     key={event.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${event.title}, ${formatEventDateShort(event.date, locale)}${event.location ? `, ${event.location}` : ''}${event.isFree ? `, ${t('events.free')}` : ''}`}
-                    style={[
-                      s.listRow,
-                      idx < allEvents.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-                    ]}
-                    onPress={() => {
-                      trackEventClick(event.id, event.category).then(() =>
-                        getClickHistory().then(h => setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))))
-                      )
-                      if (event.infoUrl) {
-                        openExternalUrl(event.infoUrl)
-                      } else {
-                        router.push('/community-events' as any)
-                      }
-                    }}
-                  >
-                    <View style={[s.eventIconBox, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
-                      <CalendarDays size={16} color={colors.mutedForeground} strokeWidth={1.6} />
-                    </View>
-                    <View style={s.cardContent}>
-                      <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
-                        {event.title}
-                      </Text>
-                      <Text style={[s.cardDateText, { color: colors.mutedForeground }]}>
-                        {formatEventDateShort(event.date, locale)}
-                        {event.location ? ` \u00B7 ${event.location}` : ''}
-                      </Text>
-                      {event.isFree && (
-                        <View style={[s.freeBadge, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
-                          <Text style={[s.freeBadgeText, { color: colors.mutedForeground }]}>
-                            {t('events.free')}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
-                  </PressableOpacity>
+                    event={event}
+                    isLast={idx === allEvents.length - 1}
+                    colors={colors}
+                    isDark={isDark}
+                    locale={locale}
+                    t={t}
+                    onPress={handleEventPress}
+                  />
                 ))}
               </View>
             )}
@@ -899,38 +980,17 @@ function ExploreScreenInner() {
               </View>
             ) : (
               <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {sortedPlaces.map((place, idx) => {
-                  const catLabel = t(PLACE_LABEL_KEYS[place.category] || 'common.other')
-                  const dist = '_distance' in place
-                    ? formatDistance((place as any)._distance)
-                    : null
-
-                  return (
-                    <PressableOpacity
-                      key={place.id}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${place.name}, ${catLabel}${dist ? `, ${dist}` : ''}`}
-                      style={[
-                        s.listRow,
-                        idx < sortedPlaces.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-                      ]}
-                      onPress={() => openPlaceInMaps(place)}
-                    >
-                      <View style={[s.placeIconBox, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
-                        <PlaceCategoryIcon category={place.category} size={16} color={colors.mutedForeground} />
-                      </View>
-                      <View style={s.cardContent}>
-                        <Text style={[s.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
-                          {place.name}
-                        </Text>
-                        <Text style={[s.cardMeta, { color: colors.mutedForeground }]}>
-                          {catLabel}{dist ? ` \u00B7 ${dist}` : ''}
-                        </Text>
-                      </View>
-                      <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
-                    </PressableOpacity>
-                  )
-                })}
+                {sortedPlaces.map((place, idx) => (
+                  <PlaceListRow
+                    key={place.id}
+                    place={place}
+                    isLast={idx === sortedPlaces.length - 1}
+                    colors={colors}
+                    isDark={isDark}
+                    t={t}
+                    onPress={openPlaceInMaps}
+                  />
+                ))}
               </View>
             )}
           </>

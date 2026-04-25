@@ -25,6 +25,7 @@ interface FeedContext {
  */
 export function scorePost(post: Post, ctx: FeedContext): number {
   const now = ctx.now ?? Date.now()
+  if (!Number.isFinite(now)) return 0
 
   // Recency: exponential decay, half-life 24 hours
   const createdMs = post.created_at ? new Date(post.created_at).getTime() : NaN
@@ -45,7 +46,7 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   if (ctx.userNeighborhood && post.location) {
     if (post.location.toLowerCase().includes(ctx.userNeighborhood.toLowerCase())) proximity = 1.0
   }
-  if (ctx.userNeighborhood && post.user?.naapurusto === ctx.userNeighborhood) proximity = Math.max(proximity, 0.8)
+  if (ctx.userNeighborhood && post.user?.naapurusto?.toLowerCase() === ctx.userNeighborhood.toLowerCase()) proximity = Math.max(proximity, 0.8)
 
   // Trust + Social
   const trustLevel = computeTrustLevelFromBadges(post.user?.user_badges)

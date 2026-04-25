@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { View, Text, ScrollView, StyleSheet, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -74,7 +76,7 @@ function AboutScreenInner() {
         {/* Website */}
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <PressableOpacity
-            onPress={() => Linking.openURL('https://tackbird.com').catch(() => {})}
+            onPress={() => Linking.openURL('https://tackbird.com').catch((e) => { if (__DEV__) console.warn('[about] link open failed:', e) })}
             style={s.linkRow}
             accessibilityLabel="tackbird.com"
             accessibilityRole="link"

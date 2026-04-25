@@ -243,7 +243,7 @@ function FeedScreenInner() {
       // Fetch user's votes
       let voteMap: Record<string, number> = {}
       if (pollIds.length > 0) {
-        const { data: votes } = await Promise.resolve(
+        const { data: votes, error: votesErr } = await Promise.resolve(
           supabase
             .from('poll_votes')
             .select('poll_id, option_index')
@@ -251,19 +251,21 @@ function FeedScreenInner() {
             .in('poll_id', pollIds)
         )
         if (!mounted) return
+        if (votesErr && __DEV__) console.warn('[feed] poll votes fetch failed:', votesErr.message)
         if (votes) for (const v of votes as any[]) voteMap[v.poll_id] = v.option_index
       }
 
       // Fetch per-option vote counts
       let optionCountsMap: Record<string, Record<number, number>> = {}
       if (pollIds.length > 0) {
-        const { data: allVotes } = await Promise.resolve(
+        const { data: allVotes, error: allVotesErr } = await Promise.resolve(
           supabase
             .from('poll_votes')
             .select('poll_id, option_index')
             .in('poll_id', pollIds)
         )
         if (!mounted) return
+        if (allVotesErr && __DEV__) console.warn('[feed] poll allVotes fetch failed:', allVotesErr.message)
         if (allVotes) {
           for (const v of allVotes as any[]) {
             if (!optionCountsMap[v.poll_id]) optionCountsMap[v.poll_id] = {}
@@ -790,7 +792,7 @@ function FeedScreenInner() {
                         {' '}{t('feed.neighbors') ?? 'naapuria'}
                       </>
                     ) : (
-                      <>{locale === 'fi' ? 'Kutsu naapurisi!' : 'Invite your neighbors!'}</>
+                      <>{t('feed.inviteNeighbors')}</>
                     )}
                   </Text>
                 </View>

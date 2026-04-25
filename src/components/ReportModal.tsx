@@ -76,7 +76,7 @@ export const ReportModal = memo(function ReportModal({ visible, onClose, type, t
         setSuccess(false)
         setReason(null)
         setDescription('')
-        onClose()
+        if (mountedRef.current) onClose()
       }, 1500)
     } catch {
       Alert.alert(t('common.error'), t('report.submitFailed'))
@@ -105,7 +105,7 @@ export const ReportModal = memo(function ReportModal({ visible, onClose, type, t
               <Flag size={18} color={colors.destructive} />
               <Text style={[s.title, { color: colors.foreground }]}>{t('report.title')}</Text>
             </View>
-            <Pressable onPress={handleClose} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close" style={({ pressed }) => pressed ? { opacity: 0.5 } : undefined}>
+            <Pressable onPress={handleClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')} style={({ pressed }) => pressed ? { opacity: 0.5 } : undefined}>
               <X size={20} color={colors.mutedForeground} />
             </Pressable>
           </View>

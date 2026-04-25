@@ -160,6 +160,20 @@ function AdminScreenInner() {
     setSearchingUsers(false)
   }, [userSearch, supabase])
 
+  // Audit helper — logs admin action to audit_log table
+  const logAudit = useCallback(async (action: string, tableName: string, recordId: string, details?: Record<string, unknown>) => {
+    try {
+      await (supabase.from('audit_log') as any).insert({
+        action: `admin:${action}`,
+        table_name: tableName,
+        record_id: recordId,
+        new_data: details ?? null,
+      })
+    } catch (e) {
+      if (__DEV__) console.warn('[admin] audit log failed:', e)
+    }
+  }, [supabase])
+
   // Actions
   const hidePost = useCallback(async (postId: string, flagId: string) => {
     const [postRes, flagRes] = await Promise.all([
@@ -172,13 +186,16 @@ function AdminScreenInner() {
     }
     setFlags(prev => prev.map(f => f.id === flagId ? { ...f, reviewed: true } : f))
     toast.show({ message: t('admin.hidePost'), type: 'success' })
-  }, [supabase, t, toast])
+    logAudit('hide_post', 'posts', postId, { flag_id: flagId })
+  }, [supabase, t, toast, logAudit])
 
   const allowPost = useCallback(async (flagId: string) => {
     const { error } = await (supabase.from('content_flags') as any).update({ reviewed: true }).eq('id', flagId)
     if (error) { toast.show({ message: t('common.error'), type: 'error' }); return }
     setFlags(prev => prev.map(f => f.id === flagId ? { ...f, reviewed: true } : f))
-  }, [supabase, t, toast])
+    toast.show({ message: t('admin.allowPost'), type: 'success' })
+    logAudit('allow_post', 'content_flags', flagId)
+  }, [supabase, t, toast, logAudit])
 
   const toggleBan = useCallback(async (userId: string, currentlyBanned: boolean) => {
     const action = currentlyBanned ? t('admin.unbanUser') : t('admin.banUser')
@@ -191,10 +208,12 @@ function AdminScreenInner() {
           const { error } = await (supabase.from('profiles') as any).update({ is_banned: !currentlyBanned }).eq('id', userId)
           if (error) { toast.show({ message: t('common.error'), type: 'error' }); return }
           setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_banned: !currentlyBanned } : u))
+          toast.show({ message: action, type: 'success' })
+          logAudit(currentlyBanned ? 'unban_user' : 'ban_user', 'profiles', userId)
         },
       },
     ])
-  }, [supabase, t])
+  }, [supabase, t, toast, logAudit])
 
   // Loading / access denied
   if (loading) {

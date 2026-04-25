@@ -71,17 +71,19 @@ function BuildingChatScreenInner() {
         if (cancelled || !org) return
 
         // Find existing conversation for this org
-        const { data: conv } = await supabase
+        const { data: conv, error: convErr } = await supabase
           .from('conversations')
           .select('id')
           .eq('org_id', orgId)
           .maybeSingle()
 
+        if (convErr && __DEV__) console.warn('[building-chat] conv lookup failed:', convErr.message)
+
         let convId = (conv as any)?.id ?? null
 
         // Create conversation if it doesn't exist
         if (!convId) {
-          const { data: newConv } = await (supabase.from('conversations') as any)
+          const { data: newConv, error: newConvErr } = await (supabase.from('conversations') as any)
             .insert({
               org_id: orgId,
               user1_id: userId,
@@ -89,6 +91,7 @@ function BuildingChatScreenInner() {
             })
             .select('id')
             .single()
+          if (newConvErr && __DEV__) console.warn('[building-chat] conv create failed:', newConvErr.message)
           convId = (newConv as any)?.id ?? null
 
           // Add creator as conversation member
@@ -265,7 +268,7 @@ function BuildingChatScreenInner() {
 
         <Pressable
           style={s.headerInfo}
-          onPress={() => orgId && router.push(`/building/${orgId}` as any)}
+          onPress={() => orgId && isValidUUID(orgId) && router.push(`/building/${orgId}` as any)}
         >
           <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>
             {orgInfo?.name ?? t('building.chat')}
@@ -285,7 +288,7 @@ function BuildingChatScreenInner() {
       {orgInfo?.street_address && (
         <Pressable
           style={[s.orgBar, { borderBottomColor: colors.border }]}
-          onPress={() => router.push(`/building/${orgId}` as any)}
+          onPress={() => orgId && isValidUUID(orgId) && router.push(`/building/${orgId}` as any)}
         >
           <Building2 size={14} color={colors.foreground} />
           <Text style={[s.orgBarText, { color: colors.foreground }]} numberOfLines={1}>
@@ -306,7 +309,7 @@ function BuildingChatScreenInner() {
         <View style={s.center}>
           <Building2 size={40} color={colors.mutedForeground} strokeWidth={1.2} style={{ opacity: 0.4, marginBottom: 8 }} />
           <Text style={[s.emptyText, { color: colors.mutedForeground }]}>
-            {locale === 'fi' ? 'Aloita keskustelu naapuriesi kanssa!' : 'Start chatting with your neighbors!'}
+            {t('building.chatEmpty')}
           </Text>
         </View>
       ) : (
@@ -339,7 +342,7 @@ function BuildingChatScreenInner() {
             fontFamily: fonts.body,
             borderColor: colors.border,
           }]}
-          placeholder={locale === 'fi' ? 'Kirjoita viesti...' : 'Write a message...'}
+          placeholder={t('building.chatPlaceholder')}
           placeholderTextColor={colors.mutedForeground}
           value={input}
           onChangeText={setInput}

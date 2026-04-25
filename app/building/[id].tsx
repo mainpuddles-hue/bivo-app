@@ -129,7 +129,7 @@ const PRIORITY_OPTIONS: AnnouncementPriority[] = ['normal', 'important', 'urgent
 function getStatusColor(status: MaintenanceStatus, colors: ThemeColors): string {
   switch (status) {
     case 'open': return colors.success
-    case 'in_progress': return '#F59E0B'
+    case 'in_progress': return colors.pro
     case 'resolved': return colors.info
     case 'closed': return colors.mutedForeground
   }
@@ -138,7 +138,7 @@ function getStatusColor(status: MaintenanceStatus, colors: ThemeColors): string 
 function getPriorityColor(priority: AnnouncementPriority, colors: ThemeColors): string {
   switch (priority) {
     case 'urgent': return colors.destructive
-    case 'important': return '#F59E0B'
+    case 'important': return colors.pro
     case 'normal': return colors.mutedForeground
   }
 }
@@ -340,6 +340,10 @@ function BuildingScreenInner() {
           await (supabase.from('maintenance_requests') as any)
             .update({ upvote_count: count })
             .eq('id', requestId)
+          // Sync local state with actual DB count
+          setMaintenanceRequests(prev =>
+            prev.map(r => r.id === requestId ? { ...r, upvote_count: count } : r)
+          )
         }
       }
       if (error) {
@@ -362,8 +366,12 @@ function BuildingScreenInner() {
   }, [userId, supabase, t, toast])
 
   // ── Mark announcement read ──
+  const readAnnouncementsRef = useRef(new Set<string>())
   const handleMarkRead = useCallback(async (announcementId: string) => {
     if (!userId) return
+    // Prevent duplicate increments for announcements already read this session
+    if (readAnnouncementsRef.current.has(announcementId)) return
+    readAnnouncementsRef.current.add(announcementId)
     try {
       const { error } = await (supabase.from('announcement_reads') as any)
         .upsert({ announcement_id: announcementId, user_id: userId }, { onConflict: 'announcement_id,user_id' })
@@ -374,7 +382,8 @@ function BuildingScreenInner() {
         )
       }
     } catch {
-      // Silent fail for reads
+      // Allow retry on error
+      readAnnouncementsRef.current.delete(announcementId)
     }
   }, [userId, supabase])
 
@@ -546,7 +555,7 @@ function BuildingScreenInner() {
       {/* Create Announcement Modal */}
       <CreateAnnouncementModal
         visible={showAnnouncementModal}
-        onClose={() => setShowAnnouncementModal(false)}
+        onClose={() => { setShowAnnouncementModal(false); setAnnTitle(''); setAnnBody(''); setAnnPriority('normal'); setAnnPinned(false) }}
         colors={colors}
         t={t}
         title={annTitle}
@@ -564,7 +573,7 @@ function BuildingScreenInner() {
       {/* Create Maintenance Modal */}
       <CreateMaintenanceModal
         visible={showMaintenanceModal}
-        onClose={() => setShowMaintenanceModal(false)}
+        onClose={() => { setShowMaintenanceModal(false); setMaintTitle(''); setMaintDesc(''); setMaintCategory('plumbing') }}
         colors={colors}
         t={t}
         title={maintTitle}
@@ -776,7 +785,7 @@ function MembersTab({
         return (
           <PressableOpacity
             key={m.user_id}
-            onPress={() => router.push(`/profile/${m.user_id}`)}
+            onPress={() => { if (isValidUUID(m.user_id)) router.push(`/profile/${m.user_id}`) }}
             style={s.memberCell}
           >
             <Avatar url={m.profiles.avatar_url} name={m.profiles.name} size={48} />

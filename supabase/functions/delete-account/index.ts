@@ -83,6 +83,19 @@ async function cleanupUserData(
     { table: 'user_boosts', promise: supabase.from('user_boosts').delete().eq('user_id', uid) },
     { table: 'boost_purchases', promise: supabase.from('boost_purchases').delete().eq('user_id', uid) },
     { table: 'user_badges', promise: supabase.from('user_badges').delete().eq('user_id', uid) },
+    // Buildings & organizations
+    { table: 'user_buildings', promise: supabase.from('user_buildings').delete().eq('user_id', uid) },
+    { table: 'organization_members', promise: supabase.from('organization_members').delete().eq('user_id', uid) },
+    { table: 'announcement_reads', promise: supabase.from('announcement_reads').delete().eq('user_id', uid) },
+    { table: 'org_poll_votes', promise: supabase.from('org_poll_votes').delete().eq('user_id', uid) },
+    // OTP codes (PII: email)
+    { table: 'otp_codes', promise: supabase.from('otp_codes').delete().eq('email', uid) },
+    // Post images (kept; posts are deactivated not deleted)
+    // Blocked users — remove both directions
+    { table: 'blocked_users_blocker', promise: supabase.from('blocked_users').delete().eq('blocker_id', uid) },
+    { table: 'blocked_users_blocked', promise: supabase.from('blocked_users').delete().eq('blocked_id', uid) },
+    // Post reports filed by this user
+    { table: 'post_reports', promise: supabase.from('post_reports').delete().eq('reporter_id', uid) },
     // Profile — anonymize all PII before the auth row is removed
     {
       table: 'profiles',
@@ -93,6 +106,11 @@ async function cleanupUserData(
         push_token: null,
         naapurusto: null,
         email: null,
+        phone_number: null,
+        phone_verified: false,
+        address_verified: false,
+        verified_address: null,
+        address_verified_at: null,
         business_name: null,
         business_phone: null,
         business_website: null,

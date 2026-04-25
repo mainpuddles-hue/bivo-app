@@ -10,7 +10,7 @@ type AnalyticsEvent =
   | 'notification_opened' | 'referral_shared'
   | 'retention_d1' | 'retention_d7' | 'retention_d30' | 'retention_d90'
   | 'onboarding_slide' | 'onboarding_city_selected' | 'onboarding_neighborhood_selected'
-  | 'onboarding_invite_code' | 'onboarding_completed'
+  | 'onboarding_invite_code' | 'onboarding_coop_code' | 'onboarding_completed'
   | 'auth_register_start' | 'auth_register_success' | 'auth_login_success'
   | 'boost_purchased' | 'boost_used' | 'boost_screen_viewed'
   | 'listing_published'

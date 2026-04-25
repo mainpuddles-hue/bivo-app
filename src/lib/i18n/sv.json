@@ -161,7 +161,8 @@
     "weeklyPopular": "Populärt denna vecka",
     "weeklyPopularSub": "Evenemang i ditt område",
     "freeEvent": "Gratis",
-    "participants": "deltagare"
+    "participants": "deltagare",
+    "inviteNeighbors": "Bjud in dina grannar!"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",
@@ -468,7 +469,8 @@
     "eventCancelled": "Evenemanget avbokat",
     "cancelFailed": "Avbokning misslyckades",
     "leaveFailed": "Kunde inte lämna",
-    "eventNotFound": "Evenemanget hittades inte"
+    "eventNotFound": "Evenemanget hittades inte",
+    "chatLeaveFailed": "Kunde inte lämna evenemangets chatt"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -976,7 +978,15 @@
     "saveFailed": "Sparning misslyckades",
     "helpTitle": "Hjälp och support",
     "helpFaq": "Vanliga frågor",
-    "helpContact": "Kontakta support"
+    "helpContact": "Kontakta support",
+    "earnings": "Intäkter",
+    "sectionBuilding": "Husbolag",
+    "changeAddress": "Byt adress",
+    "removeBuilding": "Ta bort husbolag",
+    "removeBuildingConfirm": "Vill du ta bort din husbolagsanslutning?",
+    "addAddress": "Lägg till din adress",
+    "addAddressHint": "Se dina grannar och husbolagsinlägg",
+    "addAddressDesc": "Ange din hemadress för att se grannar och husbolagsinlägg."
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -1757,7 +1767,9 @@
     "title": "Välj plats",
     "tapToSelect": "Tryck på kartan för att välja plats",
     "nativeHint": "Ange koordinater manuellt",
-    "confirm": "Bekräfta"
+    "confirm": "Bekräfta",
+    "latPlaceholder": "Lat (60.17)",
+    "lngPlaceholder": "Lng (24.94)"
   },
   "calendar": {
     "noEvents": "Inga evenemang denna dag",
@@ -2030,7 +2042,10 @@
     "placeUnsaved": "Plats borttagen från sparade",
     "removed": "Inlägg borttaget från sparade",
     "openInMaps": "Öppna i kartor",
-    "unsave": "Ta bort"
+    "unsave": "Ta bort",
+    "freePrice": "Gratis",
+    "perDayShort": "/dag",
+    "tabAll": "Alla"
   },
   "error": {
     "pageLoadFailed": "Sidan kunde inte laddas",
@@ -2200,6 +2215,8 @@
     "timeToday": "Idag",
     "timeTomorrow": "Imorgon",
     "timeThisWeek": "Denna vecka",
+    "callPhone": "Ring telefonnummer",
+    "detailImage": "Detaljbild",
     "place": {
       "restaurant": "Restaurang",
       "cafe": "Café",
@@ -2541,6 +2558,28 @@
     "codeApplied": "Inbjudningskod använd!",
     "invites": "inbjudningar",
     "points": "poäng"
+  },
+  "cooperativeInvite": {
+    "codeInput": "Bostadsrättsföreningskod (valfritt)",
+    "codeApplied": "Gick med i bostadsrättsföreningen!",
+    "invalidCode": "Inbjudningskod hittades inte",
+    "expiredCode": "Inbjudningskoden har gått ut",
+    "exhaustedCode": "Inbjudningskoden har använts upp",
+    "generateCode": "Generera inbjudningskod",
+    "generatedCode": "Inbjudningskod genererad",
+    "codeLabel": "Inbjudningskod",
+    "maxUses": "Max användningar",
+    "expiresIn": "Går ut om",
+    "days": "dagar",
+    "unlimited": "Obegränsad",
+    "active": "Aktiv",
+    "deactivated": "Inaktiverad",
+    "uses": "användningar",
+    "codesTitle": "Inbjudningskoder",
+    "noCodesYet": "Inga inbjudningskoder ännu. Skapa den första!",
+    "copyCode": "Kopiera kod",
+    "codeCopied": "Inbjudningskod kopierad!",
+    "deactivate": "Inaktivera"
   },
   "pwa": {
     "installTitle": "Lägg till TackBird på hemskärmen",
@@ -2938,6 +2977,23 @@
     "doNow": "Gör nu",
     "comingSoon": "Kommer snart",
     "privacyNote": "Data lagras krypterat. TackBird delar inte den med tredje parter."
+  },
+  "addressVerification": {
+    "title": "Adressverifiering",
+    "enterAddress": "Ange din hemadress",
+    "enterAddressDesc": "Skriv din adress och välj den från listan. Vi verifierar din plats med GPS.",
+    "placeholder": "T.ex. Hämeentie 15, Helsingfors",
+    "verify": "Verifiera plats",
+    "hint": "Du måste vara på din hemadress under verifieringen. GPS-noggrannhet: 500 m.",
+    "locating": "Hämtar din plats...",
+    "locatingDesc": "Vi jämför din GPS-plats med adressen du angav.",
+    "success": "Adress verifierad!",
+    "successDesc": "Ditt grannskap är nu verifierat. Detta förbättrar din förtroendenivå i gemenskapen.",
+    "failed": "Platsen stämmer inte",
+    "failedDesc": "Din GPS-plats är {{distance}} m från adressen du angav. Se till att du är hemma och försök igen.",
+    "tryAgain": "Försök igen",
+    "locationRequired": "Plats krävs",
+    "locationRequiredDesc": "Adressverifiering kräver GPS-plats. Aktivera plats i dina inställningar."
   },
   "urgency": {
     "juuriNyt": "Just nu",
@@ -3405,6 +3461,9 @@
     "commentAdded": "Kommentar tillagd",
     "errorLoadingRequest": "Felanmälan hittades inte",
     "errorUpdatingStatus": "Kunde inte uppdatera status",
-    "errorAddingComment": "Kunde inte lägga till kommentar"
+    "errorAddingComment": "Kunde inte lägga till kommentar",
+    "errorUpvoting": "Röstning misslyckades",
+    "chatEmpty": "Börja chatta med dina grannar!",
+    "chatPlaceholder": "Skriv ett meddelande..."
   }
 }

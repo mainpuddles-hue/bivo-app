@@ -301,12 +301,15 @@ export default function ProfileScreen() {
     finally { setAllPostsLoading(false) }
   }, [profile, supabase, allPostsLoaded])
 
+  const loadAllPostsRef = useRef(loadAllPosts)
+  useEffect(() => { loadAllPostsRef.current = loadAllPosts }, [loadAllPosts])
+
   useEffect(() => {
     if (activeTab !== 'ilmoitukset' || allPostsLoaded) return
     let mounted = true
-    loadAllPosts().finally(() => { if (!mounted) return })
+    loadAllPostsRef.current().finally(() => { if (!mounted) return })
     return () => { mounted = false }
-  }, [activeTab, allPostsLoaded, loadAllPosts])
+  }, [activeTab, allPostsLoaded])
 
   // Load saved posts when tallennetut tab selected
   const loadSavedPosts = useCallback(async () => {
@@ -326,12 +329,15 @@ export default function ProfileScreen() {
     finally { setSavedPostsLoading(false) }
   }, [profile, supabase, savedPostsLoaded])
 
+  const loadSavedPostsRef = useRef(loadSavedPosts)
+  useEffect(() => { loadSavedPostsRef.current = loadSavedPosts }, [loadSavedPosts])
+
   useEffect(() => {
     if (activeTab !== 'tallennetut' || savedPostsLoaded) return
     let mounted = true
-    loadSavedPosts().finally(() => { if (!mounted) return })
+    loadSavedPostsRef.current().finally(() => { if (!mounted) return })
     return () => { mounted = false }
-  }, [activeTab, savedPostsLoaded, loadSavedPosts])
+  }, [activeTab, savedPostsLoaded])
 
   // Post status helpers — pure function, no closure deps
   const getPostStatus = (post: Post): 'active' | 'expired' | 'closed' => {

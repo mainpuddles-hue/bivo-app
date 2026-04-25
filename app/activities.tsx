@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useMemo, useRef, memo } from 'react'
 import {
   View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
   Pressable, Modal, TextInput, KeyboardAvoidingView,
@@ -9,6 +9,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
+import { isValidUUID } from '@/lib/validation'
 import * as Haptics from 'expo-haptics'
 import {
   ArrowLeft, Plus, MapPin, Users, X, Clock,
@@ -19,6 +20,7 @@ import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/com
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { EmptyState } from '@/components/EmptyState'
 import { useSupabase } from '@/hooks/useSupabase'
 import { Avatar } from '@/components/Avatar'
 import { useShimmer } from '@/components/SkeletonLoaders'
@@ -173,6 +175,99 @@ function ActivitySkeleton({ colors }: { colors: ReturnType<typeof import('@/hook
     </View>
   )
 }
+
+// ── Memoized activity card item ──
+
+interface ActivityCardProps {
+  item: Activity
+  colors: ReturnType<typeof import('@/hooks/useTheme').useTheme>['colors']
+  t: (k: string, p?: Record<string, string | number>) => string
+  onToggleMembership: (activityId: string) => void
+  onCreatorPress: (creatorId: string) => void
+}
+
+const ActivityCard = memo(function ActivityCard({
+  item,
+  colors,
+  t,
+  onToggleMembership,
+  onCreatorPress,
+}: ActivityCardProps) {
+  const CatIcon = CATEGORY_ICON_MAP[item.category] ?? Grid2x2
+  const isFull = item.max_members ? (item.member_count ?? 0) >= item.max_members : false
+
+  return (
+    <View style={[st.card, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
+      <View style={st.cardTop}>
+        <View style={[st.iconBox, { backgroundColor: colors.muted }]}>
+          <CatIcon size={20} color={colors.foreground} />
+        </View>
+        <View style={st.cardContent}>
+          <Text style={[st.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
+            {item.title}
+          </Text>
+          <View style={st.scheduleRow}>
+            <Clock size={12} color={colors.mutedForeground} />
+            <Text style={[st.scheduleText, { color: colors.mutedForeground }]}>
+              {formatSchedule(item.schedule_type, item.schedule_day, item.schedule_time, t)}
+            </Text>
+          </View>
+          {item.location_name && (
+            <View style={st.metaRow}>
+              <MapPin size={12} color={colors.mutedForeground} />
+              <Text style={[st.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
+                {item.location_name}
+              </Text>
+            </View>
+          )}
+          <View style={st.metaRow}>
+            <Users size={12} color={colors.mutedForeground} />
+            <Text style={[st.metaText, { color: colors.mutedForeground }]}>
+              {item.max_members
+                ? t('activity.membersOfMax', { count: item.member_count ?? 0, max: item.max_members })
+                : t('activity.members', { count: item.member_count ?? 0 })}
+            </Text>
+          </View>
+          {/* Creator */}
+          {item.creator && (
+            <PressableOpacity
+              onPress={() => { if (item.creator?.id && isValidUUID(item.creator.id)) onCreatorPress(item.creator.id) }}
+              style={st.creatorRow}
+            >
+              <Avatar url={item.creator.avatar_url} name={item.creator.name} size={18} />
+              <Text style={[st.metaText, { color: colors.foreground }]} numberOfLines={1}>
+                {item.creator.name}
+              </Text>
+            </PressableOpacity>
+          )}
+        </View>
+      </View>
+
+      <View style={st.cardBottom}>
+        {isFull && !item.is_member ? (
+          <View style={[st.joinBtn, { backgroundColor: colors.muted }]}>
+            <Text style={[st.joinBtnText, { color: colors.mutedForeground }]}>{t('activity.full')}</Text>
+          </View>
+        ) : (
+          <PressableOpacity
+            onPress={() => onToggleMembership(item.id)}
+            style={[
+              st.joinBtn,
+              item.is_member
+                ? { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border }
+                : { backgroundColor: colors.foreground },
+            ]}
+          >
+            {item.is_member && <Check size={14} color={colors.mutedForeground} strokeWidth={2.5} />}
+            <Text style={[st.joinBtnText, { color: item.is_member ? colors.mutedForeground : colors.background }]}>
+              {item.is_member ? t('activity.joined') : t('activity.joinActivity')}
+            </Text>
+          </PressableOpacity>
+        )}
+      </View>
+    </View>
+  )
+})
 
 // ══════════════════════════════════════════════════════
 //  Main screen
@@ -407,83 +502,21 @@ function ActivitiesScreenInner() {
     return activities.filter(a => a.category === filterCategory)
   }, [activities, filterCategory])
 
-  // ── Render Activity Card ──
-  const renderActivity = useCallback(({ item }: { item: Activity }) => {
-    const CatIcon = CATEGORY_ICON_MAP[item.category] ?? Grid2x2
-    const isFull = item.max_members ? (item.member_count ?? 0) >= item.max_members : false
+  // ── Navigate to creator profile ──
+  const handleCreatorPress = useCallback((creatorId: string) => {
+    router.push(`/profile/${creatorId}` as any)
+  }, [router])
 
-    return (
-      <View style={[st.card, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
-        <View style={st.cardTop}>
-          <View style={[st.iconBox, { backgroundColor: colors.muted }]}>
-            <CatIcon size={20} color={colors.foreground} />
-          </View>
-          <View style={st.cardContent}>
-            <Text style={[st.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
-              {item.title}
-            </Text>
-            <View style={st.scheduleRow}>
-              <Clock size={12} color={colors.mutedForeground} />
-              <Text style={[st.scheduleText, { color: colors.mutedForeground }]}>
-                {formatSchedule(item.schedule_type, item.schedule_day, item.schedule_time, t)}
-              </Text>
-            </View>
-            {item.location_name && (
-              <View style={st.metaRow}>
-                <MapPin size={12} color={colors.mutedForeground} />
-                <Text style={[st.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {item.location_name}
-                </Text>
-              </View>
-            )}
-            <View style={st.metaRow}>
-              <Users size={12} color={colors.mutedForeground} />
-              <Text style={[st.metaText, { color: colors.mutedForeground }]}>
-                {item.max_members
-                  ? t('activity.membersOfMax', { count: item.member_count ?? 0, max: item.max_members })
-                  : t('activity.members', { count: item.member_count ?? 0 })}
-              </Text>
-            </View>
-            {/* Creator */}
-            {item.creator && (
-              <PressableOpacity
-                onPress={() => router.push(`/profile/${item.creator!.id}` as any)}
-                style={st.creatorRow}
-              >
-                <Avatar url={item.creator.avatar_url} name={item.creator.name} size={18} />
-                <Text style={[st.metaText, { color: colors.foreground }]} numberOfLines={1}>
-                  {item.creator.name}
-                </Text>
-              </PressableOpacity>
-            )}
-          </View>
-        </View>
-
-        <View style={st.cardBottom}>
-          {isFull && !item.is_member ? (
-            <View style={[st.joinBtn, { backgroundColor: colors.muted }]}>
-              <Text style={[st.joinBtnText, { color: colors.mutedForeground }]}>{t('activity.full')}</Text>
-            </View>
-          ) : (
-            <PressableOpacity
-              onPress={() => toggleMembership(item.id)}
-              style={[
-                st.joinBtn,
-                item.is_member
-                  ? { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border }
-                  : { backgroundColor: colors.foreground },
-              ]}
-            >
-              {item.is_member && <Check size={14} color={colors.mutedForeground} strokeWidth={2.5} />}
-              <Text style={[st.joinBtnText, { color: item.is_member ? colors.mutedForeground : colors.background }]}>
-                {item.is_member ? t('activity.joined') : t('activity.joinActivity')}
-              </Text>
-            </PressableOpacity>
-          )}
-        </View>
-      </View>
-    )
-  }, [colors, t, toggleMembership])
+  // ── Render Activity Card (memoized) ──
+  const renderActivity = useCallback(({ item }: { item: Activity }) => (
+    <ActivityCard
+      item={item}
+      colors={colors}
+      t={t}
+      onToggleMembership={toggleMembership}
+      onCreatorPress={handleCreatorPress}
+    />
+  ), [colors, t, toggleMembership, handleCreatorPress])
 
   // ── Need weekly/biweekly day picker? ──
   const needsDayPicker = createScheduleType === 'weekly' || createScheduleType === 'biweekly'
@@ -546,24 +579,15 @@ function ActivitiesScreenInner() {
           <ActivitySkeleton colors={colors} />
         </View>
       ) : fetchError ? (
-        <View style={st.empty}>
-          <RefreshCw size={48} color={colors.mutedForeground} />
-          <Text style={[st.emptyTitle, { color: colors.foreground }]}>
-            {t('common.error')}
-          </Text>
-          <Text style={[st.emptyHint, { color: colors.mutedForeground }]}>
-            {t('common.tryAgain')}
-          </Text>
-          <PressableOpacity
-            onPress={() => { setLoading(true); fetchActivities() }}
-            style={[st.emptyBtn, { backgroundColor: colors.foreground }]}
-          >
-            <RefreshCw size={16} color={colors.background} />
-            <Text style={[st.emptyBtnText, { color: colors.background }]}>
-              {t('common.retry')}
-            </Text>
-          </PressableOpacity>
-        </View>
+        <EmptyState
+          icon={<RefreshCw size={48} color={colors.mutedForeground} />}
+          title={t('common.error')}
+          description={t('common.tryAgain')}
+          actionLabel={t('common.retry')}
+          onAction={() => { setLoading(true); fetchActivities() }}
+          actionIcon={<RefreshCw size={16} color={colors.background} />}
+          actionVariant="filled"
+        />
       ) : (
         <FlatList
           data={filteredActivities}
@@ -580,27 +604,18 @@ function ActivitiesScreenInner() {
           ItemSeparatorComponent={ActivityItemSeparator}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <View style={st.empty}>
-              <RefreshCw size={48} color={colors.mutedForeground} />
-              <Text style={[st.emptyTitle, { color: colors.foreground }]}>
-                {t('activity.noActivities')}
-              </Text>
-              <Text style={[st.emptyHint, { color: colors.mutedForeground }]}>
-                {t('activity.noActivitiesHint')}
-              </Text>
-              <PressableOpacity
-                onPress={() => {
-                  if (!userId) { router.push('/(auth)/login'); return }
-                  setShowCreateModal(true)
-                }}
-                style={[st.emptyBtn, { backgroundColor: colors.foreground }]}
-              >
-                <Plus size={16} color={colors.background} strokeWidth={2.5} />
-                <Text style={[st.emptyBtnText, { color: colors.background }]}>
-                  {t('activities.create')}
-                </Text>
-              </PressableOpacity>
-            </View>
+            <EmptyState
+              icon={<RefreshCw size={48} color={colors.mutedForeground} />}
+              title={t('activity.noActivities')}
+              description={t('activity.noActivitiesHint')}
+              actionLabel={t('activities.create')}
+              onAction={() => {
+                if (!userId) { router.push('/(auth)/login'); return }
+                setShowCreateModal(true)
+              }}
+              actionIcon={<Plus size={16} color={colors.background} strokeWidth={2.5} />}
+              actionVariant="filled"
+            />
           }
         />
       )}
@@ -637,7 +652,7 @@ function ActivitiesScreenInner() {
               <Text style={[st.modalTitle, { color: colors.foreground }]}>
                 {t('activities.create')}
               </Text>
-              <PressableOpacity onPress={() => setShowCreateModal(false)} hitSlop={12}>
+              <PressableOpacity onPress={() => setShowCreateModal(false)} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')}>
                 <X size={24} color={colors.foreground} />
               </PressableOpacity>
             </View>
@@ -959,40 +974,6 @@ const st = StyleSheet.create({
     fontSize: 13,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
-  },
-
-  // Empty state
-  empty: {
-    alignItems: 'center',
-    paddingTop: 60,
-    gap: 12,
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    fontFamily: fonts.headingSemi,
-    lineHeight: 24,
-  },
-  emptyHint: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
-    fontFamily: fonts.body,
-  },
-  emptyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 999,
-    marginTop: 8,
-  },
-  emptyBtnText: {
-    fontSize: 14,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 20,
   },
 
   // FAB

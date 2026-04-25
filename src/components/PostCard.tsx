@@ -497,7 +497,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
                         user_id: post.user_id, from_user_id: userId,
                         type: 'post_like', title: t('post.liked'),
                         body: post.title, link_type: 'post', link_id: post.id,
-                      }).then(() => {}).catch(() => {})
+                      }).then(() => {}).catch((e: any) => { if (__DEV__) console.warn('[PostCard] notification insert failed:', e?.message) })
                     }
                   }
                 }

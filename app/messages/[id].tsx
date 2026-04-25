@@ -443,7 +443,11 @@ function ConversationScreenInner() {
         conversation_id: id, sender_id: userId,
         content: '', image_url: urlData.publicUrl,
       })
-      if (msgError) throw msgError
+      if (msgError) {
+        // Clean up orphaned image from storage
+        supabase.storage.from('message-images').remove([path]).catch(() => {})
+        throw msgError
+      }
       await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
     } catch (err) {
       toast.show({ message: t('messages.imageSendFailed'), type: 'error' })
@@ -471,7 +475,14 @@ function ConversationScreenInner() {
     )
 
     if (existing) {
-      // Remove reaction
+      // Remove reaction — optimistic update then revert on failure
+      const prevReactions = reactions[targetId] ?? []
+      setReactions(prev => ({
+        ...prev,
+        [targetId]: (prev[targetId] ?? []).filter(
+          r => !(r.user_id === userId && r.emoji === emoji)
+        ),
+      }))
       try {
         await (supabase.from('message_reactions') as any)
           .delete()
@@ -479,14 +490,9 @@ function ConversationScreenInner() {
           .eq('user_id', userId)
           .eq('emoji', emoji)
       } catch {
-        // Silently fail — reaction just won't be removed from server
+        // Revert on failure
+        setReactions(prev => ({ ...prev, [targetId]: prevReactions }))
       }
-      setReactions(prev => ({
-        ...prev,
-        [targetId]: (prev[targetId] ?? []).filter(
-          r => !(r.user_id === userId && r.emoji === emoji)
-        ),
-      }))
     } else {
       // Add reaction — optimistic update then revert on failure
       setReactions(prev => ({

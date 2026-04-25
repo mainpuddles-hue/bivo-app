@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, memo, type ReactNode } from 'react'
-import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
+import { useState, useEffect, useCallback } from 'react'
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing, Home } from 'lucide-react-native'
@@ -25,9 +25,9 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity } from '@/components/ui'
+import { SettingsRow as Row, SettingsGroup as Group, SettingsSectionLabel as SectionLabel } from '@/components/SettingsUI'
 import { useReferral, type ApplyResult } from '@/hooks/useReferral'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
-import type { ThemeColors } from '@/lib/theme'
 
 const THEME_OPTIONS = [
   { key: 'light', label: 'settings.themeLight', icon: Sun },
@@ -48,125 +48,6 @@ const LOCATION_ACCURACY_OPTIONS: { key: LocationAccuracy; label: string; desc: s
 ]
 
 // Danger red for logout row — uses semantic theme token `colors.danger`
-
-// ── Mockup 22 primitives ──
-
-/** Section label above a group — uppercase, small, muted */
-function SectionLabel({ children, colors }: { children: ReactNode; colors: ThemeColors }) {
-  return (
-    <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{children}</Text>
-  )
-}
-
-/** Grouped card container with surface bg, rounded corners, border */
-function Group({ label, children, colors }: { label?: string; children: ReactNode; colors: ThemeColors }) {
-  const items = Array.isArray(children) ? children.filter(Boolean) : children ? [children] : []
-  return (
-    <View style={s.groupWrapper}>
-      {label ? <SectionLabel colors={colors}>{label}</SectionLabel> : null}
-      <View style={[s.groupContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        {items.map((child, i) => (
-          <View key={i}>
-            {child}
-            {i < items.length - 1 && (
-              <View style={[s.groupDivider, { backgroundColor: colors.border }]} />
-            )}
-          </View>
-        ))}
-      </View>
-    </View>
-  )
-}
-
-/** Single row inside a Group */
-const Row = memo(function Row({
-  icon,
-  iconBg,
-  label,
-  meta,
-  value,
-  danger,
-  dangerColor,
-  chevron = true,
-  switchValue,
-  onSwitchChange,
-  onPress,
-  colors,
-  isDark,
-  disabled,
-  accessibilityLabel,
-  accessibilityRole,
-  children,
-}: {
-  icon?: ReactNode
-  iconBg?: string
-  label: string
-  meta?: string
-  value?: string | null
-  danger?: boolean
-  dangerColor?: string
-  chevron?: boolean
-  switchValue?: boolean
-  onSwitchChange?: (val: boolean) => void
-  onPress?: () => void
-  colors: ThemeColors
-  isDark?: boolean
-  disabled?: boolean
-  accessibilityLabel?: string
-  accessibilityRole?: 'button' | 'radio' | 'switch'
-  children?: ReactNode
-}) {
-  const textColor = danger ? (dangerColor ?? colors.destructive) : colors.foreground
-  const bgColor = iconBg ?? colors.background
-
-  const content = (
-    <View style={s.rowInner}>
-      {icon && (
-        <View style={[s.rowIconCircle, { backgroundColor: bgColor }]}>
-          {icon}
-        </View>
-      )}
-      <View style={s.rowTextContainer}>
-        <Text style={[s.rowLabel, { color: textColor }]}>
-          {label}
-        </Text>
-        {meta ? <Text style={[s.rowMeta, { color: colors.mutedForeground }]}>{meta}</Text> : null}
-      </View>
-      {value ? <Text style={[s.rowValue, { color: colors.mutedForeground }]}>{value}</Text> : null}
-      {switchValue !== undefined && onSwitchChange && (
-        <Switch
-          value={switchValue}
-          onValueChange={onSwitchChange}
-          trackColor={{ false: colors.border, true: colors.foreground }}
-          thumbColor="#FFFFFF"
-          disabled={disabled}
-          style={s.switchStyle}
-          accessibilityLabel={accessibilityLabel ?? label}
-        />
-      )}
-      {children}
-      {chevron && switchValue === undefined && !value && !children && (
-        <ChevronRight size={14} color={colors.tertiaryForeground} />
-      )}
-    </View>
-  )
-
-  if (onPress && switchValue === undefined) {
-    return (
-      <PressableOpacity
-        onPress={onPress}
-        disabled={disabled}
-        accessibilityRole={accessibilityRole ?? 'button'}
-        accessibilityLabel={accessibilityLabel ?? label}
-        style={s.rowPressable}
-      >
-        {content}
-      </PressableOpacity>
-    )
-  }
-
-  return <View style={s.rowPressable}>{content}</View>
-})
 
 export default function SettingsScreen() {
   const { colors, isDark, theme, setTheme: setAppTheme } = useTheme()
@@ -399,8 +280,8 @@ export default function SettingsScreen() {
   const handleRemoveBuilding = useCallback(async () => {
     if (!profile) return
     Alert.alert(
-      locale === 'fi' ? 'Poista taloyhtiö' : 'Remove building',
-      locale === 'fi' ? 'Haluatko poistaa taloyhtiön profiilista?' : 'Remove your building association?',
+      t('settings.removeBuilding'),
+      t('settings.removeBuildingConfirm'),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
@@ -934,7 +815,7 @@ export default function SettingsScreen() {
           {FEATURES.LENDING_PAYMENTS && (
             <Row
               icon={<Banknote size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={locale === 'fi' ? 'Tulot' : 'Earnings'}
+              label={t('settings.earnings')}
               onPress={() => router.push('/payouts' as any)}
               colors={colors}
               isDark={isDark}
@@ -985,7 +866,7 @@ export default function SettingsScreen() {
         </Group>
 
         {/* ── Section: Taloyhtiö (Building) ── */}
-        <Group label={locale === 'fi' ? 'Taloyhtiö' : 'Building'} colors={colors}>
+        <Group label={t('settings.sectionBuilding')} colors={colors}>
           {userBuilding ? (
             <>
               <Row
@@ -998,14 +879,14 @@ export default function SettingsScreen() {
               />
               <Row
                 icon={<Pencil size={16} color={colors.foreground} strokeWidth={1.8} />}
-                label={locale === 'fi' ? 'Vaihda osoite' : 'Change address'}
+                label={t('settings.changeAddress')}
                 onPress={() => setShowBuildingModal(true)}
                 colors={colors}
                 isDark={isDark}
               />
               <Row
                 icon={<Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />}
-                label={locale === 'fi' ? 'Poista taloyhtiö' : 'Remove building'}
+                label={t('settings.removeBuilding')}
                 onPress={handleRemoveBuilding}
                 danger
                 colors={colors}
@@ -1015,8 +896,8 @@ export default function SettingsScreen() {
           ) : (
             <Row
               icon={<Home size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={locale === 'fi' ? 'Lisää osoitteesi' : 'Add your address'}
-              meta={locale === 'fi' ? 'Näe naapurisi ja taloyhtiösi ilmoitukset' : 'See your neighbors and building posts'}
+              label={t('settings.addAddress')}
+              meta={t('settings.addAddressHint')}
               onPress={() => setShowBuildingModal(true)}
               colors={colors}
               isDark={isDark}
@@ -1389,13 +1270,11 @@ export default function SettingsScreen() {
             <View style={s.deleteHeader}>
               <Home size={24} color={colors.foreground} />
               <Text style={[s.deleteTitle, { color: colors.foreground }]}>
-                {locale === 'fi' ? 'Lisää osoitteesi' : 'Add your address'}
+                {t('settings.addAddress')}
               </Text>
             </View>
             <Text style={[s.deleteDesc, { color: colors.mutedForeground }]}>
-              {locale === 'fi'
-                ? 'Kirjoita kotiosoitteesi niin näet taloyhtiösi muut naapurit ja ilmoitukset.'
-                : 'Enter your home address to see neighbors and building posts.'}
+              {t('settings.addAddressDesc')}
             </Text>
             <LocationAutocomplete
               value={buildingAddress}
@@ -1591,69 +1470,6 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
 
-  // ── Group (mockup 22) ──
-  groupWrapper: {
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-    paddingHorizontal: 4,
-    paddingBottom: 8,
-    lineHeight: 16,
-  },
-  groupContainer: {
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  groupDivider: {
-    height: 1,
-    marginLeft: 60,
-  },
-
-  // ── Row (mockup 22) ──
-  rowPressable: {},
-  rowInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  rowIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowTextContainer: {
-    flex: 1,
-  },
-  rowLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: fonts.bodyMedium,
-    letterSpacing: -0.05,
-  },
-  rowMeta: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    marginTop: 4,
-    lineHeight: 16,
-  },
-  rowValue: {
-    fontSize: 13,
-    fontFamily: fonts.body,
-  },
-  switchStyle: {
-    transform: [{ scaleX: 0.95 }, { scaleY: 0.95 }],
-  },
   inlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',

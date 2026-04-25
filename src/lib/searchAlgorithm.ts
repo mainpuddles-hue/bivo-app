@@ -51,7 +51,7 @@ function scoreSearchResult(item: SearchResult, ctx: SearchContext): number {
   score += Math.max(0, 15 - daysOld * 0.5)
 
   // Same neighborhood boost
-  if (ctx.userNeighborhood && item.user?.naapurusto === ctx.userNeighborhood) {
+  if (ctx.userNeighborhood && item.user?.naapurusto?.toLowerCase() === ctx.userNeighborhood.toLowerCase()) {
     score += 10
   }
 
@@ -61,6 +61,11 @@ function scoreSearchResult(item: SearchResult, ctx: SearchContext): number {
   return score
 }
 
+const MAX_QUERY_LEN = 500
+
 export function rankSearchResults<T extends SearchResult>(results: T[], ctx: SearchContext): T[] {
-  return [...results].sort((a, b) => scoreSearchResult(b, ctx) - scoreSearchResult(a, ctx))
+  const safeCtx = ctx.query.length > MAX_QUERY_LEN
+    ? { ...ctx, query: ctx.query.slice(0, MAX_QUERY_LEN) }
+    : ctx
+  return [...results].sort((a, b) => scoreSearchResult(b, safeCtx) - scoreSearchResult(a, safeCtx))
 }

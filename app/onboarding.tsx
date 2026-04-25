@@ -36,6 +36,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { useReferral } from '@/hooks/useReferral'
+import { useCooperativeInvite, type CoopInviteResult } from '@/hooks/useCooperativeInvite'
 import { trackEvent } from '@/lib/analytics'
 
 const TOTAL_STEPS = 3
@@ -55,11 +56,15 @@ function OnboardingScreenInner() {
   const [saving, setSaving] = useState(false)
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
+  const [coopInput, setCoopInput] = useState('')
+  const [coopStatus, setCoopStatus] = useState<'idle' | 'applied' | 'invalid' | 'expired' | 'exhausted'>('idle')
+  const [coopOrgName, setCoopOrgName] = useState<string | null>(null)
   const [onboardingUserId, setOnboardingUserId] = useState<string | null>(null)
   // Address-based onboarding state
   const [addressText, setAddressText] = useState('')
   const [selectedAddress, setSelectedAddress] = useState<LocationResult | null>(null)
   const { applyInviteCode } = useReferral(onboardingUserId)
+  const { applyCode: applyCoopCode, validateCode: validateCoopCode } = useCooperativeInvite()
 
   // Fetch user ID for referral system
   useEffect(() => {
@@ -104,6 +109,27 @@ function OnboardingScreenInner() {
         const result = await applyInviteCode(referralInput.trim())
         setReferralStatus(result === 'success' ? 'applied' : 'invalid')
         if (result !== 'success') {
+          setSaving(false)
+          return
+        }
+      }
+
+      // Apply cooperative (taloyhtiö) code if provided
+      if (coopInput.trim()) {
+        trackEvent('onboarding_coop_code', { hasCode: true })
+        const coopResult: CoopInviteResult = await applyCoopCode(coopInput.trim(), user.id)
+        if (coopResult === 'success' || coopResult === 'already_member') {
+          setCoopStatus('applied')
+        } else if (coopResult === 'expired') {
+          setCoopStatus('expired')
+          setSaving(false)
+          return
+        } else if (coopResult === 'exhausted') {
+          setCoopStatus('exhausted')
+          setSaving(false)
+          return
+        } else {
+          setCoopStatus('invalid')
           setSaving(false)
           return
         }
@@ -160,7 +186,7 @@ function OnboardingScreenInner() {
     } finally {
       setSaving(false)
     }
-  }, [supabase, selectedAddress, selectedCity, referralInput, router, t, toast, applyInviteCode])
+  }, [supabase, selectedAddress, selectedCity, referralInput, coopInput, router, t, toast, applyInviteCode, applyCoopCode])
 
   // Skip handler — jumps to last step (address/neighborhood)
   const handleSkip = useCallback(() => {
@@ -343,6 +369,58 @@ function OnboardingScreenInner() {
           {referralStatus === 'invalid' && (
             <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
               {t('referral.invalidCode')}
+            </Text>
+          )}
+        </View>
+
+        {/* Cooperative (taloyhtiö) invite code */}
+        <View style={s.referralInputRow}>
+          <TextInput
+            value={coopInput}
+            onChangeText={(text) => { setCoopInput(text); setCoopStatus('idle'); setCoopOrgName(null) }}
+            onBlur={async () => {
+              if (coopInput.trim().length >= 4) {
+                const info = await validateCoopCode(coopInput.trim())
+                if (info) setCoopOrgName(info.org_name)
+              }
+            }}
+            placeholder={t('cooperativeInvite.codeInput')}
+            placeholderTextColor={colors.tertiaryForeground}
+            accessibilityLabel={t('cooperativeInvite.codeInput')}
+            style={[s.referralInput, {
+              backgroundColor: colors.muted,
+              borderWidth: coopStatus !== 'idle' ? 1 : 0,
+              borderColor: coopStatus === 'applied' ? colors.success : coopStatus !== 'idle' ? colors.destructive : 'transparent',
+              color: colors.foreground,
+              fontFamily: fonts.body,
+            }]}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={12}
+          />
+          {coopOrgName && coopStatus === 'idle' && (
+            <Text style={[s.referralFeedback, { color: colors.success, fontFamily: fonts.body }]}>
+              {coopOrgName}
+            </Text>
+          )}
+          {coopStatus === 'applied' && (
+            <Text style={[s.referralFeedback, { color: colors.success, fontFamily: fonts.body }]}>
+              {t('cooperativeInvite.codeApplied')}
+            </Text>
+          )}
+          {coopStatus === 'invalid' && (
+            <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
+              {t('cooperativeInvite.invalidCode')}
+            </Text>
+          )}
+          {coopStatus === 'expired' && (
+            <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
+              {t('cooperativeInvite.expiredCode')}
+            </Text>
+          )}
+          {coopStatus === 'exhausted' && (
+            <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
+              {t('cooperativeInvite.exhaustedCode')}
             </Text>
           )}
         </View>

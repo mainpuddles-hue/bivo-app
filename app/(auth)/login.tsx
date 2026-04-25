@@ -370,11 +370,11 @@ function LoginScreenInner() {
           .filter(Boolean)
           .join(' ')
         if (fullName) {
-          await (supabase.from('profiles') as any)
+          const { error: nameErr } = await (supabase.from('profiles') as any)
             .update({ name: fullName })
             .eq('id', data.user.id)
             .is('name', null)
-            .catch(() => {})
+          if (nameErr && __DEV__) console.warn('[auth] Apple name save failed:', nameErr.message)
         }
       }
 

@@ -161,7 +161,8 @@
     "weeklyPopular": "Popular this week",
     "weeklyPopularSub": "Events in your area",
     "freeEvent": "Free",
-    "participants": "participants"
+    "participants": "participants",
+    "inviteNeighbors": "Invite your neighbors!"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",
@@ -468,7 +469,8 @@
     "participants": "Participants",
     "joinedSuccess": "You joined the event!",
     "joinPending": "Request sent",
-    "eventPending": "Date pending"
+    "eventPending": "Date pending",
+    "chatLeaveFailed": "Could not leave event chat"
   },
   "activity": {
     "activities": "Together",
@@ -976,7 +978,15 @@
     "saveFailed": "Save failed",
     "helpTitle": "Help & support",
     "helpFaq": "Frequently asked questions",
-    "helpContact": "Contact support"
+    "helpContact": "Contact support",
+    "earnings": "Earnings",
+    "sectionBuilding": "Building",
+    "changeAddress": "Change address",
+    "removeBuilding": "Remove building",
+    "removeBuildingConfirm": "Remove your building association?",
+    "addAddress": "Add your address",
+    "addAddressHint": "See your neighbors and building posts",
+    "addAddressDesc": "Enter your home address to see neighbors and building posts."
   },
   "postCard": {
     "viewListing": "View listing",
@@ -1757,7 +1767,9 @@
     "title": "Select location",
     "tapToSelect": "Tap the map to select a location",
     "nativeHint": "Enter coordinates manually",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "latPlaceholder": "Lat (60.17)",
+    "lngPlaceholder": "Lng (24.94)"
   },
   "calendar": {
     "noEvents": "No events on this day",
@@ -2030,7 +2042,10 @@
     "placeUnsaved": "Place removed from saved",
     "removed": "Post removed from saved",
     "openInMaps": "Open in Maps",
-    "unsave": "Unsave"
+    "unsave": "Unsave",
+    "freePrice": "Free",
+    "perDayShort": "/day",
+    "tabAll": "All"
   },
   "error": {
     "pageLoadFailed": "Page could not be loaded",
@@ -2200,6 +2215,8 @@
     "timeToday": "Today",
     "timeTomorrow": "Tomorrow",
     "timeThisWeek": "This week",
+    "callPhone": "Call phone number",
+    "detailImage": "Detail image",
     "place": {
       "restaurant": "Restaurant",
       "cafe": "Cafe",
@@ -2541,6 +2558,28 @@
     "codeApplied": "Invite code applied!",
     "invites": "invites",
     "points": "points"
+  },
+  "cooperativeInvite": {
+    "codeInput": "Housing cooperative code (optional)",
+    "codeApplied": "Joined housing cooperative!",
+    "invalidCode": "Invite code not found",
+    "expiredCode": "Invite code has expired",
+    "exhaustedCode": "Invite code has been fully used",
+    "generateCode": "Generate invite code",
+    "generatedCode": "Invite code generated",
+    "codeLabel": "Invite code",
+    "maxUses": "Max uses",
+    "expiresIn": "Expires in",
+    "days": "days",
+    "unlimited": "Unlimited",
+    "active": "Active",
+    "deactivated": "Deactivated",
+    "uses": "uses",
+    "codesTitle": "Invite codes",
+    "noCodesYet": "No invite codes yet. Create the first one!",
+    "copyCode": "Copy code",
+    "codeCopied": "Invite code copied!",
+    "deactivate": "Deactivate"
   },
   "pwa": {
     "installTitle": "Add TackBird to home screen",
@@ -2938,6 +2977,23 @@
     "doNow": "Do now",
     "comingSoon": "Coming soon",
     "privacyNote": "Data is stored encrypted. TackBird does not share it with third parties."
+  },
+  "addressVerification": {
+    "title": "Address verification",
+    "enterAddress": "Enter your home address",
+    "enterAddressDesc": "Type your address and select it from the list. We'll verify your location using GPS.",
+    "placeholder": "E.g. Hämeentie 15, Helsinki",
+    "verify": "Verify location",
+    "hint": "You must be at your home address during verification. GPS accuracy: 500 m.",
+    "locating": "Getting your location...",
+    "locatingDesc": "We're comparing your GPS location with the address you provided.",
+    "success": "Address verified!",
+    "successDesc": "Your neighborhood is now verified. This improves your trust level in the community.",
+    "failed": "Location doesn't match",
+    "failedDesc": "Your GPS location is {{distance}} m from the address you provided. Make sure you're at home and try again.",
+    "tryAgain": "Try again",
+    "locationRequired": "Location required",
+    "locationRequiredDesc": "Address verification requires GPS location. Please enable location in your settings."
   },
   "urgency": {
     "juuriNyt": "Right now",
@@ -3405,6 +3461,9 @@
     "commentAdded": "Comment added",
     "errorLoadingRequest": "Maintenance request not found",
     "errorUpdatingStatus": "Failed to update status",
-    "errorAddingComment": "Failed to add comment"
+    "errorAddingComment": "Failed to add comment",
+    "errorUpvoting": "Vote failed",
+    "chatEmpty": "Start chatting with your neighbors!",
+    "chatPlaceholder": "Write a message..."
   }
 }

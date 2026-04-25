@@ -156,7 +156,7 @@ function CreateEventScreenInner() {
       if (mounted && (data as any)?.naapurusto) {
         setUserNaapurusto((data as any).naapurusto as string)
       }
-    }).catch(() => {})
+    }).catch((e: any) => { if (__DEV__) console.warn('[create-event] profile fetch failed:', e?.message) })
     return () => { mounted = false }
   }, [supabase, router])
 
@@ -183,7 +183,7 @@ function CreateEventScreenInner() {
           setLocationLat(data.building.lat)
           setLocationLng(data.building.lng)
         }
-      }).catch(() => {})
+      }).catch((e: any) => { if (__DEV__) console.warn('[create-event] building address fetch failed:', e?.message) })
     }
   }, [template, edit, t, currentUserId, supabase])
 
@@ -363,17 +363,26 @@ function CreateEventScreenInner() {
         error = res.error
         resultId = res.data?.id
 
-        // Auto-join creator as participant + create group chat (soft fail)
+        // Auto-join creator as participant + create group chat (soft fail with logging)
         if (!error && resultId && currentUserId) {
           ;(supabase.from('community_event_participants') as any)
             .insert({ event_id: resultId, user_id: currentUserId, status: 'joined' })
-            .then(() => {})
-            .catch(() => {})
-          createEventChat(supabase, resultId, title.trim(), currentUserId).catch(() => {})
+            .then(({ error: joinErr }: any) => {
+              if (joinErr && __DEV__) console.warn('[create-event] auto-join failed:', joinErr.message)
+            })
+            .catch((err: any) => { if (__DEV__) console.warn('[create-event] auto-join error:', err) })
+          createEventChat(supabase, resultId, title.trim(), currentUserId).catch((err) => {
+            if (__DEV__) console.warn('[create-event] chat creation failed:', err)
+          })
         }
       }
 
       if (error) {
+        // Clean up orphaned image if we uploaded one but event creation failed
+        if (uploadedImageUrl && !edit) {
+          const pathMatch = uploadedImageUrl.match(/event-images\/(.+)$/)
+          if (pathMatch) supabase.storage.from('event-images').remove([pathMatch[1]]).catch(() => {})
+        }
         toast.show({ message: t('events.createFailed'), type: 'error' })
         setSubmitting(false)
         return

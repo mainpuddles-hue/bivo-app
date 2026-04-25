@@ -286,7 +286,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
         }
       }
       setCityEvents(allCityEvents)
-      const withCoords = allCityEvents.filter(e => e.latitude && e.longitude).length
+      const withCoords = allCityEvents.filter(e => e.latitude != null && e.longitude != null).length
       if (__DEV__) console.log(`[map] Events: ${linkedEvents.length} LE + ${tmData.length} TM + ${kideData.length} Kide + ${meteliData.length} Meteli = ${allCityEvents.length} merged (${withCoords} with coords)`)
       if (__DEV__ && postsRes.error) console.log('[map] posts error:', postsRes.error.message)
       if (__DEV__ && eventsRes.error) console.log('[map] events error:', eventsRes.error.message)

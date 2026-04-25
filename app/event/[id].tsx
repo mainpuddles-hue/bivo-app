@@ -209,6 +209,7 @@ function EventDetailScreenInner() {
                 // Remove user from event group chat (soft fail)
                 removeMemberFromChat(supabase, event.id, userId).catch((err) => {
                   if (__DEV__) console.warn('[event] removeMemberFromChat failed:', err)
+                  toast.show({ message: t('events.chatLeaveFailed') ?? 'Could not leave event chat', type: 'info' })
                 })
                 await fetchEvent()
               }
@@ -274,13 +275,13 @@ function EventDetailScreenInner() {
         .or(`and(user1_id.eq.${userId},user2_id.eq.${event.creator.id}),and(user1_id.eq.${event.creator.id},user2_id.eq.${userId})`)
         .maybeSingle()
       if (findError) { toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return }
-      if (existing) {
+      if (existing && isValidUUID((existing as any).id)) {
         router.push(`/messages/${(existing as any).id}`)
-      } else {
+      } else if (!existing) {
         const { data: newConv, error } = await (supabase.from('conversations') as any)
           .insert({ user1_id: userId, user2_id: event.creator.id }).select('id').maybeSingle()
         if (error || !newConv) { toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' }); return }
-        router.push(`/messages/${newConv.id}`)
+        if (isValidUUID(newConv.id)) router.push(`/messages/${newConv.id}`)
       }
     } catch {
       toast.show({ message: t('messages.conversationCreateFailed'), type: 'error' })
@@ -405,7 +406,7 @@ function EventDetailScreenInner() {
             onPress={() => setReportModalVisible(true)}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Report"
+            accessibilityLabel={t('report.title')}
             style={[s.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)', borderColor: colors.border }]}
           >
             <Flag size={16} color={colors.foreground} />
@@ -482,7 +483,7 @@ function EventDetailScreenInner() {
           {/* Organizer card */}
           {event.creator && (
             <PressableOpacity
-              onPress={() => router.push(`/profile/${event.creator!.id}` as any)}
+              onPress={() => { if (event.creator?.id && isValidUUID(event.creator.id)) router.push(`/profile/${event.creator.id}` as any) }}
               accessibilityRole="button"
               accessibilityLabel={`${event.creator.name}, ${t('events.organizer')}`}
               style={[s.organizerCard, { borderColor: colors.border }]}

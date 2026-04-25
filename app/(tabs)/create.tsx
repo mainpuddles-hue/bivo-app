@@ -303,7 +303,7 @@ export default function CreateScreen() {
       setCurrentUserId(id)
       if (!id) { router.replace('/(auth)/login'); return }
       supabase.from('profiles').select('naapurusto, is_pro').eq('id', id).maybeSingle()
-        .then(({ data }: any) => { if (!mounted) return; if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) }, () => {})
+        .then(({ data }: any) => { if (!mounted) return; if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) }, (err: any) => { if (__DEV__) console.warn('[create] profile fetch failed:', err) })
     }).catch(() => {})
     return () => { mounted = false }
   }, [supabase, router])
@@ -1181,14 +1181,14 @@ export default function CreateScreen() {
                   {selectedType === 'lainaa' && (
                     <View style={mk.fieldWrap}>
                       <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>{t('rental.dailyFee')} *</Text>
-                      <TextInput style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]} value={dailyFee} onChangeText={setDailyFee} placeholder="0.00 €" placeholderTextColor={colors.mutedForeground} keyboardType="decimal-pad" />
+                      <TextInput style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]} value={dailyFee} onChangeText={setDailyFee} placeholder="0.00 €" placeholderTextColor={colors.mutedForeground} keyboardType="decimal-pad" maxLength={8} />
                     </View>
                   )}
 
                   {selectedType === 'tarjoan' && tarjoanType === 'service' && (
                     <View style={mk.fieldWrap}>
                       <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>{t('service.price')}</Text>
-                      <TextInput style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]} value={servicePrice} onChangeText={setServicePrice} placeholder={t('service.pricePlaceholder')} placeholderTextColor={colors.mutedForeground} keyboardType="decimal-pad" />
+                      <TextInput style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]} value={servicePrice} onChangeText={setServicePrice} placeholder={t('service.pricePlaceholder')} placeholderTextColor={colors.mutedForeground} keyboardType="decimal-pad" maxLength={8} />
                       <Text style={[mk.charCount, { color: colors.mutedForeground }]}>{t('service.priceHint')}</Text>
                       {!trust.permissions.canOfferPaidServices && servicePrice ? (
                         <Text style={[mk.charCount, { color: colors.destructive }]}>{t('service.requiresVerification')}</Text>
@@ -1201,7 +1201,7 @@ export default function CreateScreen() {
                   {selectedType === 'tarjoan' && tarjoanType === 'item' && (
                     <View style={mk.fieldWrap}>
                       <Text style={[mk.sectionLabel, { color: colors.mutedForeground }]}>{t('create.itemPrice')}</Text>
-                      <TextInput style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]} value={servicePrice} onChangeText={setServicePrice} placeholder="0.00 €" placeholderTextColor={colors.mutedForeground} keyboardType="decimal-pad" />
+                      <TextInput style={[mk.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]} value={servicePrice} onChangeText={setServicePrice} placeholder="0.00 €" placeholderTextColor={colors.mutedForeground} keyboardType="decimal-pad" maxLength={8} />
                       <Text style={[mk.charCount, { color: colors.mutedForeground }]}>{t('create.itemPriceHint')}</Text>
                     </View>
                   )}
@@ -1400,8 +1400,8 @@ export default function CreateScreen() {
                 <Text style={[mk.mapFallbackText, { color: colors.mutedForeground }]}>{t('locationPicker.tapToSelect')}</Text>
                 <Text style={[mk.mapFallbackHint, { color: colors.mutedForeground }]}>{t('locationPicker.nativeHint')}</Text>
                 <View style={mk.coordInputRow}>
-                  <TextInput style={[mk.coordInput, { backgroundColor: colors.muted, color: colors.foreground }]} placeholder="Lat (60.17)" placeholderTextColor={colors.mutedForeground} accessibilityLabel={t('locationPicker.latitude') ?? 'Latitude'} keyboardType="decimal-pad" value={tempMapCoords?.lat?.toString() ?? ''} onChangeText={(text) => { const lat = parseFloat(text); if (!isNaN(lat)) setTempMapCoords(prev => ({ lat, lng: prev?.lng ?? 24.94 })) }} />
-                  <TextInput style={[mk.coordInput, { backgroundColor: colors.muted, color: colors.foreground }]} placeholder="Lng (24.94)" placeholderTextColor={colors.mutedForeground} accessibilityLabel={t('locationPicker.longitude') ?? 'Longitude'} keyboardType="decimal-pad" value={tempMapCoords?.lng?.toString() ?? ''} onChangeText={(text) => { const lng = parseFloat(text); if (!isNaN(lng)) setTempMapCoords(prev => ({ lat: prev?.lat ?? 60.17, lng })) }} />
+                  <TextInput style={[mk.coordInput, { backgroundColor: colors.muted, color: colors.foreground }]} placeholder={t('locationPicker.latPlaceholder')} placeholderTextColor={colors.mutedForeground} accessibilityLabel={t('locationPicker.latitude') ?? 'Latitude'} keyboardType="decimal-pad" value={tempMapCoords?.lat?.toString() ?? ''} onChangeText={(text) => { const lat = parseFloat(text); if (!isNaN(lat)) setTempMapCoords(prev => ({ lat, lng: prev?.lng ?? 24.94 })) }} />
+                  <TextInput style={[mk.coordInput, { backgroundColor: colors.muted, color: colors.foreground }]} placeholder={t('locationPicker.lngPlaceholder')} placeholderTextColor={colors.mutedForeground} accessibilityLabel={t('locationPicker.longitude') ?? 'Longitude'} keyboardType="decimal-pad" value={tempMapCoords?.lng?.toString() ?? ''} onChangeText={(text) => { const lng = parseFloat(text); if (!isNaN(lng)) setTempMapCoords(prev => ({ lat: prev?.lat ?? 60.17, lng })) }} />
                 </View>
               </View>
             )}

@@ -9,10 +9,24 @@ interface EmptyStateProps {
   description?: string
   actionLabel?: string
   onAction?: () => void
+  /** Icon rendered inside the action button, before the label */
+  actionIcon?: React.ReactNode
+  /** Use a filled (ink-bg) button instead of the default outline style */
+  actionVariant?: 'outline' | 'filled'
 }
 
-export function EmptyState({ icon, title, description, actionLabel, onAction }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+  actionIcon,
+  actionVariant = 'outline',
+}: EmptyStateProps) {
   const { colors } = useTheme()
+  const isFilled = actionVariant === 'filled'
+
   return (
     <View style={styles.container}>
       <View style={styles.iconWrap}>
@@ -25,10 +39,21 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
       {actionLabel && onAction && (
         <PressableOpacity
           onPress={onAction}
-          style={[styles.actionBtn, { borderColor: colors.border }]}
+          style={[
+            styles.actionBtn,
+            isFilled
+              ? { backgroundColor: colors.foreground, borderWidth: 0 }
+              : { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth, backgroundColor: 'transparent' },
+          ]}
           accessibilityRole="button"
         >
-          <Text style={[styles.actionText, { color: colors.foreground }]}>{actionLabel}</Text>
+          {actionIcon}
+          <Text style={[
+            styles.actionText,
+            { color: isFilled ? colors.background : colors.foreground },
+          ]}>
+            {actionLabel}
+          </Text>
         </PressableOpacity>
       )}
     </View>
@@ -67,12 +92,14 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    backgroundColor: 'transparent',
+    minHeight: 44,
   },
   actionText: {
     fontSize: 14,

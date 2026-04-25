@@ -8,6 +8,7 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import { Search, X, Archive, CheckCheck, ImageIcon, Pin, MessageCircle, LogIn, Users, PenSquare, MoreHorizontal, RefreshCw } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MessageListSkeleton } from '@/components/SkeletonLoaders'
+import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -55,6 +56,7 @@ export default function MessagesScreen() {
   useEffect(() => { return () => { mountedRef.current = false } }, [])
   const conversationsRef = useRef(conversations)
   conversationsRef.current = conversations
+  const fetchConversationsRef = useRef<() => void>(() => {})
   // Fast client-side filter for realtime events — avoids refetching when
   // a message arrives for a conversation this user isn't part of
   const myConvIdsRef = useRef<Set<string>>(new Set())
@@ -220,18 +222,17 @@ export default function MessagesScreen() {
     }
   }, [supabase])
 
+  // Keep ref in sync so realtime callback always uses latest fetch without causing channel churn
+  fetchConversationsRef.current = fetchConversations
+
   // Fetch conversations on mount and re-fetch when screen gains focus (e.g. after reading messages)
   // Also check if blocked users changed (flag set by profile/[userId].tsx after block/unblock)
   useFocusEffect(useCallback(() => {
-    fetchConversations()
-    // Check if blocked list changed since last focus — force re-fetch if so
+    // Check if blocked list changed since last focus — if so, clear flag first so fetch uses fresh data
     AsyncStorage.getItem('tackbird_blocked_changed').then((val) => {
-      if (val) {
-        AsyncStorage.removeItem('tackbird_blocked_changed')
-        // Re-fetch to filter out newly blocked (or unblocked) users
-        fetchConversations()
-      }
+      if (val) AsyncStorage.removeItem('tackbird_blocked_changed')
     }).catch(() => {})
+    fetchConversations()
   }, [fetchConversations]))
 
   // Realtime for new messages. Supabase realtime only supports a single
@@ -252,11 +253,11 @@ export default function MessagesScreen() {
         const msg = payload.new as any
         if (!msg?.conversation_id) return
         if (!myConvIdsRef.current.has(msg.conversation_id)) return
-        fetchConversations()
+        fetchConversationsRef.current()
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [userId, supabase, fetchConversations])
+  }, [userId, supabase])
 
   // Fetch event group chats the user is a member of
   const fetchEventChats = useCallback(async () => {
@@ -684,46 +685,23 @@ export default function MessagesScreen() {
           loading ? (
             <MessageListSkeleton />
           ) : !userId ? (
-            /* ── Login required empty state ── */
-            <View style={styles.empty}>
-              <View style={[styles.emptyIconCircle, { backgroundColor: `${colors.foreground}08` }]}>
-                <LogIn size={48} color={colors.foreground} strokeWidth={1.5} />
-              </View>
-              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-                {t('messages.loginRequired')}
-              </Text>
-              <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.loginHint')}</Text>
-              <PressableOpacity
-                onPress={() => router.push('/(auth)/login')}
-                style={[styles.ctaBtn, { backgroundColor: colors.foreground }]}
-                accessibilityRole="button"
-                accessibilityLabel={t('auth.login')}
-              >
-                <Text style={[styles.ctaBtnText, { color: colors.background }]}>{t('auth.login')}</Text>
-              </PressableOpacity>
-            </View>
+            <EmptyState
+              icon={<LogIn size={48} color={colors.foreground} strokeWidth={1.5} />}
+              title={t('messages.loginRequired')}
+              description={t('messages.loginHint')}
+              actionLabel={t('auth.login')}
+              onAction={() => router.push('/(auth)/login')}
+              actionVariant="filled"
+            />
           ) : (
-            /* ── No conversations empty state ── */
-            <View style={styles.empty}>
-              <View style={[styles.emptyIconCircle, { backgroundColor: `${colors.foreground}08` }]}>
-                <MessageCircle size={48} color={colors.foreground} strokeWidth={1.5} />
-              </View>
-              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-                {showArchived ? t('messages.noArchivedConversations') : t('messages.noConversations')}
-              </Text>
-              {!showArchived && (
-                <>
-                  <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('messages.emptyHint')}</Text>
-                  <PressableOpacity
-                    onPress={() => router.push('/search')}
-                    style={[styles.ctaBtn, { backgroundColor: colors.foreground }]}
-                    accessibilityRole="button"
-                  >
-                    <Text style={[styles.ctaBtnText, { color: colors.background }]}>{t('messages.startConversation')}</Text>
-                  </PressableOpacity>
-                </>
-              )}
-            </View>
+            <EmptyState
+              icon={<MessageCircle size={48} color={colors.foreground} strokeWidth={1.5} />}
+              title={showArchived ? t('messages.noArchivedConversations') : t('messages.noConversations')}
+              description={showArchived ? undefined : t('messages.emptyHint')}
+              actionLabel={showArchived ? undefined : t('messages.startConversation')}
+              onAction={showArchived ? undefined : () => router.push('/search')}
+              actionVariant="filled"
+            />
           )
         }
         showsVerticalScrollIndicator={false}
@@ -920,49 +898,6 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  // ── Empty states ──
-  empty: {
-    alignItems: 'center',
-    paddingTop: 80,
-    paddingHorizontal: 32,
-    gap: 10,
-  },
-  emptyIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    lineHeight: 22,
-    fontFamily: fonts.heading,
-    letterSpacing: -0.15,
-  },
-  emptyHint: {
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 18,
-    fontFamily: fonts.body,
-  },
-  ctaBtn: {
-    marginTop: 12,
-    borderRadius: 999,
-    paddingVertical: 12,
-    paddingHorizontal: 28,
-    alignItems: 'center',
-    minHeight: 44,
-  },
-  ctaBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
-    fontFamily: fonts.bodySemi,
-  },
-
   // ── Event chats section ──
   eventChatsSection: {
     paddingTop: 4,

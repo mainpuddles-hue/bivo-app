@@ -190,34 +190,40 @@ function SavedScreenInner() {
   }, [unsavingId, supabase, t, toast])
 
   const handleUnsaveEvent = useCallback(async (eventId: string, _eventType: string) => {
-    const prev = events
-    setEvents(e => e.filter(ev => ev.id !== eventId))
+    let removedEvent: typeof events[number] | undefined
+    setEvents(e => {
+      removedEvent = e.find(ev => ev.id === eventId)
+      return e.filter(ev => ev.id !== eventId)
+    })
     try {
       const cachedId = await getCachedUserId()
       if (!cachedId) throw new Error('Not authenticated')
       const { error } = await (supabase.from('saved_events') as any).delete().eq('event_id', eventId).eq('user_id', cachedId)
       if (error) throw error
     } catch {
-      setEvents(prev)
+      if (removedEvent) {
+        const restored = removedEvent
+        setEvents(current => [restored, ...current])
+      }
       toast.show({ message: t('common.error'), type: 'error' })
     }
-  }, [events, supabase, t, toast])
+  }, [supabase, t, toast])
 
   // Derive display price for a post
   const getPostPrice = (post: Post): string => {
-    if (post.type === 'ilmaista') return locale === 'fi' ? 'Ilmainen' : 'Free'
+    if (post.type === 'ilmaista') return t('saved.freePrice')
     if (post.daily_fee != null && post.daily_fee > 0) {
-      return `${formatPrice(post.daily_fee, locale)} / ${locale === 'fi' ? 'pv' : locale === 'sv' ? 'dag' : 'day'}`
+      return `${formatPrice(post.daily_fee, locale)} ${t('saved.perDayShort')}`
     }
     if (post.service_price != null && post.service_price > 0) {
       return formatPrice(post.service_price, locale)
     }
-    return locale === 'fi' ? 'Ilmainen' : 'Free'
+    return t('saved.freePrice')
   }
 
   // Tab definitions
   const tabs = useMemo((): { key: SavedTab; label: string; count: number }[] => [
-    { key: 'all', label: locale === 'fi' ? 'Kaikki' : locale === 'sv' ? 'Alla' : 'All', count: posts.length + events.length },
+    { key: 'all', label: t('saved.tabAll'), count: posts.length + events.length },
     { key: 'posts', label: t('saved.tabPosts'), count: posts.length },
     { key: 'events', label: t('saved.tabEvents'), count: events.length },
   ], [locale, posts.length, events.length, t])

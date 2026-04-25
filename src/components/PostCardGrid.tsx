@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import { Heart, Calendar, Clock, Eye, Users, ShieldCheck } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
+import { isValidUUID } from '@/lib/validation'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -55,16 +56,12 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
   const likingRef = useRef(false)
   const mountedRef = useRef(true)
-  const likeGraceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const likeAnim = useRef(new Animated.Value(1)).current
   const shimmerAnim = useRef(new Animated.Value(0.4)).current
 
   useEffect(() => {
     mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-      if (likeGraceTimerRef.current) clearTimeout(likeGraceTimerRef.current)
-    }
+    return () => { mountedRef.current = false }
   }, [])
 
   useEffect(() => {
@@ -112,7 +109,8 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     try { Haptics.selectionAsync() } catch {}
     onInteraction?.(post.id, 'click')
     if (post.id.startsWith('event-')) {
-      router.push(`/event/${post.id.replace('event-', '')}`)
+      const eventId = post.id.replace('event-', '')
+      if (isValidUUID(eventId)) router.push(`/event/${eventId}`)
     } else {
       router.push(`/post/${post.id}`)
     }
@@ -125,7 +123,6 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     if (post.is_seed) return
     if (likingRef.current) return
     likingRef.current = true
-    if (likeGraceTimerRef.current) clearTimeout(likeGraceTimerRef.current)
     const wasLiked = liked
     const prevCount = likeCount
     try {
@@ -146,7 +143,6 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           setLiked(wasLiked)
           setLikeCount(prevCount)
         }
-        likingRef.current = false
         return
       }
       if (!wasLiked) onInteraction?.(post.id, 'like')
@@ -155,12 +151,9 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         setLiked(wasLiked)
         setLikeCount(prevCount)
       }
+    } finally {
       likingRef.current = false
-      return
     }
-    likeGraceTimerRef.current = setTimeout(() => {
-      likingRef.current = false
-    }, 2000)
   }
 
   // Spring-physics press feedback

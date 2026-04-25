@@ -134,7 +134,6 @@ function CommunityEventsScreenInner() {
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
 
       // Optimistic update — mark event as joined before the network call
-      const previousEvents = events
       setEvents(prev => prev.map(e =>
         e.id === eventId
           ? { ...e, participant_count: (e.participant_count ?? 0) + 1, _optimisticJoined: true } as any
@@ -147,8 +146,12 @@ function CommunityEventsScreenInner() {
           { onConflict: 'event_id,user_id', ignoreDuplicates: true },
         )
       if (joinError) {
-        // Revert optimistic update on failure
-        setEvents(previousEvents)
+        // Revert optimistic update on failure — only revert the specific event
+        setEvents(prev => prev.map(e =>
+          e.id === eventId
+            ? { ...e, participant_count: Math.max(0, (e.participant_count ?? 1) - 1), _optimisticJoined: undefined } as any
+            : e
+        ))
         throw joinError
       }
       // Refresh to sync with real server state

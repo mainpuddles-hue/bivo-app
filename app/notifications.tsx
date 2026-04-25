@@ -1,6 +1,6 @@
 declare const __DEV__: boolean
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { View, Text, SectionList, RefreshControl, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -179,6 +179,128 @@ const skeletonStyles = StyleSheet.create({
   bodyLine: { width: '60%', height: 11, borderRadius: 6 },
 })
 
+// ── Memoized notification row item ──
+
+interface NotificationRowProps {
+  item: PrioritizedNotification
+  isExpanded: boolean
+  colors: ReturnType<typeof import('@/hooks/useTheme').useTheme>['colors']
+  isDark: boolean
+  t: (k: string, p?: Record<string, string | number>) => string
+  locale: string
+  onTap: (item: PrioritizedNotification) => void
+  onLongPress: (item: PrioritizedNotification) => void
+}
+
+const NotificationRow = memo(function NotificationRow({
+  item,
+  isExpanded,
+  colors,
+  isDark,
+  t,
+  locale,
+  onTap,
+  onLongPress,
+}: NotificationRowProps) {
+  const isGroupedMulti = item.isGrouped && item.groupCount && item.groupCount > 1
+  const isSystem = !item.from_user
+  const showActions = hasActionButtons(item.type) && !item.is_read
+  const actionText = getNotificationActionText(item, t)
+
+  return (
+    <View>
+      <PressableOpacity
+        onPress={() => onTap(item)}
+        onLongPress={() => onLongPress(item)}
+        delayLongPress={500}
+        accessibilityRole="button"
+        accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
+        accessibilityState={{ selected: !item.is_read }}
+        accessibilityHint={t('notifications.deleteNotification')}
+        style={styles.notifRow}
+      >
+        {/* v3: Unread dot — 6px ink dot on LEFT */}
+        {!item.is_read ? (
+          <View style={[styles.unreadDot, { backgroundColor: colors.foreground }]} />
+        ) : (
+          <View style={styles.unreadDotSpacer} />
+        )}
+
+        {/* Avatar — 40px */}
+        {isSystem ? (
+          <View style={[styles.avatarSystem, { backgroundColor: colors.foreground }]}>
+            <Bell size={18} color={colors.background} />
+          </View>
+        ) : (
+          <Avatar
+            url={item.from_user?.avatar_url}
+            name={item.from_user?.name}
+            size={40}
+          />
+        )}
+
+        {/* v3: 2-line text — {name} {action} {context} + time muted */}
+        <View style={styles.notifContent}>
+          <Text style={[styles.notifAction, { color: colors.foreground }]} numberOfLines={2}>
+            {actionText.name ? (
+              <Text style={styles.notifName}>{actionText.name} </Text>
+            ) : null}
+            {actionText.action}
+            {actionText.context ? (
+              <Text style={{ color: colors.mutedForeground }}> {'\u00B7'} {actionText.context}</Text>
+            ) : null}
+          </Text>
+
+          <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
+            {formatTimeAgo(item.created_at, t, locale)}
+          </Text>
+
+          {/* Action buttons for actionable notifications */}
+          {showActions && (
+            <View style={styles.actionRow}>
+              <PressableOpacity
+                onPress={() => onTap(item)}
+                style={[styles.actionPrimary, { backgroundColor: colors.foreground }]}
+                accessibilityRole="button"
+                accessibilityLabel={item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
+              >
+                <Text style={[styles.actionPrimaryText, { color: colors.background }]}>
+                  {item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
+                </Text>
+              </PressableOpacity>
+              <PressableOpacity
+                onPress={() => onLongPress(item)}
+                style={[styles.actionSecondary, { backgroundColor: colors.card, borderColor: colors.border }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.decline')}
+              >
+                <Text style={[styles.actionSecondaryText, { color: colors.foreground }]}>
+                  {t('common.decline')}
+                </Text>
+              </PressableOpacity>
+            </View>
+          )}
+        </View>
+      </PressableOpacity>
+
+      {/* Expanded group — show individual notification names */}
+      {isGroupedMulti && isExpanded && item.groupNames && item.groupNames.length > 0 && (
+        <View style={[styles.expandedGroup, { backgroundColor: isDark ? `${colors.card}80` : `${colors.muted}80` }]}>
+          {item.groupNames.map((name, idx) => (
+            <View key={`${item.id}-${idx}`} style={styles.expandedItem}>
+              <View style={[styles.expandedDot, { backgroundColor: colors.mutedForeground }]} />
+              <Text style={[styles.expandedName, { color: colors.foreground }]} numberOfLines={1}>{name}</Text>
+              <Text style={[styles.expandedAction, { color: colors.mutedForeground }]}>
+                {item.type === 'post_like' ? t('notifications.likedYourPost') : item.title}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  )
+})
+
 function NotificationsScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -195,6 +317,8 @@ function NotificationsScreenInner() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [fetchError, setFetchError] = useState(false)
   const mountedRef = useRef(true)
+  // Track IDs being deleted so concurrent fetchNotifications() doesn't resurrect them
+  const pendingDeletesRef = useRef<Set<string>>(new Set())
 
   const fetchNotifications = useCallback(async () => {
     setFetchError(false)
@@ -220,7 +344,11 @@ function NotificationsScreenInner() {
       }
       const prioritized = prioritizeNotifications(raw)
       if (!mountedRef.current) return
-      setNotifications(prioritized)
+      // Exclude notifications that are mid-delete to prevent resurrection
+      const filtered = pendingDeletesRef.current.size > 0
+        ? prioritized.filter(n => !pendingDeletesRef.current.has(n.id))
+        : prioritized
+      setNotifications(filtered)
     } catch {
       if (!mountedRef.current) return
       setNotifications([])
@@ -232,6 +360,10 @@ function NotificationsScreenInner() {
       }
     }
   }, [supabase])
+
+  // Keep ref in sync so realtime callback always uses latest fetch without causing channel churn
+  const fetchNotificationsRef = useRef(fetchNotifications)
+  fetchNotificationsRef.current = fetchNotifications
 
   useFocusEffect(useCallback(() => {
     mountedRef.current = true
@@ -250,11 +382,11 @@ function NotificationsScreenInner() {
         table: 'notifications',
         filter: `user_id=eq.${userId}`,
       }, () => {
-        fetchNotifications()
+        fetchNotificationsRef.current()
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [userId, isLoggedIn, supabase, fetchNotifications])
+  }, [userId, isLoggedIn, supabase])
 
   // Mark all as read — update server first, then UI
   const markAllRead = useCallback(async () => {
@@ -268,13 +400,20 @@ function NotificationsScreenInner() {
     } catch {} // Intentional: non-critical — mark-all-read is best-effort
   }, [supabase])
 
-  // Delete notification
+  // Delete notification — optimistic with rollback, guarded against fetch resurrection
   const deleteNotification = useCallback(async (notifId: string) => {
+    const prev = notifications
+    pendingDeletesRef.current.add(notifId)
+    setNotifications(p => p.filter(n => n.id !== notifId))
     try {
-      await (supabase.from('notifications') as any).delete().eq('id', notifId)
-      setNotifications(prev => prev.filter(n => n.id !== notifId))
-    } catch {} // Intentional: non-critical notification delete
-  }, [supabase])
+      const { error } = await (supabase.from('notifications') as any).delete().eq('id', notifId)
+      if (error) throw error
+    } catch {
+      setNotifications(prev)
+    } finally {
+      pendingDeletesRef.current.delete(notifId)
+    }
+  }, [supabase, notifications])
 
   const handleLongPress = useCallback((item: PrioritizedNotification) => {
     Alert.alert(
@@ -312,10 +451,12 @@ function NotificationsScreenInner() {
     }
 
     try {
-      // Mark as read
+      // Mark as read — check error before updating UI
       if (!item.is_read) {
-        await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
-        setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n))
+        const { error } = await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', item.id)
+        if (!error) {
+          setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n))
+        }
       }
       // Navigate based on link_type — validate UUID before navigating to prevent crashes
       const linkId = item.link_id
@@ -334,6 +475,22 @@ function NotificationsScreenInner() {
       if (__DEV__) console.error('[notifications] handleTap error:', err)
     }
   }, [supabase, router, expandedGroups, toggleGroup])
+
+  const renderNotificationItem = useCallback(({ item }: { item: PrioritizedNotification }) => {
+    const groupKey = `${item.type}:${item.link_id ?? item.id}`
+    return (
+      <NotificationRow
+        item={item}
+        isExpanded={expandedGroups.has(groupKey)}
+        colors={colors}
+        isDark={isDark}
+        t={t}
+        locale={locale}
+        onTap={handleTap}
+        onLongPress={handleLongPress}
+      />
+    )
+  }, [expandedGroups, colors, isDark, t, locale, handleTap, handleLongPress])
 
   // v3: filter by segment — "all" shows everything, "unread" shows only unread
   const filtered = useMemo(() => {
@@ -449,107 +606,7 @@ function NotificationsScreenInner() {
               </Text>
             </View>
           )}
-          renderItem={({ item }) => {
-            const isGroupedMulti = item.isGrouped && item.groupCount && item.groupCount > 1
-            const groupKey = `${item.type}:${item.link_id ?? item.id}`
-            const isExpanded = expandedGroups.has(groupKey)
-            const isSystem = !item.from_user
-            const showActions = hasActionButtons(item.type) && !item.is_read
-            const actionText = getNotificationActionText(item, t)
-
-            return (
-              <View>
-                <PressableOpacity
-                  onPress={() => handleTap(item)}
-                  onLongPress={() => handleLongPress(item)}
-                  delayLongPress={500}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
-                  accessibilityState={{ selected: !item.is_read }}
-                  accessibilityHint={t('notifications.deleteNotification')}
-                  style={styles.notifRow}
-                >
-                  {/* v3: Unread dot — 6px ink dot on LEFT */}
-                  {!item.is_read ? (
-                    <View style={[styles.unreadDot, { backgroundColor: colors.foreground }]} />
-                  ) : (
-                    <View style={styles.unreadDotSpacer} />
-                  )}
-
-                  {/* Avatar — 40px */}
-                  {isSystem ? (
-                    <View style={[styles.avatarSystem, { backgroundColor: colors.foreground }]}>
-                      <Bell size={18} color={colors.background} />
-                    </View>
-                  ) : (
-                    <Avatar
-                      url={item.from_user?.avatar_url}
-                      name={item.from_user?.name}
-                      size={40}
-                    />
-                  )}
-
-                  {/* v3: 2-line text — {name} {action} {context} + time muted */}
-                  <View style={styles.notifContent}>
-                    <Text style={[styles.notifAction, { color: colors.foreground }]} numberOfLines={2}>
-                      {actionText.name ? (
-                        <Text style={styles.notifName}>{actionText.name} </Text>
-                      ) : null}
-                      {actionText.action}
-                      {actionText.context ? (
-                        <Text style={{ color: colors.mutedForeground }}> {'\u00B7'} {actionText.context}</Text>
-                      ) : null}
-                    </Text>
-
-                    <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
-                      {formatTimeAgo(item.created_at, t, locale)}
-                    </Text>
-
-                    {/* Action buttons for actionable notifications */}
-                    {showActions && (
-                      <View style={styles.actionRow}>
-                        <PressableOpacity
-                          onPress={() => handleTap(item)}
-                          style={[styles.actionPrimary, { backgroundColor: colors.foreground }]}
-                          accessibilityRole="button"
-                          accessibilityLabel={item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
-                        >
-                          <Text style={[styles.actionPrimaryText, { color: colors.background }]}>
-                            {item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
-                          </Text>
-                        </PressableOpacity>
-                        <PressableOpacity
-                          onPress={() => handleLongPress(item)}
-                          style={[styles.actionSecondary, { backgroundColor: colors.card, borderColor: colors.border }]}
-                          accessibilityRole="button"
-                          accessibilityLabel={t('common.decline')}
-                        >
-                          <Text style={[styles.actionSecondaryText, { color: colors.foreground }]}>
-                            {t('common.decline')}
-                          </Text>
-                        </PressableOpacity>
-                      </View>
-                    )}
-                  </View>
-                </PressableOpacity>
-
-                {/* Expanded group — show individual notification names */}
-                {isGroupedMulti && isExpanded && item.groupNames && item.groupNames.length > 0 && (
-                  <View style={[styles.expandedGroup, { backgroundColor: isDark ? `${colors.card}80` : `${colors.muted}80` }]}>
-                    {item.groupNames.map((name, idx) => (
-                      <View key={`${item.id}-${idx}`} style={styles.expandedItem}>
-                        <View style={[styles.expandedDot, { backgroundColor: colors.mutedForeground }]} />
-                        <Text style={[styles.expandedName, { color: colors.foreground }]} numberOfLines={1}>{name}</Text>
-                        <Text style={[styles.expandedAction, { color: colors.mutedForeground }]}>
-                          {item.type === 'post_like' ? t('notifications.likedYourPost') : item.title}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            )
-          }}
+          renderItem={renderNotificationItem}
           ListEmptyComponent={
             !loading ? (
               !isLoggedIn ? (

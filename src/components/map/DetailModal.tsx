@@ -91,7 +91,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
 
         {/* Image */}
         {imgUrl ? (
-          <Image source={{ uri: getImageUrl(imgUrl, 'medium')! }} style={styles.detailImage} contentFit="cover" />
+          <Image source={{ uri: getImageUrl(imgUrl, 'medium')! }} style={styles.detailImage} contentFit="cover" accessibilityLabel={item.title ?? t('map.detailImage')} />
         ) : null}
 
         {/* Content */}
@@ -151,7 +151,7 @@ export function DetailModal({ item, colors, locale, t, router, onClose }: Detail
                   <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{t('places.openingHours')}: {pl.opening_hours}</Text>
                 )}
                 {pl.phone && (
-                  <Pressable onPress={() => Linking.openURL(`tel:${pl.phone}`).catch(() => {})}>
+                  <Pressable onPress={() => Linking.openURL(`tel:${pl.phone}`).catch(() => {})} accessibilityRole="button" accessibilityLabel={t('map.callPhone')}>
                     <Text style={[styles.detailLabel, { color: colors.foreground }]}>{pl.phone}</Text>
                   </Pressable>
                 )}

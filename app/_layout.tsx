@@ -195,7 +195,7 @@ function useAnalyticsSetup() {
 
   useEffect(() => {
     // Fetch remote feature flags on startup (non-blocking)
-    fetchRemoteFlags().catch(() => {})
+    fetchRemoteFlags().catch((e: unknown) => { if (__DEV__) console.warn('[layout] remote flags fetch failed:', e) })
 
     let mounted = true
     async function init() {
@@ -211,7 +211,7 @@ function useAnalyticsSetup() {
           // Previously flushAnalyticsQueue was implemented but never called,
           // so queued events accumulated in AsyncStorage up to the 100-event
           // cap and were eventually dropped.
-          flushAnalyticsQueue().catch(() => {})
+          flushAnalyticsQueue().catch((e: unknown) => { if (__DEV__) console.warn('[layout] analytics flush failed:', e) })
         } else {
           setAnalyticsUser(null)
           setSentryUser(null)

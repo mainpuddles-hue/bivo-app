@@ -27,6 +27,7 @@ import { rankSearchResults } from '@/lib/searchAlgorithm'
 import { trackEvent } from '@/lib/analytics'
 import { getCachedUserId } from '@/lib/authCache'
 import { haversineKm } from '@/lib/geo'
+import { isValidUUID } from '@/lib/validation'
 import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions'
 import { useDemandInsights } from '@/hooks/useDemandInsights'
 import type { Post, PostType } from '@/lib/types'
@@ -381,6 +382,8 @@ function getSortLabel(filters: SearchFilterValues, t: ReturnType<typeof useI18n>
   }
 }
 
+const ListSeparator8 = () => <View style={{ height: 8 }} />
+
 function SearchScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -437,15 +440,19 @@ function SearchScreenInner() {
 
   // Load trending posts
   useEffect(() => {
+    let mounted = true
     supabase
       .from('posts')
       .select('id, title, type, like_count')
       .eq('is_active', true)
       .order('like_count', { ascending: false })
       .limit(5)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (!mounted) return
+        if (error) { if (__DEV__) console.warn('[search] trending posts error:', error.message); return }
         if (data) setTrendingPosts((data ?? []) as any[])
-      })
+      }, () => {})
+    return () => { mounted = false }
   }, [supabase])
 
   // Fetch current user's neighborhood for search ranking
@@ -981,7 +988,7 @@ function SearchScreenInner() {
           const { data: blockedData } = await supabase
             .from('blocked_users')
             .select('blocked_id')
-            .eq('user_id', loadMoreUserId)
+            .eq('blocker_id', loadMoreUserId)
           const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
           if (blockedIds.size > 0) {
             newPosts = newPosts.filter(p => !blockedIds.has(p.user_id))
@@ -995,7 +1002,8 @@ function SearchScreenInner() {
       setDbResultCount(prev => prev + newPosts.length)
       setResults(prev => [...prev, ...newPosts])
       setHasMore(newPosts.length >= 20)
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[search] loadMore error:', err)
     } finally {
       setLoadingMore(false)
     }
@@ -1447,7 +1455,7 @@ function SearchScreenInner() {
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
             <PressableOpacity
-              onPress={() => router.push(`/event/${item.id}` as any)}
+              onPress={() => isValidUUID(item.id) && router.push(`/event/${item.id}` as any)}
               style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               accessibilityRole="button"
               accessibilityLabel={item.title}
@@ -1472,7 +1480,7 @@ function SearchScreenInner() {
               <ChevronRight size={16} color={colors.mutedForeground} />
             </PressableOpacity>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ItemSeparatorComponent={ListSeparator8}
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
@@ -1491,7 +1499,7 @@ function SearchScreenInner() {
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
           renderItem={({ item }) => (
-            <PressableOpacity onPress={() => router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
+            <PressableOpacity onPress={() => isValidUUID(item.id) && router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
               <Avatar url={item.avatar_url} name={item.name} size={44} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>
@@ -1504,7 +1512,7 @@ function SearchScreenInner() {
               </View>
             </PressableOpacity>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ItemSeparatorComponent={ListSeparator8}
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />

@@ -82,17 +82,14 @@ describe('Search: feature flags hide categories from results', () => {
     return hiddenTypes
   }
 
-  test('Search hidden types are applied when no category filter is active', () => {
-    // When catFilter is null (no active filter), hidden types should be excluded
-    const catFilter: PostType | null = null
+  test('No hidden types when LENDING is enabled', () => {
+    // LENDING is now true for MVP — no categories are hidden
     const hidden = getHiddenTypes()
-    const shouldApplyHidden = hidden.length > 0 && !catFilter
-    expect(shouldApplyHidden).toBe(true)
+    expect(hidden).toEqual([])
   })
 
-  test('Search hidden types are NOT applied when a specific category is selected', () => {
-    // When a specific category is selected, hidden types filter is skipped
-    const catFilter: PostType | null = 'tarvitsen'
+  test('Hidden types filter is not applied when list is empty', () => {
+    const catFilter: PostType | null = null
     const hidden = getHiddenTypes()
     const shouldApplyHidden = hidden.length > 0 && !catFilter
     expect(shouldApplyHidden).toBe(false)

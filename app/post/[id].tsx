@@ -304,7 +304,7 @@ function PostDetailScreenInner() {
         const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
         if (realCount !== null) {
           setLikeCount(realCount)
-          ;(supabase.from('posts') as any).update({ like_count: realCount }).eq('id', id).then(() => {}).catch(() => {})
+          ;(supabase.from('posts') as any).update({ like_count: realCount }).eq('id', id).then(() => {}).catch((e: any) => { if (__DEV__) console.warn('[post] like count sync failed:', e?.message) })
         }
         // Notification (fire-and-forget)
         if (!wasLiked && post?.user_id && post.user_id !== userId) {
@@ -312,7 +312,7 @@ function PostDetailScreenInner() {
             user_id: post.user_id, from_user_id: userId,
             type: 'post_like', title: t('post.liked'),
             body: post.title, link_type: 'post', link_id: id,
-          }).then(() => {}).catch(() => {})
+          }).then(() => {}).catch((e: any) => { if (__DEV__) console.warn('[post] like notification failed:', e?.message) })
         }
       }
     } finally { likingRef.current = false }
@@ -884,9 +884,10 @@ function PostDetailScreenInner() {
 
       // 3. Store stripe session
       if (sessionId) {
-        await (supabase.from('service_bookings') as any)
+        const { error: stripeErr } = await (supabase.from('service_bookings') as any)
           .update({ stripe_session_id: sessionId })
           .eq('id', booking.id)
+        if (stripeErr && __DEV__) console.warn('[post] stripe session update failed:', stripeErr.message)
       }
 
       setServiceModalVisible(false)

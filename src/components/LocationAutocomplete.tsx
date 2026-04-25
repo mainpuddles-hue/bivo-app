@@ -71,11 +71,15 @@ export const LocationAutocomplete = memo(function LocationAutocomplete({
   const [loading, setLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
   const selectingRef = useRef(false)
 
-  // Cleanup debounce on unmount to prevent stale state updates
+  // Cleanup debounce + abort on unmount
   useEffect(() => {
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      abortRef.current?.abort()
+    }
   }, [])
 
   const search = useCallback(async (query: string) => {
@@ -85,11 +89,16 @@ export const LocationAutocomplete = memo(function LocationAutocomplete({
       return
     }
 
+    // Cancel previous in-flight request to prevent stale results overwriting fresh ones
+    abortRef.current?.abort()
+    abortRef.current = new AbortController()
+
     setLoading(true)
     try {
       const encoded = encodeURIComponent(query)
       const res = await fetch(
         `https://photon.komoot.io/api/?q=${encoded}&limit=5&lat=${HELSINKI_LAT}&lon=${HELSINKI_LNG}&lang=default`,
+        { signal: abortRef.current.signal },
       )
       if (!res.ok) throw new Error('Network error')
       const data = await res.json()
@@ -106,7 +115,9 @@ export const LocationAutocomplete = memo(function LocationAutocomplete({
       })
       setSuggestions(filtered)
       setShowSuggestions(filtered.length > 0)
-    } catch {
+    } catch (err) {
+      // Don't clear suggestions on abort — a newer search is already in progress
+      if (err instanceof DOMException && err.name === 'AbortError') return
       setSuggestions([])
       setShowSuggestions(false)
     } finally {

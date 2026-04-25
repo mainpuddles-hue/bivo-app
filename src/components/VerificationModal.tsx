@@ -60,7 +60,7 @@ export const VerificationModal = memo(function VerificationModal({ visible, onCl
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable accessibilityViewIsModal={true} style={[styles.modal, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
-          <PressableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={12}>
+          <PressableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('common.close')}>
             <X size={20} color={colors.mutedForeground} />
           </PressableOpacity>
 

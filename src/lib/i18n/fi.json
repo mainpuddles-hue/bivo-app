@@ -161,7 +161,8 @@
     "weeklyPopular": "Viikon suosituimmat",
     "weeklyPopularSub": "Tapahtumat lähialueellasi",
     "freeEvent": "Ilmainen",
-    "participants": "osallistujaa"
+    "participants": "osallistujaa",
+    "inviteNeighbors": "Kutsu naapurisi!"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",
@@ -468,7 +469,8 @@
     "participants": "Osallistujat",
     "joinedSuccess": "Liityit tapahtumaan!",
     "joinPending": "Pyyntö lähetetty",
-    "eventPending": "Päivä ei vahvistettu"
+    "eventPending": "Päivä ei vahvistettu",
+    "chatLeaveFailed": "Chat-jäsenyyden poisto epäonnistui"
   },
   "activity": {
     "activities": "Porukalla",
@@ -976,7 +978,15 @@
     "saveFailed": "Tallennus epäonnistui",
     "helpTitle": "Ohje ja tuki",
     "helpFaq": "Usein kysytyt kysymykset",
-    "helpContact": "Ota yhteyttä tukeen"
+    "helpContact": "Ota yhteyttä tukeen",
+    "earnings": "Tulot",
+    "sectionBuilding": "Taloyhtiö",
+    "changeAddress": "Vaihda osoite",
+    "removeBuilding": "Poista taloyhtiö",
+    "removeBuildingConfirm": "Haluatko poistaa taloyhtiön profiilista?",
+    "addAddress": "Lisää osoitteesi",
+    "addAddressHint": "Näe naapurisi ja taloyhtiösi ilmoitukset",
+    "addAddressDesc": "Kirjoita kotiosoitteesi niin näet taloyhtiösi muut naapurit ja ilmoitukset."
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -1757,7 +1767,9 @@
     "title": "Valitse sijainti",
     "tapToSelect": "Napauta karttaa valitaksesi sijainnin",
     "nativeHint": "Syötä koordinaatit manuaalisesti",
-    "confirm": "Vahvista"
+    "confirm": "Vahvista",
+    "latPlaceholder": "Lat (60.17)",
+    "lngPlaceholder": "Lng (24.94)"
   },
   "calendar": {
     "noEvents": "Ei tapahtumia tänä päivänä. Kokeile toista päivää!",
@@ -2030,7 +2042,10 @@
     "placeUnsaved": "Paikka poistettu tallennetuista",
     "removed": "Ilmoitus poistettu tallennetuista",
     "openInMaps": "Avaa kartassa",
-    "unsave": "Poista tallennetuista"
+    "unsave": "Poista tallennetuista",
+    "freePrice": "Ilmainen",
+    "perDayShort": "/pv",
+    "tabAll": "Kaikki"
   },
   "error": {
     "pageLoadFailed": "Sivua ei voitu ladata",
@@ -2200,6 +2215,8 @@
     "timeToday": "Tänään",
     "timeTomorrow": "Huomenna",
     "timeThisWeek": "Tällä viikolla",
+    "callPhone": "Soita puhelinnumeroon",
+    "detailImage": "Yksityiskohdan kuva",
     "place": {
       "restaurant": "Ravintola",
       "cafe": "Kahvila",
@@ -2541,6 +2558,28 @@
     "codeApplied": "Kutsukoodi käytetty!",
     "invites": "kutsua",
     "points": "pistettä"
+  },
+  "cooperativeInvite": {
+    "codeInput": "Taloyhtiön kutsukoodi (valinnainen)",
+    "codeApplied": "Liityit taloyhtiöön!",
+    "invalidCode": "Kutsukoodia ei löydy",
+    "expiredCode": "Kutsukoodi on vanhentunut",
+    "exhaustedCode": "Kutsukoodi on käytetty loppuun",
+    "generateCode": "Luo kutsukoodi",
+    "generatedCode": "Kutsukoodi luotu",
+    "codeLabel": "Kutsukoodi",
+    "maxUses": "Käyttökerrat",
+    "expiresIn": "Vanhenee",
+    "days": "päivässä",
+    "unlimited": "Rajaton",
+    "active": "Aktiivinen",
+    "deactivated": "Poistettu käytöstä",
+    "uses": "käyttöä",
+    "codesTitle": "Kutsukoodit",
+    "noCodesYet": "Ei kutsukoodeja. Luo ensimmäinen!",
+    "copyCode": "Kopioi koodi",
+    "codeCopied": "Kutsukoodi kopioitu!",
+    "deactivate": "Poista käytöstä"
   },
   "pwa": {
     "installTitle": "Lisää TackBird kotinäytölle",
@@ -2938,6 +2977,23 @@
     "doNow": "Tee nyt",
     "comingSoon": "Tulossa pian",
     "privacyNote": "Tiedot säilytetään salattuna. TackBird ei jaa niitä kolmansille osapuolille."
+  },
+  "addressVerification": {
+    "title": "Osoitevahvistus",
+    "enterAddress": "Syötä kotiosoitteesi",
+    "enterAddressDesc": "Kirjoita osoitteesi ja valitse se listasta. Vahvistamme sijainnin GPS:n avulla.",
+    "placeholder": "Esim. Hämeentie 15, Helsinki",
+    "verify": "Vahvista sijainti",
+    "hint": "Sinun tulee olla kotiosoitteessasi vahvistuksen aikana. GPS-tarkkuus: 500 m.",
+    "locating": "Haetaan sijaintia...",
+    "locatingDesc": "Vertaamme GPS-sijaintiasi antamaasi osoitteeseen.",
+    "success": "Osoite vahvistettu!",
+    "successDesc": "Naapurustosi on nyt vahvistettu. Tämä parantaa luottamustasi yhteisössä.",
+    "failed": "Sijainti ei täsmää",
+    "failedDesc": "GPS-sijaintisi on {{distance}} m päässä antamastasi osoitteesta. Varmista, että olet kotona ja yritä uudelleen.",
+    "tryAgain": "Yritä uudelleen",
+    "locationRequired": "Sijainti vaaditaan",
+    "locationRequiredDesc": "Osoitevahvistus vaatii GPS-sijainnin. Salli sijainti asetuksista."
   },
   "urgency": {
     "juuriNyt": "Juuri nyt",
@@ -3405,6 +3461,9 @@
     "commentAdded": "Kommentti lisätty",
     "errorLoadingRequest": "Vikailmoitusta ei löytynyt",
     "errorUpdatingStatus": "Tilan päivitys epäonnistui",
-    "errorAddingComment": "Kommentin lisääminen epäonnistui"
+    "errorAddingComment": "Kommentin lisääminen epäonnistui",
+    "errorUpvoting": "Äänestys epäonnistui",
+    "chatEmpty": "Aloita keskustelu naapuriesi kanssa!",
+    "chatPlaceholder": "Kirjoita viesti..."
   }
 }

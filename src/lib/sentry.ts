@@ -8,7 +8,23 @@ export function initSentry() {
     environment: __DEV__ ? 'development' : 'production',
     // Attach user context for debugging
     beforeSend(event) {
-      // Strip PII from breadcrumbs (GDPR)
+      // Strip PII from error messages (GDPR)
+      if (event.message) {
+        event.message = event.message
+          .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[email]')
+          .replace(/\+?\d{1,4}[\s-]?\d{2,4}[\s-]?\d{4,10}/g, '[phone]')
+      }
+      // Strip PII from exception values
+      if (event.exception?.values) {
+        for (const ex of event.exception.values) {
+          if (ex.value) {
+            ex.value = ex.value
+              .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[email]')
+              .replace(/\+?\d{1,4}[\s-]?\d{2,4}[\s-]?\d{4,10}/g, '[phone]')
+          }
+        }
+      }
+      // Strip PII from breadcrumbs
       if (event.breadcrumbs) {
         event.breadcrumbs = event.breadcrumbs.map(b => {
           if (b.data?.url) {

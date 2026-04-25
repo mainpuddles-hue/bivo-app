@@ -43,13 +43,17 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Event deduplication: Stripe can retry webhooks — skip if already processed
-    const { data: existingEvent } = await supabase
+    // Event deduplication: atomic upsert — no TOCTOU race on concurrent retries
+    const { data: dedup } = await supabase
       .from('webhook_events')
-      .select('id')
-      .eq('stripe_event_id', event.id)
-      .maybeSingle()
-    if (existingEvent) {
+      .upsert(
+        { stripe_event_id: event.id, event_type: event.type, status: 'processing', attempts: 1 },
+        { onConflict: 'stripe_event_id', ignoreDuplicates: false }
+      )
+      .select('status')
+      .single()
+
+    if (dedup?.status === 'completed') {
       console.log(`[webhook] Already processed event ${event.id}, skipping`)
       return new Response(JSON.stringify({ received: true, deduplicated: true }), {
         status: 200,
@@ -322,16 +326,13 @@ serve(async (req) => {
         console.log(`[webhook] Unhandled event: ${event.type}`)
     }
 
-    // Log successful webhook processing (stripe_event_id for deduplication)
-    await supabase.from('webhook_events').insert({
-      stripe_event_id: event.id,
-      event_type: event.type,
-      payload: { id: event.id, type: event.type },
-      status: 'completed',
-      attempts: 1,
-    }).catch((err: any) => {
-      console.error(`[webhook] CRITICAL: Failed to log webhook event ${event.id} (${event.type}):`, err?.message ?? err)
-    })
+    // Mark webhook as completed (row was created during dedup upsert above)
+    await supabase.from('webhook_events')
+      .update({ status: 'completed', payload: { id: event.id, type: event.type } })
+      .eq('stripe_event_id', event.id)
+      .catch((err: any) => {
+        console.error(`[webhook] CRITICAL: Failed to mark webhook event ${event.id} as completed:`, err?.message ?? err)
+      })
 
     return new Response(JSON.stringify({ received: true }), {
       status: 200,

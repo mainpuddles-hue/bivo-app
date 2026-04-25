@@ -294,10 +294,11 @@ function MaintenanceDetailInner() {
           .eq('id', id)
       }
     } catch {
-      // Revert on failure
+      // Revert on failure and notify user
       if (mountedRef.current) {
         setHasUpvoted(wasUpvoted)
         setUpvoteCount(prevCount)
+        toast.show({ message: t('building.errorUpvoting'), type: 'error' })
       }
     } finally {
       upvotingRef.current = false

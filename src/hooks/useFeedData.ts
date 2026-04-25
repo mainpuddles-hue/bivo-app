@@ -287,10 +287,13 @@ export function useFeedData() {
       // Filter out posts from blocked users
       if (currentUserId) {
         try {
-          const { data: blockedData } = await supabase
+          const { data: blockedData, error: blockedError } = await supabase
             .from('blocked_users')
             .select('blocked_id')
             .eq('blocker_id', currentUserId)
+          if (blockedError) {
+            if (__DEV__) console.warn('[feed] blocked users fetch failed:', blockedError.message)
+          }
           const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
           if (blockedIds.size > 0) {
             newPosts = newPosts.filter(p => !blockedIds.has(p.user_id))
@@ -307,8 +310,12 @@ export function useFeedData() {
           supabase.from('post_likes').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
           supabase.from('saved_posts').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
         ])
-        const { data: likedData } = likedSettled.status === 'fulfilled' ? likedSettled.value : { data: null }
-        const { data: savedData } = savedSettled.status === 'fulfilled' ? savedSettled.value : { data: null }
+        const likedResult = likedSettled.status === 'fulfilled' ? likedSettled.value : { data: null, error: null }
+        const savedResult = savedSettled.status === 'fulfilled' ? savedSettled.value : { data: null, error: null }
+        if (__DEV__ && (likedResult as any).error) console.warn('[feed] liked fetch error:', (likedResult as any).error.message)
+        if (__DEV__ && (savedResult as any).error) console.warn('[feed] saved fetch error:', (savedResult as any).error.message)
+        const { data: likedData } = likedResult
+        const { data: savedData } = savedResult
         const likedSet = new Set((likedData ?? []).map((l: any) => l.post_id))
         const savedSet = new Set((savedData ?? []).map((s: any) => s.post_id))
         newPosts.forEach(p => {
@@ -322,13 +329,14 @@ export function useFeedData() {
       if (newPosts.length > 0) {
         try {
           const postIds = newPosts.map(p => p.id)
-          const { data: boosts } = await supabase
+          const { data: boosts, error: boostError } = await supabase
             .from('post_boosts')
             .select('post_id')
             .in('post_id', postIds)
             .eq('is_active', true)
             .lte('boost_start', new Date().toISOString())
             .gte('boost_end', new Date().toISOString())
+          if (boostError && __DEV__) console.warn('[feed] boosts fetch error:', boostError.message)
           if (boosts) {
             boostedPostIds = new Set(boosts.map((b: any) => b.post_id))
             newPosts.forEach(p => {
@@ -557,7 +565,14 @@ export function useFeedData() {
     setUserNeighborhood(nh)
     setShowNeighborhoodPicker(false)
     if (currentUserId) {
-      await (supabase.from('profiles') as any).update({ naapurusto: nh }).eq('id', currentUserId)
+      const { error } = await (supabase.from('profiles') as any).update({ naapurusto: nh }).eq('id', currentUserId)
+      if (error) {
+        // Revert local state if DB update failed
+        userNeighborhoodRef.current = userNeighborhood
+        setUserNeighborhood(userNeighborhood)
+        if (__DEV__) console.warn('[feed] neighborhood update failed:', error.message)
+        return
+      }
     }
     // Refresh content
     offsetRef.current = 0
