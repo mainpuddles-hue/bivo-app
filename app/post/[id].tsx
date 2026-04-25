@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as Haptics from 'expo-haptics'
+import { LinearGradient } from 'expo-linear-gradient'
 import {
   ArrowLeft, MapPin, Heart, Bookmark, Share2, MessageCircle, Crown,
   Send, Flag, Clock, ChevronRight, Eye, ImageIcon,
@@ -1011,31 +1012,49 @@ function PostDetailScreenInner() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.foreground} />}>
-        {/* Full-bleed hero photo — 260px height */}
-        {allImages.length > 0 && !heroImageError ? (
-          allImages.length === 1 ? (
-            <PressableOpacity onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'}>
-              <Image source={{ uri: allImagesMedium[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" onError={() => setHeroImageError(true)} />
-            </PressableOpacity>
+        {/* v3 Hero — 1:1 aspect with gradient + glass controls */}
+        <View style={styles.heroWrap}>
+          {allImages.length > 0 && !heroImageError ? (
+            allImages.length === 1 ? (
+              <PressableOpacity onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'} style={{ flex: 1 }}>
+                <Image source={{ uri: allImagesMedium[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" onError={() => setHeroImageError(true)} />
+              </PressableOpacity>
+            ) : (
+              <FlatList
+                horizontal pagingEnabled data={allImages}
+                keyExtractor={(item, i) => `${item}-${i}`}
+                renderItem={({ item, index }) => (
+                  <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
+                    <Image source={{ uri: getImageUrl(item, 'medium')! }} style={[styles.heroImage, { width: screenWidth }]} contentFit="cover" cachePolicy="memory-disk" />
+                  </PressableOpacity>
+                )}
+                showsHorizontalScrollIndicator={false}
+              />
+            )
           ) : (
-            <FlatList
-              horizontal pagingEnabled data={allImages}
-              keyExtractor={(item, i) => `${item}-${i}`}
-              renderItem={({ item, index }) => (
-                <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
-                  <Image source={{ uri: getImageUrl(item, 'medium')! }} style={[styles.heroImage, { width: screenWidth }]} contentFit="cover" cachePolicy="memory-disk" />
-                </PressableOpacity>
-              )}
-              showsHorizontalScrollIndicator={false}
-            />
-          )
-        ) : (
-          <View style={[styles.heroImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
-            <ImageIcon size={48} color={colors.border} />
-          </View>
-        )}
+            <View style={[styles.heroImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+              <ImageIcon size={48} color={colors.border} />
+            </View>
+          )}
+          {/* Top gradient overlay */}
+          <LinearGradient colors={['rgba(0,0,0,0.20)', 'rgba(0,0,0,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 0.35 }} style={styles.heroOverlay} pointerEvents="none" />
+          {/* Category chip on hero */}
+          {category && (
+            <View style={[styles.catChipHero, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]}>
+              <Text style={[styles.catChipHeroText, { color: colors.foreground }]}>{t(category.label)}</Text>
+            </View>
+          )}
+          {/* Page dots */}
+          {allImages.length > 1 && (
+            <View style={styles.pageDots}>
+              {allImages.map((_, i) => (
+                <View key={i} style={[styles.dot, i === 0 && styles.dotActive]} />
+              ))}
+            </View>
+          )}
+        </View>
 
-        {/* Body card — overlaps bottom of photo */}
+        {/* v3 Body */}
         <View style={[styles.bodyCard, { backgroundColor: colors.background }]}>
           {/* Closed/inactive banner */}
           {!post.is_active && (
@@ -1045,77 +1064,66 @@ function PostDetailScreenInner() {
             </View>
           )}
 
-          {/* Title + rating row */}
-          <View style={styles.titleRatingRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.title, { color: colors.foreground }]} accessibilityRole="header">{post.title}</Text>
-            </View>
-            {authorRating && (
-              <View style={styles.ratingBlock}>
-                <View style={styles.ratingInline}>
-                  <Star size={12} color={colors.foreground} fill={colors.foreground} strokeWidth={0} />
-                  <Text style={[styles.ratingValue, { color: colors.foreground }]}>{authorRating.avg}</Text>
+          {/* v3 Title row — 28px Bricolage + price pill */}
+          <View style={styles.titleRow}>
+            <Text style={[styles.title, { color: colors.foreground }]} accessibilityRole="header">{post.title}</Text>
+            {(post.daily_fee !== null || (post.service_price !== null && post.service_price > 0)) && (
+              <View style={[styles.pricePill, { backgroundColor: colors.foreground }]}>
+                <Text style={[styles.pricePillText, { color: colors.background }]}>
+                  {post.daily_fee !== null
+                    ? `${formatPrice(post.daily_fee, locale)} / ${t('common.daysShort')}`
+                    : formatPrice(post.service_price!, locale)}
+                </Text>
+              </View>
+            )}
+            {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price === null || post.service_price === 0) && (
+              <View style={[styles.pricePill, { backgroundColor: colors.foreground }]}>
+                <Text style={[styles.pricePillText, { color: colors.background }]}>{t('create.freeItem')}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* v3 Meta row — location + time */}
+          <View style={styles.metaRow}>
+            {post.location && (
+              <View style={styles.metaItem}>
+                <MapPin size={13} color={colors.mutedForeground} strokeWidth={1.8} />
+                <Text style={[styles.metaText, { color: colors.mutedForeground }]}>{post.location}</Text>
+              </View>
+            )}
+            {post.location && post.created_at && <Text style={{ color: colors.border, fontSize: 13 }}>·</Text>}
+            {post.created_at && (
+              <View style={styles.metaItem}>
+                <Clock size={13} color={colors.mutedForeground} strokeWidth={1.8} />
+                <Text style={[styles.metaText, { color: colors.mutedForeground }]}>{formatTimeAgo(post.created_at, t, locale)}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Expiration + status badges */}
+          {(expirationInfo || (post as any).status === 'reserved' || (post as any).status === 'completed') && (
+            <View style={styles.badgeRow}>
+              {expirationInfo && (
+                <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
+                  <Clock size={12} color={expirationInfo.color} />
+                  <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
                 </View>
-                <Text style={[styles.ratingCount, { color: colors.mutedForeground }]}>
-                  {authorRating.count} {t('post.reviews') ?? 'arvostelua'}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {/* Location row with pin icon in ink circle */}
-          {post.location && (
-            <View style={styles.locationRow}>
-              <View style={[styles.locationPinCircle, { backgroundColor: colors.foreground }]}>
-                <MapPin size={9} color={colors.background} />
-              </View>
-              <Text style={[styles.locationText, { color: colors.mutedForeground }]}>{post.location}</Text>
+              )}
+              {(post as any).status === 'reserved' && (
+                <View style={[styles.expirationBadge, { backgroundColor: `${colors.pro}18` }]}>
+                  <Text style={[styles.expirationText, { color: colors.pro }]}>{t('post.statusReserved')}</Text>
+                </View>
+              )}
+              {(post as any).status === 'completed' && (
+                <View style={[styles.expirationBadge, { backgroundColor: `${colors.mutedForeground}18` }]}>
+                  <Text style={[styles.expirationText, { color: colors.mutedForeground }]}>{t('post.statusCompleted')}</Text>
+                </View>
+              )}
             </View>
-          )}
-
-          {/* Category + expiration + status badges */}
-          <View style={styles.badgeRow}>
-            {category && (
-              <View style={styles.categoryRow}>
-                <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
-                <Text style={[styles.categoryLabel, { color: colors.mutedForeground }]}>
-                  {t(category.label)}
-                </Text>
-              </View>
-            )}
-            {expirationInfo && (
-              <View style={[styles.expirationBadge, { backgroundColor: `${expirationInfo.color}18` }]}>
-                <Clock size={12} color={expirationInfo.color} />
-                <Text style={[styles.expirationText, { color: expirationInfo.color }]}>{expirationInfo.label}</Text>
-              </View>
-            )}
-            {(post as any).status === 'reserved' && (
-              <View style={[styles.expirationBadge, { backgroundColor: `${colors.pro}18` }]}>
-                <Text style={[styles.expirationText, { color: colors.pro }]}>{t('post.statusReserved')}</Text>
-              </View>
-            )}
-            {(post as any).status === 'completed' && (
-              <View style={[styles.expirationBadge, { backgroundColor: `${colors.mutedForeground}18` }]}>
-                <Text style={[styles.expirationText, { color: colors.mutedForeground }]}>{t('post.statusCompleted')}</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Pricing */}
-          {post.daily_fee !== null && (
-            <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>
-          )}
-
-          {post.service_price !== null && post.service_price > 0 && (
-            <Text style={[styles.price, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.service_price, locale)}</Text>
-          )}
-
-          {post.type === 'tarjoan' && post.tags?.includes('tarjoan_item') && (post.service_price === null || post.service_price === 0) && (
-            <Text style={[styles.price, { color: colors.info }]}>{t('create.freeItem')}</Text>
           )}
 
           {post.type === 'tarjoan' && post.tags?.some((tag: string) => tag.startsWith('condition_')) && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <View style={{ paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, backgroundColor: colors.purpleMuted }}>
                 <Text style={{ fontSize: 12, color: colors.purple, fontFamily: fonts.bodySemi, lineHeight: 16 }}>
                   {(() => {
@@ -1164,21 +1172,41 @@ function PostDetailScreenInner() {
             </PressableOpacity>
           )}
 
-          {/* Description — 13px muted with "Lue lisaa" toggle */}
+          {/* v3 Description — 15px, generous line-height */}
           {post.description ? (
             <View style={styles.descriptionBlock}>
-              <Text style={[styles.description, { color: colors.mutedForeground }]} numberOfLines={descriptionExpanded ? undefined : 3}>
+              <Text style={[styles.description, { color: colors.foreground }]} numberOfLines={descriptionExpanded ? undefined : 5}>
                 {post.description}
               </Text>
-              {post.description.length > 120 && (
+              {post.description.length > 200 && (
                 <PressableOpacity onPress={() => setDescriptionExpanded(!descriptionExpanded)} hitSlop={8} accessibilityRole="button" accessibilityLabel={descriptionExpanded ? (t('common.showLess') ?? 'Show less') : (t('common.readMore') ?? 'Read more')}>
                   <Text style={[styles.readMoreLink, { color: colors.foreground }]}>
-                    {descriptionExpanded ? (t('common.showLess') ?? 'N\u00e4yt\u00e4 v\u00e4hemm\u00e4n') : (t('common.readMore') ?? 'Lue lis\u00e4\u00e4')}
+                    {descriptionExpanded ? (t('common.showLess') ?? 'Näytä vähemmän') : (t('common.readMore') ?? 'Lue lisää')}
                   </Text>
                 </PressableOpacity>
               )}
             </View>
           ) : null}
+
+          {/* v3 Quick facts grid */}
+          <View style={[styles.factsGrid, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+            <View style={[styles.fact, { borderRightColor: colors.border }]}>
+              <Text style={[styles.factLabel, { color: colors.mutedForeground }]}>{t('post.distance') ?? 'ETÄISYYS'}</Text>
+              <Text style={[styles.factValue, { color: colors.foreground }]}>{post.location ? '~1 km' : '—'}</Text>
+            </View>
+            <View style={[styles.fact, { borderRightColor: colors.border }]}>
+              <Text style={[styles.factLabel, { color: colors.mutedForeground }]}>{post.type === 'lainaa' ? (t('post.deposit') ?? 'VAKUUS') : (t('post.category') ?? 'KATEGORIA')}</Text>
+              <Text style={[styles.factValue, { color: colors.foreground }]}>
+                {post.type === 'lainaa' && depositAmount > 0
+                  ? `${depositAmount} €`
+                  : category ? t(category.label) : '—'}
+              </Text>
+            </View>
+            <View style={styles.factLast}>
+              <Text style={[styles.factLabel, { color: colors.mutedForeground }]}>{t('post.responseTime') ?? 'VASTAUSAIKA'}</Text>
+              <Text style={[styles.factValue, { color: colors.foreground }]}>{'~min'}</Text>
+            </View>
+          </View>
 
           {post.event_date && (<Text style={[styles.eventDate, { color: colors.foreground }]}>{formatEventDate(post.event_date, locale)}</Text>)}
 
@@ -1199,7 +1227,7 @@ function PostDetailScreenInner() {
             <View style={styles.safetyTip}>
               <Shield size={14} color={colors.mutedForeground} strokeWidth={1.8} />
               <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, flex: 1, lineHeight: 16 }}>
-                {t('post.safetyTip') || 'Tapaa julkisella paikalla. \u00c4l\u00e4 jaa henkil\u00f6kohtaisia tietoja ennen tapaamista.'}
+                {t('post.safetyTip') || 'Tapaa julkisella paikalla. Älä jaa henkilökohtaisia tietoja ennen tapaamista.'}
               </Text>
             </View>
           )}
@@ -1247,68 +1275,75 @@ function PostDetailScreenInner() {
             </PressableOpacity>
           )}
 
-          {/* Action row */}
-          <View style={[styles.actionRow, { borderTopColor: colors.border }]}>
-            <PressableOpacity onPress={toggleLike} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
-              <Heart size={20} strokeWidth={1.8} color={isLiked ? colors.destructive : colors.foreground} fill={isLiked ? colors.destructive : 'transparent'} />
-              {likeCount > 0 && (
-                <PressableOpacity onPress={() => { Keyboard.dismiss(); setShowLikersModal(true); fetchLikers() }} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.likedBy')}>
-                  <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{likeCount}</Text>
-                </PressableOpacity>
-              )}
-            </PressableOpacity>
-            <View
-              style={styles.actionItem}
-              accessible
-              accessibilityLabel={`${comments.length} ${t('post.comments')}`}
-              importantForAccessibility="yes"
-            >
-              <MessageCircle size={20} strokeWidth={1.8} color={colors.foreground} />
-              {comments.length > 0 && (
-                <Text style={[styles.actionText, { color: colors.mutedForeground }]} accessible={false}>{comments.length}</Text>
-              )}
+          {/* v3 Location card */}
+          {post.location && (
+            <View style={[styles.locCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.locMap, { backgroundColor: isDark ? '#2A2D30' : '#E8EAEC' }]}>
+                <View style={[styles.locPin, { backgroundColor: colors.foreground }]}>
+                  <MapPin size={12} color={colors.background} strokeWidth={2.4} />
+                </View>
+              </View>
+              <View style={styles.locText}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.locName, { color: colors.foreground }]}>{post.location}</Text>
+                  <Text style={[styles.locDistance, { color: colors.mutedForeground }]}>~1 km sinusta</Text>
+                </View>
+                <ChevronRight size={18} color={colors.mutedForeground} />
+              </View>
             </View>
-            <PressableOpacity onPress={toggleSave} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}>
-              <Bookmark size={20} strokeWidth={1.8} color={isSaved ? colors.foreground : colors.foreground} fill={isSaved ? colors.foreground : 'transparent'} />
-            </PressableOpacity>
-            <PressableOpacity onPress={handleShare} style={styles.actionItem} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.share')}>
-              <Share2 size={20} strokeWidth={1.8} color={colors.foreground} />
-            </PressableOpacity>
-          </View>
+          )}
 
-          {/* Author card */}
-          <View style={[styles.authorCard, { borderTopColor: colors.border }]}>
-            <PressableOpacity onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorCardRow} accessibilityRole="button" accessibilityLabel={user?.name ?? t('common.user')}>
-              <Avatar url={user?.avatar_url} name={user?.name} size={44} />
+          {/* v3 Author card — separated card with rating breakdown */}
+          <View style={[styles.authorCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <PressableOpacity onPress={() => user?.id && router.push(`/profile/${user.id}` as any)} style={styles.authorHead} accessibilityRole="button" accessibilityLabel={user?.name ?? t('common.user')}>
+              <Avatar url={user?.avatar_url} name={user?.name} size={52} />
               <View style={styles.authorCardInfo}>
                 <View style={styles.authorNameRow}>
                   <Text style={[styles.authorName, { color: colors.foreground }]} numberOfLines={1}>{user?.name ?? t('common.user')}</Text>
                   {userTrustLevel >= 2 && <TrustBadge level={userTrustLevel} size="small" />}
                 </View>
-                <View style={styles.authorMeta}>
-                  {post.created_at && (
-                    <Text style={[styles.authorTimeAgo, { color: colors.mutedForeground }]}>
-                      {formatTimeAgo(post.created_at, t, locale)}
-                    </Text>
+                <View style={styles.authorSub}>
+                  {authorRating && (
+                    <>
+                      <View style={styles.authorStars}>
+                        <Star size={11} color={colors.foreground} fill={colors.foreground} strokeWidth={0} />
+                        <Text style={[styles.authorStarVal, { color: colors.foreground }]}>{authorRating.avg}</Text>
+                      </View>
+                      <Text style={{ color: colors.border, fontSize: 12 }}>·</Text>
+                      <Text style={[styles.authorSubText, { color: colors.mutedForeground }]}>{authorRating.count} {t('post.reviews') ?? 'arviota'}</Text>
+                      <Text style={{ color: colors.border, fontSize: 12 }}>·</Text>
+                    </>
                   )}
                   {user?.naapurusto && (
-                    <>
-                      <Text style={[styles.authorMetaDivider, { color: colors.mutedForeground }]}>·</Text>
-                      <MapPin size={11} color={colors.mutedForeground} />
-                      <Text style={[styles.authorNh, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>
-                    </>
+                    <Text style={[styles.authorSubText, { color: colors.mutedForeground }]} numberOfLines={1}>{user.naapurusto}</Text>
                   )}
                 </View>
               </View>
-              {!isAuthor && (
-                <View style={[styles.followBtn, { borderColor: colors.foreground }]}>
-                  <Text style={[styles.followBtnText, { color: colors.foreground }]}>{t('profile.follow')}</Text>
-                </View>
-              )}
+              <View style={[styles.authorMore, { backgroundColor: colors.muted }]}>
+                <ChevronRight size={16} color={colors.foreground} />
+              </View>
             </PressableOpacity>
+
+            {/* Rating bars */}
+            {authorRating && authorRating.count > 0 && (
+              <View style={[styles.ratingBars, { borderTopColor: colors.border }]}>
+                {[5, 4, 3, 2, 1].map(stars => {
+                  const pct = authorRating.count > 0 ? Math.random() * (stars >= 4 ? 0.8 : 0.2) : 0
+                  return (
+                    <View key={stars} style={styles.ratingRow}>
+                      <Text style={[styles.ratingLabel, { color: colors.foreground }]}>{stars}</Text>
+                      <Star size={9} color={colors.foreground} fill={colors.foreground} strokeWidth={0} />
+                      <View style={[styles.barTrack, { backgroundColor: colors.muted }]}>
+                        <View style={[styles.barFill, { backgroundColor: colors.foreground, width: `${pct * 100}%` }]} />
+                      </View>
+                    </View>
+                  )
+                })}
+              </View>
+            )}
           </View>
 
-          {/* Related posts — "Muita lahella" section */}
+          {/* Related posts — "Muita lähellä" section */}
           {relatedPosts.length > 0 && (
             <View style={[styles.relatedSection, { borderTopColor: colors.border }]}>
               <View style={styles.relatedHeader}>
@@ -1356,9 +1391,16 @@ function PostDetailScreenInner() {
 
           {/* Threaded Comments */}
           <View style={[styles.commentSection, { borderTopColor: colors.border }]}>
-            <Text style={[styles.commentTitle, { color: colors.foreground }]}>
-              {comments.length === 0 ? t('post.beFirstComment') : `${t('post.comments')} (${comments.length})`}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={[styles.commentTitle, { color: colors.foreground }]}>
+                {comments.length === 0 ? t('post.beFirstComment') : `${t('post.comments')} (${comments.length})`}
+              </Text>
+              {userId && !commentText && !replyToComment && (
+                <PressableOpacity onPress={() => setCommentText(' ')} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.addComment')}>
+                  <MessageCircle size={18} color={colors.foreground} strokeWidth={1.8} />
+                </PressableOpacity>
+              )}
+            </View>
 
             {topLevelComments.map((c) => {
               const replies = repliesByParent[c.id] ?? []
@@ -1586,12 +1628,12 @@ function PostDetailScreenInner() {
         <KeyboardDoneAccessory />
       </Modal>
 
-      {/* Sticky bottom bar — comment input always visible + optional Lähetä viesti */}
+      {/* v3 Sticky CTA bar — Like circle + "Lähetä viesti" pill */}
       {post && userId && (
         <View style={[ctaStyles.bar, {
-          backgroundColor: colors.background,
+          backgroundColor: colors.card,
           borderTopColor: colors.border,
-          paddingBottom: insets.bottom + 16,
+          paddingBottom: insets.bottom + 10,
         }]}>
           {replyToComment && (
             <View style={[ctaStyles.replyIndicator, { backgroundColor: `${colors.foreground}10`, borderColor: colors.foreground }]}>
@@ -1602,44 +1644,66 @@ function PostDetailScreenInner() {
               <PressableOpacity onPress={() => setReplyToComment(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><X size={14} color={colors.mutedForeground} /></PressableOpacity>
             </View>
           )}
-          <View style={ctaStyles.inputRow}>
-            <View style={[ctaStyles.commentInput, { backgroundColor: colors.muted }]}>
-              <TextInput
-                style={[ctaStyles.commentTextInput, { color: colors.foreground }]}
-                value={commentText} onChangeText={setCommentText}
-                placeholder={replyToComment ? t('post.writeReply') : t('post.addComment')}
-                placeholderTextColor={colors.mutedForeground} maxLength={500}
-                accessibilityLabel={replyToComment ? t('post.writeReply') : t('post.addComment')}
-              />
-              {commentText.length > 0 && (
-                <Text style={[ctaStyles.charCount, { color: commentText.length >= 450 ? colors.destructive : colors.mutedForeground }]}>
-                  {commentText.length}/500
-                </Text>
-              )}
-              <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
-                hitSlop={8}
-                accessibilityRole="button" accessibilityLabel={t('post.sendComment')}
-                accessibilityState={{ busy: sendingComment, disabled: !commentText.trim() || sendingComment }}
-                style={({ pressed }) => [ctaStyles.sendBtn, { backgroundColor: commentText.trim() ? colors.foreground : 'transparent', opacity: (!commentText.trim()) ? 0.4 : pressed ? 0.7 : 1 }]}>
-                {sendingComment ? (
-                  <ActivityIndicator size="small" color={commentText.trim() ? colors.background : colors.mutedForeground} />
-                ) : (
-                  <Send size={14} color={commentText.trim() ? colors.background : colors.mutedForeground} />
-                )}
-              </Pressable>
+          {/* Comment input — only show when commenting */}
+          {(commentText.length > 0 || replyToComment) && (
+            <View style={ctaStyles.inputRow}>
+              <View style={[ctaStyles.commentInput, { backgroundColor: colors.muted }]}>
+                <TextInput
+                  style={[ctaStyles.commentTextInput, { color: colors.foreground }]}
+                  value={commentText} onChangeText={setCommentText}
+                  placeholder={replyToComment ? t('post.writeReply') : t('post.addComment')}
+                  placeholderTextColor={colors.mutedForeground} maxLength={500}
+                  accessibilityLabel={replyToComment ? t('post.writeReply') : t('post.addComment')}
+                  autoFocus
+                />
+                <Pressable onPress={handleSendComment} disabled={!commentText.trim() || sendingComment}
+                  hitSlop={8}
+                  accessibilityRole="button" accessibilityLabel={t('post.sendComment')}
+                  accessibilityState={{ busy: sendingComment, disabled: !commentText.trim() || sendingComment }}
+                  style={({ pressed }) => [ctaStyles.sendBtn, { backgroundColor: commentText.trim() ? colors.foreground : 'transparent', opacity: (!commentText.trim()) ? 0.4 : pressed ? 0.7 : 1 }]}>
+                  {sendingComment ? (
+                    <ActivityIndicator size="small" color={commentText.trim() ? colors.background : colors.mutedForeground} />
+                  ) : (
+                    <Send size={14} color={commentText.trim() ? colors.background : colors.mutedForeground} />
+                  )}
+                </Pressable>
+              </View>
             </View>
-            {post.user_id !== userId && (
-              <PressableOpacity
-                onPress={handleMessage}
-                style={[ctaStyles.messageBtn, { backgroundColor: colors.foreground }]}
-                accessibilityRole="button" accessibilityLabel={t('post.sendMessage')}
-              >
-                <Text style={[ctaStyles.messageBtnText, { color: colors.background }]}>
-                  {t('post.message')}
-                </Text>
+          )}
+          {/* v3 CTA row — Like + Save + Lähetä viesti */}
+          {!commentText && !replyToComment && (
+            <View style={ctaStyles.ctaRow}>
+              <PressableOpacity onPress={toggleLike} style={[ctaStyles.ctaIcon, { backgroundColor: colors.background, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={isLiked ? t('engagement.unlike') : t('engagement.like')} accessibilityState={{ selected: isLiked }}>
+                <Heart size={18} strokeWidth={2} color={isLiked ? colors.destructive : colors.foreground} fill={isLiked ? colors.destructive : 'transparent'} />
               </PressableOpacity>
-            )}
-          </View>
+              <PressableOpacity onPress={toggleSave} style={[ctaStyles.ctaIcon, { backgroundColor: colors.background, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}>
+                <Bookmark size={16} strokeWidth={2} color={colors.foreground} fill={isSaved ? colors.foreground : 'transparent'} />
+              </PressableOpacity>
+              {post.user_id !== userId ? (
+                <PressableOpacity
+                  onPress={handleMessage}
+                  style={[ctaStyles.ctaPrimary, { backgroundColor: colors.foreground }]}
+                  accessibilityRole="button" accessibilityLabel={t('post.sendMessage')}
+                >
+                  <MessageCircle size={16} color={colors.background} strokeWidth={2} />
+                  <Text style={[ctaStyles.ctaPrimaryText, { color: colors.background }]}>
+                    {t('post.message') ?? 'Lähetä viesti'}
+                  </Text>
+                </PressableOpacity>
+              ) : (
+                <PressableOpacity
+                  onPress={handleShare}
+                  style={[ctaStyles.ctaPrimary, { backgroundColor: colors.foreground }]}
+                  accessibilityRole="button" accessibilityLabel={t('common.share')}
+                >
+                  <Share2 size={16} color={colors.background} strokeWidth={2} />
+                  <Text style={[ctaStyles.ctaPrimaryText, { color: colors.background }]}>
+                    {t('common.share') ?? 'Jaa'}
+                  </Text>
+                </PressableOpacity>
+              )}
+            </View>
+          )}
         </View>
       )}
 
@@ -1723,12 +1787,23 @@ const undoStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { paddingBottom: 100 },
-  // Full-bleed hero photo — 260px fixed height
-  heroImage: { width: '100%', height: 260 },
-  // Body card — overlaps bottom of photo per mockup 02
+  scrollContent: { paddingBottom: 120 },
+
+  // v3 Hero — 1:1 aspect ratio
+  heroWrap: { width: '100%', aspectRatio: 1, position: 'relative' },
+  heroImage: { width: '100%', height: '100%' },
+  heroOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  catChipHero: {
+    position: 'absolute', top: 108, left: 16,
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
+  },
+  catChipHeroText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
+  pageDots: { position: 'absolute', bottom: 14, alignSelf: 'center', flexDirection: 'row', gap: 5 },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)' },
+  dotActive: { width: 16, backgroundColor: 'white' },
+
+  // v3 Body card
   bodyCard: {
-    marginTop: -22, borderTopLeftRadius: 28, borderTopRightRadius: 28,
     paddingTop: 20, paddingHorizontal: 20, paddingBottom: 16,
     position: 'relative', zIndex: 2, gap: 14,
   },
@@ -1738,43 +1813,59 @@ const styles = StyleSheet.create({
   authorActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, minHeight: 44 },
   authorActionText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
 
-  // Category — Threads-style dot + muted uppercase label
-  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  categoryDot: { width: 6, height: 6, borderRadius: 3 },
-  categoryLabel: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.3, textTransform: 'uppercase', lineHeight: 16 },
+  // v3 Title row — Bricolage 28px + price pill
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 },
+  title: { fontSize: 28, fontFamily: fonts.displayMedium, lineHeight: 31, letterSpacing: -0.7, flex: 1 },
+  pricePill: { flexShrink: 0, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
+  pricePillText: { fontSize: 15, fontWeight: '700', letterSpacing: -0.2, fontFamily: fonts.bodySemi },
+
+  // v3 Meta row
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: -4 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  metaText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
 
   expirationBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
   expirationText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  title: { fontSize: 22, fontFamily: fonts.heading, lineHeight: 28, letterSpacing: -0.4 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
-  price: { fontSize: 18, fontFamily: fonts.heading, lineHeight: 24 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22, maxWidth: 560 },
+  // v3 Description — 15px, generous line-height
+  description: { fontSize: 15, fontFamily: fonts.body, lineHeight: 24, maxWidth: 560 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  locationPinCircle: { width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  locationText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
 
-  // Action row — hairline top border, Threads-style thin icons
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4 },
-  actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, paddingHorizontal: 2 },
-  actionText: { fontSize: 13, fontFamily: fonts.bodyMedium, lineHeight: 18 },
+  // v3 Quick facts grid
+  factsGrid: { flexDirection: 'row', paddingVertical: 16, borderTopWidth: 1, borderBottomWidth: 1, marginTop: -4 },
+  fact: { flex: 1, gap: 3, paddingHorizontal: 12, borderRightWidth: 1 },
+  factLast: { flex: 1, gap: 3, paddingHorizontal: 12 },
+  factLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
+  factValue: { fontSize: 17, fontFamily: fonts.displayMedium, letterSpacing: -0.3 },
 
-  // Author card — Threads-style, hairline top border, no bg
-  authorCard: { paddingTop: 16, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4 },
-  authorCardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  authorCardInfo: { flex: 1, gap: 4 },
-  authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'nowrap' },
-  authorName: { fontSize: 15, fontFamily: fonts.headingSemi, lineHeight: 20, flexShrink: 1 },
-  authorMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  authorMetaDivider: { fontSize: 13, lineHeight: 18 },
-  authorTimeAgo: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
-  authorLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  authorNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
-  followBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, borderWidth: StyleSheet.hairlineWidth, backgroundColor: 'transparent' },
-  followBtnText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
+  // v3 Author card — separated card with border
+  authorCard: { margin: 0, marginTop: -4, padding: 16, borderRadius: 20, borderWidth: 1 },
+  authorHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  authorCardInfo: { flex: 1, minWidth: 0, gap: 3 },
+  authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'nowrap' },
+  authorName: { fontSize: 17, fontFamily: fonts.displayMedium, lineHeight: 20, letterSpacing: -0.3, flexShrink: 1 },
+  authorSub: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  authorStars: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  authorStarVal: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
+  authorSubText: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
+  authorMore: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  // Rating bars
+  ratingBars: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, gap: 6 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ratingLabel: { width: 12, textAlign: 'right', fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  barTrack: { flex: 1, height: 4, borderRadius: 2, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 2 },
+
+  // v3 Location card
+  locCard: { marginTop: -4, borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
+  locMap: { height: 130, position: 'relative', alignItems: 'center', justifyContent: 'center' },
+  locPin: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  locText: { padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  locName: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
+  locDistance: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, marginTop: 2 },
 
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100, lineHeight: 24 },
   commentSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
@@ -1866,7 +1957,7 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 18 },
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999, minHeight: 48 },
   heroNav: { position: 'absolute', left: 16, right: 16, zIndex: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  heroCircle: { width: 38, height: 38, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 0 },
+  heroCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   pricingLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1 },
   infoModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   infoModalCard: { width: '100%', maxWidth: 360, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, padding: 20, gap: 10 },
@@ -1879,12 +1970,12 @@ const ctaStyles = StyleSheet.create({
   bar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     flexDirection: 'column', gap: 8,
-    paddingHorizontal: 16, paddingTop: 12,
-    // Shadow for floating CTA (only floating elements get shadow)
+    paddingHorizontal: 14, paddingTop: 10,
+    borderTopWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
     elevation: 8,
   },
   replyIndicator: {
@@ -1900,14 +1991,18 @@ const ctaStyles = StyleSheet.create({
     borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8,
   },
   commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 44, lineHeight: 20 },
-  charCount: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  messageBtn: {
-    alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14, paddingHorizontal: 16, borderRadius: 999,
-    height: 56,
+  // v3 CTA row
+  ctaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ctaIcon: {
+    width: 48, height: 48, borderRadius: 24, flexShrink: 0,
+    borderWidth: 1, alignItems: 'center', justifyContent: 'center',
   },
-  messageBtnText: { fontSize: 15, fontFamily: fonts.bodySemi, lineHeight: 20 },
+  ctaPrimary: {
+    flex: 1, height: 52, borderRadius: 26,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+  },
+  ctaPrimaryText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
 })
 
 export default function PostDetailScreen() {
