@@ -607,62 +607,55 @@ export default function CreateScreen() {
         const maxAtt = parseInt(eventMaxCapacity, 10)
         if (isNaN(maxAtt) || maxAtt < 1) {
           toast.show({ message: t('create.invalidMaxCapacity') ?? 'Osallistujamäärän pitää olla vähintään 1', type: 'error' })
-          return
+          submittingRef.current = false; return
         }
       }
       if (eventEndTime && eventStartTime && eventEndTime < eventStartTime) {
         toast.show({ message: t('create.endTimeBeforeStart') ?? 'Päättymisaika ei voi olla ennen alkamisaikaa', type: 'error' })
-        return
+        submittingRef.current = false; return
+      }
+      if (!eventDate) {
+        setFormError(t('events.titleDateRequired'))
+        shakeButton()
+        submittingRef.current = false; return
+      }
+      if (eventDate) {
+        const eventDateObj = new Date(eventDate)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        if (!isNaN(eventDateObj.getTime()) && eventDateObj < today) {
+          toast.show({ message: t('create.eventDateInPast'), type: 'error' })
+          submittingRef.current = false; return
+        }
       }
     }
     if (selectedType === 'lainaa' && (!dailyFee || isNaN(parseFloat(dailyFee)) || parseFloat(dailyFee) <= 0)) {
       setFormError(t('create.dailyFeeRequired'))
       shakeButton()
-      return
+      submittingRef.current = false; return
     }
     if (selectedType === 'lainaa' && trust.permissions.maxDailyFee !== null && !isNaN(parseFloat(dailyFee)) && parseFloat(dailyFee) > trust.permissions.maxDailyFee) {
       toast.show({ message: t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }), type: 'error' })
-      return
+      submittingRef.current = false; return
     }
     if (selectedType === 'tarjoan' && servicePrice && !isNaN(parseFloat(servicePrice)) && parseFloat(servicePrice) < 0) {
       toast.show({ message: t('create.priceCannotBeNegative'), type: 'error' })
-      return
+      submittingRef.current = false; return
     }
     if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && parseFloat(servicePrice) === 0) {
       toast.show({ message: t('create.priceCannotBeZero') ?? 'Hinta ei voi olla 0 €', type: 'error' })
-      return
+      submittingRef.current = false; return
     }
     if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && !trust.permissions.canOfferPaidServices) {
       toast.show({ message: t('service.requiresVerification'), type: 'error' })
-      return
+      submittingRef.current = false; return
     }
     if (selectedType === 'tarjoan' && tarjoanType === 'service' && servicePrice && !isNaN(parseFloat(servicePrice)) && trust.permissions.maxServicePrice !== null && parseFloat(servicePrice) > trust.permissions.maxServicePrice) {
       toast.show({ message: t('service.maxPriceExceeded', { max: trust.permissions.maxServicePrice }), type: 'error' })
-      return
-    }
-    if (selectedType === 'tapahtuma' && !eventDate) {
-      setFormError(t('events.titleDateRequired'))
-      shakeButton()
-      return
-    }
-    if (selectedType === 'tapahtuma' && eventDate) {
-      const eventDateObj = new Date(eventDate)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      if (!isNaN(eventDateObj.getTime()) && eventDateObj < today) {
-        toast.show({ message: t('create.eventDateInPast'), type: 'error' })
-        return
-      }
-    }
-    if (selectedType === 'tapahtuma' && eventMaxCapacity) {
-      const maxAtt = parseInt(eventMaxCapacity, 10)
-      if (isNaN(maxAtt) || maxAtt < 1) {
-        toast.show({ message: t('create.invalidMaxCapacity') ?? 'Invalid max capacity', type: 'error' })
-        return
-      }
+      submittingRef.current = false; return
     }
 
-    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch (e) { if (__DEV__) console.warn('[create] haptics failed:', e) }
     setSubmitting(true)
     let createdPostIdForCleanup: string | null = null
     try {
@@ -688,7 +681,7 @@ export default function CreateScreen() {
             submittingRef.current = false; setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}); return
           }
         }
-      } catch {}
+      } catch (e) { if (__DEV__) console.warn('[create] content moderation check failed (fail-open):', e) }
       setUploadStatus(t('create.publishing'))
       const { data: creatorProfile } = await supabase.from('profiles').select('is_pro').eq('id', user.id).maybeSingle()
       const finalTags = [...selectedTags]
@@ -756,7 +749,7 @@ export default function CreateScreen() {
         })
         if (eventError) {
           if (__DEV__) console.error('[create] event insert failed:', eventError.message)
-          try { await (supabase.from('posts') as any).delete().eq('id', post.id) } catch {}
+          try { await (supabase.from('posts') as any).delete().eq('id', post.id) } catch (e) { if (__DEV__) console.warn('[create] event failure post cleanup failed:', e) }
           toast.show({ message: t('create.eventCreateFailed') ?? 'Event creation failed', type: 'error' })
           submittingRef.current = false; setSubmitting(false); return
         }

@@ -638,20 +638,24 @@ function SearchScreenInner() {
         q = q.gte('created_at', monthAgo.toISOString())
       }
 
-      // Price range
+      // Price range (guard against NaN from malformed input)
       if (f.minPrice) {
-        q = q.gte('daily_fee', parseFloat(f.minPrice))
+        const minVal = parseFloat(f.minPrice)
+        if (!isNaN(minVal)) q = q.gte('daily_fee', minVal)
       }
       if (f.maxPrice) {
-        q = q.lte('daily_fee', parseFloat(f.maxPrice))
+        const maxVal = parseFloat(f.maxPrice)
+        if (!isNaN(maxVal)) q = q.lte('daily_fee', maxVal)
       }
 
-      // Date range
-      if (f.postedAfter) {
-        q = q.gte('created_at', `${f.postedAfter}T00:00:00`)
+      // Date range (validate format before sending to Supabase)
+      if (f.postedAfter && /^\d{4}-\d{2}-\d{2}$/.test(f.postedAfter)) {
+        const d = new Date(`${f.postedAfter}T00:00:00`)
+        if (!isNaN(d.getTime())) q = q.gte('created_at', d.toISOString())
       }
-      if (f.postedBefore) {
-        q = q.lte('created_at', `${f.postedBefore}T23:59:59`)
+      if (f.postedBefore && /^\d{4}-\d{2}-\d{2}$/.test(f.postedBefore)) {
+        const d = new Date(`${f.postedBefore}T23:59:59`)
+        if (!isNaN(d.getTime())) q = q.lte('created_at', d.toISOString())
       }
 
       // Distance bounding box
