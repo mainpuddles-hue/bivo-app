@@ -164,11 +164,14 @@ function BookingsScreenInner() {
 
   // Auth gate
   useEffect(() => {
+    let mounted = true
     async function checkAuth() {
       const cachedId = await getCachedUserId()
+      if (!mounted) return
       if (!cachedId) { router.replace('/(auth)/login') }
     }
     checkAuth()
+    return () => { mounted = false }
   }, [router])
 
   const fetchBookings = useCallback(async () => {

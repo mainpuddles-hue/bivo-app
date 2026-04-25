@@ -298,7 +298,10 @@ export default function ProfileScreen() {
   }, [profile, supabase, allPostsLoaded])
 
   useEffect(() => {
-    if (activeTab === 'posts' && !allPostsLoaded) loadAllPosts()
+    if (activeTab !== 'posts' || allPostsLoaded) return
+    let mounted = true
+    loadAllPosts().finally(() => { if (!mounted) return })
+    return () => { mounted = false }
   }, [activeTab, allPostsLoaded, loadAllPosts])
 
   // Post status helpers — pure function, no closure deps

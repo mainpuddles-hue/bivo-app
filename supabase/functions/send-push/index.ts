@@ -169,13 +169,18 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
-    const { user_id, title, body: pushBody, type, data, post_id } = body as PushPayload
+    const { user_id, title: rawTitle, body: rawBody, type, data, post_id } = body as PushPayload
 
-    if (!user_id || !title || !pushBody || !type) {
+    if (!user_id || !rawTitle || !rawBody || !type) {
       return new Response(JSON.stringify({ error: 'Missing fields' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
+    // Sanitize user-supplied text: truncate and strip control characters
+    const sanitize = (s: string, max: number) => s.slice(0, max).replace(/[\x00-\x1F\x7F]/g, '')
+    const title = sanitize(rawTitle, 255)
+    const pushBody = sanitize(rawBody, 4096)
 
     // Authorization: only allow sending push to yourself.
     // Broadcast types (urgent_help, juuri_nyt) still require user_id === user.id

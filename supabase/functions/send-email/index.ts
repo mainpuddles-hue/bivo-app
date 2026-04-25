@@ -251,7 +251,7 @@ serve(async (req) => {
 
     if (!resendRes.ok) {
       const resendErr = await resendRes.json().catch(() => ({}))
-      console.error('[send-email] Resend error:', JSON.stringify(resendErr))
+      console.error('[send-email] Resend error:', resendErr?.statusCode || resendErr?.name || 'unknown')
       if (rateLimitEntry?.id) {
         await supabase.from('notifications').delete().eq('id', rateLimitEntry.id).catch(() => {})
       }
