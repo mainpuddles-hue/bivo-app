@@ -297,7 +297,7 @@ function SearchEmptyState({ query, colors, isDark, t, onSelectCategory }: Search
       <View style={[s.emptyIconCircle, { backgroundColor: colors.foreground + '10' }]}>
         <BoardIllustration size={52} />
       </View>
-      <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>
+      <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.display }]}>
         {query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}
       </Text>
       <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noResultsHint')}</Text>
@@ -1476,7 +1476,7 @@ function SearchScreenInner() {
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
-              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}</Text>
+              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.display }]}>{query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}</Text>
               <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noResultsHint')}</Text>
             </View>
           }
@@ -1508,7 +1508,7 @@ function SearchScreenInner() {
           ListEmptyComponent={
             <View style={s.empty}>
               <BoardIllustration size={80} />
-              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}</Text>
+              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.display }]}>{query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}</Text>
               <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noResultsHint')}</Text>
             </View>
           }
@@ -1633,9 +1633,11 @@ const s = StyleSheet.create({
     paddingVertical: 10,
   },
   resultsCount: {
-    fontSize: 12,
+    fontSize: 11,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1.4,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
   sortButton: {
@@ -1707,9 +1709,11 @@ const s = StyleSheet.create({
     gap: 10,
   },
   similarSectionLabel: {
-    fontSize: 12,
+    fontSize: 11,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1.4,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
   similarScroll: {
@@ -1751,7 +1755,7 @@ const s = StyleSheet.create({
   // ── Discovery sections ──
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 },
+  sectionTitle: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 1.4, flex: 1 },
   clearHistoryLink: { fontSize: 12, lineHeight: 16 },
   recentChipsRow: { flexDirection: 'row', gap: 8 },
   recentChip: {
@@ -1779,7 +1783,7 @@ const s = StyleSheet.create({
   // ── Empty state ──
   empty: { alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 32 },
   emptyIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  emptyTitle: { fontSize: 16, fontFamily: fonts.headingSemi, lineHeight: 22 },
+  emptyTitle: { fontSize: 16, fontFamily: fonts.display, lineHeight: 22 },
   emptyHint: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body, lineHeight: 20 },
   emptyCategoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 4 },
   emptyCategoryChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, borderWidth: 1 },

@@ -763,7 +763,7 @@ const s = StyleSheet.create({
   // ── Hero illustration area ──
   heroArea: {
     marginHorizontal: 20,
-    borderRadius: 24,
+    borderRadius: 28,
     height: 280,
     alignItems: 'center',
     justifyContent: 'center',
@@ -848,10 +848,11 @@ const s = StyleSheet.create({
     marginBottom: 24,
   },
   headline: {
-    fontSize: 26,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '700',
+    fontFamily: fonts.display,
     letterSpacing: -0.6,
-    lineHeight: 30,
+    lineHeight: 34,
   },
   bodyText: {
     fontSize: 14,
@@ -911,12 +912,13 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderRadius: 999,
-    height: 54,
-    minHeight: 54,
+    height: 52,
+    minHeight: 52,
   },
   ctaText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
+    fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,
   },
 

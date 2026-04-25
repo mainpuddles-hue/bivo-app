@@ -638,11 +638,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   headerTitle: {
-    fontSize: 15,
-    fontFamily: fonts.bodySemi,
+    fontSize: 17,
+    fontFamily: fonts.display,
     fontWeight: '600',
-    lineHeight: 20,
-    letterSpacing: -0.15,
+    lineHeight: 22,
+    letterSpacing: -0.3,
   },
   headerRightBtn: {
     minWidth: 36,
@@ -685,9 +685,9 @@ const styles = StyleSheet.create({
     paddingTop: 18,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 0.9,
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
     fontFamily: fonts.bodySemi,
     lineHeight: 14,
@@ -807,7 +807,7 @@ const styles = StyleSheet.create({
     gap: 8,
     margin: 16,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 20,
   },
   errorText: {
     fontSize: 13,

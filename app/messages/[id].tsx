@@ -1057,7 +1057,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },
-  headerName: { fontSize: 15, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.bodySemi },
+  headerName: { fontSize: 15, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.displayMedium },
   headerSub: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   onlineDot: { width: 6, height: 6, borderRadius: 999 },
@@ -1070,15 +1070,15 @@ const s = StyleSheet.create({
   },
   dayStampLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dateHeader: {
-    fontSize: 12, fontWeight: '500', letterSpacing: 0.9,
-    fontFamily: fonts.bodyMedium, textTransform: 'uppercase',
+    fontSize: 11, fontWeight: '600', letterSpacing: 1.4,
+    fontFamily: fonts.bodySemi, textTransform: 'uppercase',
   },
   msgRow: { flexDirection: 'row', gap: 8, marginVertical: 4 },
   msgRowMine: { justifyContent: 'flex-end' },
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 4 },
-  bubble: { maxWidth: '100%', paddingHorizontal: 12, paddingVertical: 8 },
-  msgImage: { width: 200, height: 150, borderRadius: 14, marginBottom: 4 },
+  bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10 },
+  msgImage: { width: 200, height: 150, borderRadius: 18, marginBottom: 4 },
   msgText: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
@@ -1169,7 +1169,7 @@ const s = StyleSheet.create({
   // ── Link preview ────────────────────────────────────────────
   linkPreview: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginTop: 4, padding: 8, borderRadius: 14, borderWidth: 1,
+    marginTop: 4, padding: 8, borderRadius: 18, borderWidth: 1,
     maxWidth: '100%',
   },
   linkDomain: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
@@ -1184,15 +1184,15 @@ const contextStyles = StyleSheet.create({
   },
   image: { width: 46, height: 46, borderRadius: 12 },
   info: { flex: 1, minWidth: 0, gap: 4 },
-  eyebrow: { fontSize: 12, fontWeight: '500', letterSpacing: 0.9, textTransform: 'uppercase', fontFamily: fonts.bodyMedium, lineHeight: 16 },
-  title: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: -0.1, fontFamily: fonts.bodySemi },
+  eyebrow: { fontSize: 11, fontWeight: '600', letterSpacing: 1.4, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 14 },
+  title: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: -0.1, fontFamily: fonts.displayMedium },
   showLink: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textDecorationLine: 'underline' },
 })
 
 const offerStyles = StyleSheet.create({
   banner: {
     marginHorizontal: 16, marginTop: 4, marginBottom: 8, padding: 12,
-    borderRadius: 16, borderWidth: 1, gap: 8,
+    borderRadius: 20, borderWidth: 1, gap: 8,
   },
   bannerTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bannerAmount: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },

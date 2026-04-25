@@ -1297,7 +1297,7 @@ const s = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: fonts.heading,
+    fontFamily: fonts.display,
     letterSpacing: -0.15,
   },
   headerRightSpacer: {
@@ -1323,7 +1323,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
     padding: 16,
   },
@@ -1360,7 +1360,7 @@ const s = StyleSheet.create({
   profileName: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: fonts.heading,
+    fontFamily: fonts.display,
     letterSpacing: -0.15,
   },
   profileSubtitle: {
@@ -1386,8 +1386,8 @@ const s = StyleSheet.create({
     marginBottom: 12,
   },
   sectionLabel: {
-    fontSize: 12,
-    letterSpacing: 0.9,
+    fontSize: 11,
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
@@ -1396,7 +1396,7 @@ const s = StyleSheet.create({
     lineHeight: 16,
   },
   groupContainer: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -1460,7 +1460,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   input: {
-    borderRadius: 20,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 14,
@@ -1565,7 +1565,7 @@ const s = StyleSheet.create({
   deleteCard: {
     width: '100%',
     maxWidth: 400,
-    borderRadius: 28,
+    borderRadius: 20,
     padding: 20,
     gap: 12,
   },
@@ -1578,7 +1578,7 @@ const s = StyleSheet.create({
     fontSize: 17,
     lineHeight: 24,
     fontWeight: '700',
-    fontFamily: fonts.headingSemi,
+    fontFamily: fonts.display,
   },
   deleteDesc: {
     fontSize: 14,
@@ -1593,7 +1593,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   deleteInput: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 16,

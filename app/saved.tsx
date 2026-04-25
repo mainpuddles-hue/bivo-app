@@ -324,7 +324,7 @@ function SavedScreenInner() {
       ) : fetchError ? (
         <View style={{ alignItems: 'center', paddingTop: 60, gap: 12 }}>
           <Bookmark size={40} color={colors.mutedForeground} />
-          <Text style={{ color: colors.foreground, fontFamily: fonts.headingSemi, fontSize: 16, lineHeight: 22 }}>
+          <Text style={{ color: colors.foreground, fontFamily: fonts.display, fontSize: 16, lineHeight: 22 }}>
             {t('common.error')}
           </Text>
           <PressableOpacity
@@ -541,7 +541,7 @@ const s = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: fonts.bodySemi,
+    fontFamily: fonts.display,
     letterSpacing: -0.15,
   },
   headerSpacer: {
@@ -602,7 +602,7 @@ const s = StyleSheet.create({
     marginBottom: GRID_GAP,
   },
   gridCard: {
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -662,8 +662,8 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   sectionLabel: {
-    fontSize: 12,
-    letterSpacing: 0.9,
+    fontSize: 11,
+    letterSpacing: 1.4,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
@@ -675,7 +675,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },
