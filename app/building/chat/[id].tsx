@@ -282,6 +282,8 @@ function BuildingChatScreenInner() {
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
           style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
           <ArrowLeft size={20} color={colors.foreground} />
@@ -362,7 +364,7 @@ function BuildingChatScreenInner() {
 
       {/* Input */}
       <View style={[s.inputRow, { paddingBottom: insets.bottom + 8, borderTopColor: colors.border, backgroundColor: colors.background }]}>
-        <Pressable onPress={handlePickImage} hitSlop={8} style={s.imgBtn}>
+        <Pressable onPress={handlePickImage} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('messages.addImage')} style={s.imgBtn}>
           <ImageIcon size={22} color={colors.mutedForeground} />
         </Pressable>
 
@@ -375,6 +377,7 @@ function BuildingChatScreenInner() {
           }]}
           placeholder={t('building.chatPlaceholder')}
           placeholderTextColor={colors.mutedForeground}
+          accessibilityLabel={t('building.chatPlaceholder')}
           value={input}
           onChangeText={setInput}
           multiline
@@ -386,6 +389,8 @@ function BuildingChatScreenInner() {
           onPress={handleSend}
           disabled={!input.trim() || sending}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('messages.send')}
           style={[s.sendBtn, { backgroundColor: input.trim() ? colors.foreground : colors.muted }]}
         >
           <Send size={18} color={input.trim() ? colors.primaryForeground : colors.mutedForeground} />

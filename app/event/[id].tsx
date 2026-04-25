@@ -430,7 +430,7 @@ function EventDetailScreenInner() {
 
       <ScrollView
         style={s.scroll}
-        contentContainerStyle={s.scrollContent}
+        contentContainerStyle={[s.scrollContent, (!isCreator && actionLabel !== '') && { paddingBottom: 100 + insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Full-bleed hero image */}

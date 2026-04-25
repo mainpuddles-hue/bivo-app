@@ -328,18 +328,18 @@ function SavedScreenInner() {
           <PostCardSkeleton />
         </View>
       ) : fetchError ? (
-        <View style={{ alignItems: 'center', paddingTop: 60, gap: 12 }}>
+        <View style={s.errorCenter}>
           <Bookmark size={40} color={colors.mutedForeground} />
-          <Text style={{ color: colors.foreground, fontFamily: fonts.display, fontSize: 16, lineHeight: 22 }}>
+          <Text style={[s.errorTitle, { color: colors.foreground }]}>
             {t('common.error')}
           </Text>
           <PressableOpacity
             onPress={() => { setLoading(true); loadSaved() }}
-            style={{ marginTop: 8, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, backgroundColor: colors.foreground }}
+            style={[s.retryBtn, { backgroundColor: colors.foreground }]}
             accessibilityRole="button"
             accessibilityLabel={t('common.retry')}
           >
-            <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 14, lineHeight: 20 }}>
+            <Text style={[s.retryBtnText, { color: colors.background }]}>
               {t('common.retry')}
             </Text>
           </PressableOpacity>
@@ -440,7 +440,7 @@ function SavedScreenInner() {
                 )
               })}
               {/* Fill empty space if odd number of items in last row */}
-              {row.length === 1 && <View style={{ width: CARD_WIDTH }} />}
+              {row.length === 1 && <View style={s.gridSpacer} />}
             </View>
           ))}
 
@@ -520,6 +520,13 @@ const s = StyleSheet.create({
   container: {
     flex: 1,
   },
+
+  /* ── Error / Retry ── */
+  errorCenter: { alignItems: 'center', paddingTop: 60, gap: 12 },
+  errorTitle: { fontFamily: fonts.display, fontSize: 16, lineHeight: 22 },
+  retryBtn: { marginTop: 8, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999 },
+  retryBtnText: { fontFamily: fonts.bodySemi, fontSize: 14, lineHeight: 20 },
+  gridSpacer: { width: CARD_WIDTH },
 
   /* ── Header ── */
   header: {

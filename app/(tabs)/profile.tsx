@@ -498,9 +498,9 @@ export default function ProfileScreen() {
         }
       >
         {fetchError && !profileLoading && (
-          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile().finally(() => setRefreshing(false)) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20, backgroundColor: `${colors.destructive}10` }}>
+          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile().finally(() => setRefreshing(false)) }} style={[s.errorBanner, { backgroundColor: `${colors.destructive}10` }]}>
             <RefreshCw size={14} color={colors.destructive} />
-            <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.destructive, flex: 1 }}>{t('common.loadError')}</Text>
+            <Text style={[s.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
           </PressableOpacity>
         )}
 
@@ -879,6 +879,8 @@ export default function ProfileScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
+  errorBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20 },
+  errorBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12,
