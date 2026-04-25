@@ -329,8 +329,19 @@ function BuildingScreenInner() {
       setMaintenanceRequests(prev =>
         prev.map(r => r.id === requestId ? { ...r, upvote_count: r.upvote_count + 1 } : r)
       )
-      const { error } = await (supabase.from('maintenance_request_upvotes') as any)
+      const { error } = await (supabase.from('maintenance_upvotes') as any)
         .insert({ request_id: requestId, user_id: userId })
+      if (!error) {
+        // Sync count to DB — count actual upvotes for accuracy
+        const { count } = await (supabase.from('maintenance_upvotes') as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('request_id', requestId)
+        if (typeof count === 'number') {
+          await (supabase.from('maintenance_requests') as any)
+            .update({ upvote_count: count })
+            .eq('id', requestId)
+        }
+      }
       if (error) {
         // Revert
         setMaintenanceRequests(prev =>
@@ -354,12 +365,14 @@ function BuildingScreenInner() {
   const handleMarkRead = useCallback(async (announcementId: string) => {
     if (!userId) return
     try {
-      await (supabase.from('announcement_reads') as any)
-        .insert({ announcement_id: announcementId, user_id: userId })
-      // Increment read count optimistically
-      setAnnouncements(prev =>
-        prev.map(a => a.id === announcementId ? { ...a, read_count: a.read_count + 1 } : a)
-      )
+      const { error } = await (supabase.from('announcement_reads') as any)
+        .upsert({ announcement_id: announcementId, user_id: userId }, { onConflict: 'announcement_id,user_id' })
+      // Increment read count optimistically (only if this is a new read)
+      if (!error) {
+        setAnnouncements(prev =>
+          prev.map(a => a.id === announcementId ? { ...a, read_count: a.read_count + 1 } : a)
+        )
+      }
     } catch {
       // Silent fail for reads
     }

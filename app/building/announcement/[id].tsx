@@ -55,13 +55,22 @@ function AnnouncementDetailInner() {
         // Mark as read
         const { data: { user } } = await supabase.auth.getUser()
         if (user && mounted) {
-          await (supabase.from('announcement_reads') as any)
-            .upsert({ announcement_id: id, user_id: user.id }, { onConflict: 'announcement_id,user_id' })
+          // Check if already read
+          const { data: existingRead } = await (supabase.from('announcement_reads') as any)
+            .select('id')
+            .eq('announcement_id', id)
+            .eq('user_id', user.id)
+            .maybeSingle()
 
-          // Increment read count
-          await (supabase.from('announcements') as any)
-            .update({ read_count: ((data as any)?.read_count ?? 0) + 1 })
-            .eq('id', id)
+          if (!existingRead) {
+            await (supabase.from('announcement_reads') as any)
+              .insert({ announcement_id: id, user_id: user.id })
+
+            // Increment read count only for first read
+            await (supabase.from('announcements') as any)
+              .update({ read_count: ((data as any)?.read_count ?? 0) + 1 })
+              .eq('id', id)
+          }
         }
       } catch (err) {
         if (__DEV__) console.warn('[announcement] load error:', err)

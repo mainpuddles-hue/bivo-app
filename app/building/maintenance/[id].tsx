@@ -40,6 +40,8 @@ import { getImageUrl } from '@/lib/imageUtils'
 import { Avatar } from '@/components/Avatar'
 import { BackButton, PressableOpacity } from '@/components/ui'
 import { getShadow } from '@/lib/shadows'
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { isValidUUID } from '@/lib/validation'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -132,7 +134,7 @@ const STATUS_TRANSLATION_KEYS: Record<MaintenanceStatus, string> = {
 // Screen
 // ---------------------------------------------------------------------------
 
-export default function MaintenanceDetailScreen() {
+function MaintenanceDetailInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const toast = useToast()
@@ -181,7 +183,7 @@ export default function MaintenanceDetailScreen() {
   // ------- Data loading -------
 
   const loadData = useCallback(async () => {
-    if (!id) return
+    if (!id || !isValidUUID(id)) return
     try {
       const uid = await getCachedUserId()
       if (mountedRef.current) setUserId(uid)
@@ -1087,3 +1089,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 })
+
+export default function MaintenanceDetailScreen() {
+  return (
+    <ScreenErrorBoundary screenName="MaintenanceDetail">
+      <MaintenanceDetailInner />
+    </ScreenErrorBoundary>
+  )
+}
