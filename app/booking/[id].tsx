@@ -229,7 +229,7 @@ function BookingDetailScreenInner() {
         router.push(`/messages/${newConv.id}`)
       }
     } catch {
-      // silent
+      toast.show({ message: t('messages.sendFailed') ?? 'Could not start conversation', type: 'error' })
     } finally {
       messagingRef.current = false
     }

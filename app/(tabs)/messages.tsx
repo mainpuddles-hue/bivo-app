@@ -430,7 +430,7 @@ export default function MessagesScreen() {
       return (
         <PressableOpacity
           onPress={() => { hapticMedium(); handleArchive(item.id) }}
-          style={[styles.swipeActionRight, { backgroundColor: showArchived ? colors.foreground : colors.mutedForeground }]}
+          style={[styles.swipeActionRight, { backgroundColor: colors.foreground }]}
           accessibilityRole="button"
           accessibilityLabel={showArchived ? t('messages.unarchive') ?? 'Unarchive' : t('messages.archive') ?? 'Archive'}
         >

@@ -393,7 +393,7 @@ function CreateEventScreenInner() {
       }
 
       try { await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-      toast.show({ message: edit ? t('events.updated') ?? t('events.created') : t('events.created'), type: 'success' })
+      toast.show({ message: edit ? (t('events.updated') ?? 'Event updated') : (t('events.created') ?? 'Event created'), type: 'success' })
 
       if (resultId) {
         router.replace(`/event/${resultId}` as any)

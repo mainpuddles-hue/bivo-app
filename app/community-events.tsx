@@ -167,7 +167,7 @@ function CommunityEventsScreenInner() {
     } finally {
       joiningRef.current.delete(eventId)
     }
-  }, [supabase, fetchEvents, router, t, toast, events])
+  }, [supabase, fetchEvents, router, t, toast])
 
   const renderEventCard = useCallback(({ item }: { item: CommunityEvent }) => (
     <EventCard event={item} />

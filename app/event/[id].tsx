@@ -145,7 +145,7 @@ function EventDetailScreenInner() {
             .select('*', { count: 'exact', head: true })
             .eq('event_id', event.id)
             .in('status', ['joined', 'approved'])
-          if ((postInsertCount ?? 0) > event.max_participants) {
+          if ((postInsertCount ?? 0) >= event.max_participants) {
             // Over capacity — remove our participation and show "full" toast
             await (supabase.from('community_event_participants') as any)
               .delete()
@@ -335,7 +335,7 @@ function EventDetailScreenInner() {
           </Text>
           {fetchError && (
             <PressableOpacity
-              onPress={() => { setFetchError(false); setLoading(true); fetchEvent() }}
+              onPress={() => { setFetchError(false); setEventImgError(false); setLoading(true); fetchEvent() }}
               style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, marginTop: 12 }}
             >
               <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 13 }}>{t('common.retry')}</Text>

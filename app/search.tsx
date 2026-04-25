@@ -574,7 +574,7 @@ function SearchScreenInner() {
     const updated = savedSearches.filter(s => s.id !== id)
     setSavedSearches(updated)
     // Delete from Supabase if it looks like a UUID (server-side search)
-    if (currentUserId && id.includes('-')) {
+    if (currentUserId && isValidUUID(id)) {
       await (supabase.from('saved_searches') as any).delete().eq('id', id).catch((e: any) => { if (__DEV__) console.warn('[search] saved search delete failed:', e) })
     }
     await AsyncStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
@@ -585,7 +585,7 @@ function SearchScreenInner() {
       if (s.id !== id) return s
       const newEnabled = !s.push_enabled
       // Update Supabase in background
-      if (currentUserId && id.includes('-')) {
+      if (currentUserId && isValidUUID(id)) {
         (supabase.from('saved_searches') as any)
           .update({ push_enabled: newEnabled })
           .eq('id', id)
@@ -1338,6 +1338,7 @@ function SearchScreenInner() {
             onSubmitEditing={() => { setShowSuggestions(false); searchSuggestions.addToHistory(query); executeSearch() }}
             onFocus={() => setShowSuggestions(true)}
             returnKeyType="search"
+            maxLength={500}
             accessibilityLabel={t('feed.searchPlaceholder')}
             autoFocus
             accessibilityRole="search"
@@ -1350,6 +1351,7 @@ function SearchScreenInner() {
                 setSimilarPosts([])
                 setDbResultCount(0)
                 setUserResults([])
+                setEventResults([])
                 setSearched(false)
               }}
               hitSlop={8}

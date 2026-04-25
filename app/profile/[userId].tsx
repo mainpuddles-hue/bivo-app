@@ -429,7 +429,8 @@ export default function PublicProfileScreen() {
           {fetchError && (
             <Pressable
               onPress={() => { setFetchError(false); setLoading(true); loadProfile() }}
-              style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999 }}
+              style={({ pressed }) => ({ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, minHeight: 44, justifyContent: 'center' as const, opacity: pressed ? 0.7 : 1 })}
+              hitSlop={8}
             >
               <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 13 }}>{t('common.retry')}</Text>
             </Pressable>
@@ -499,6 +500,7 @@ export default function PublicProfileScreen() {
               onPress={() => router.push(`/post/${post.id}`)}
               style={({ pressed }) => [s.listingGridCard, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
               accessibilityRole="button"
+              accessibilityLabel={post.title}
             >
               {post.image_url ? (
                 <Image

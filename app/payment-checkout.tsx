@@ -105,7 +105,7 @@ function PaymentCheckoutScreenInner() {
       router.replace('/payment/success')
     } catch (err) {
       if (__DEV__) console.warn('[payment-checkout] pay failed:', err)
-      toast.show({ message: t('common.error'), type: 'error' })
+      toast.show({ message: t('payment.paymentFailed') ?? 'Maksu epäonnistui', type: 'error' })
     } finally {
       setPaying(false)
     }

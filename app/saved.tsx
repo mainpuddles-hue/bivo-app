@@ -407,7 +407,7 @@ function SavedScreenInner() {
                           handleUnsavePost(post.id)
                         }}
                         disabled={unsavingId === post.id}
-                        style={[s.heartOverlay, { backgroundColor: 'rgba(0,0,0,0.45)' }]}
+                        style={({ pressed }) => [s.heartOverlay, { backgroundColor: 'rgba(0,0,0,0.45)', opacity: pressed && unsavingId !== post.id ? 0.6 : 1 }]}
                         hitSlop={8}
                         accessibilityRole="button"
                         accessibilityLabel={t('saved.unsave')}
@@ -502,7 +502,7 @@ function SavedScreenInner() {
                     hitSlop={8}
                     accessibilityRole="button"
                     accessibilityLabel={t('saved.unsave')}
-                    style={s.eventUnsaveBtn}
+                    style={({ pressed }) => [s.eventUnsaveBtn, pressed && { opacity: 0.6 }]}
                   >
                     <Heart size={18} color={colors.foreground} fill={colors.foreground} />
                   </Pressable>

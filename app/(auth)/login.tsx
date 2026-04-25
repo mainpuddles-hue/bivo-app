@@ -87,6 +87,7 @@ function LoginScreenInner() {
       if (val) {
         const ts = parseInt(val, 10)
         if (ts > Date.now()) setLockedUntil(ts)
+        else AsyncStorage.removeItem('tackbird_login_lockout').catch(() => {})
       }
     }).catch((e) => {
       if (__DEV__) console.warn('Session storage failed:', e)

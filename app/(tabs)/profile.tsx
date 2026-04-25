@@ -35,13 +35,7 @@ import { clearExpiredPro } from '@/lib/proExpiry'
 import { useToast } from '@/components/Toast'
 import type { Profile, Post, Review, UserBadge } from '@/lib/types'
 
-interface ActivityItem {
-  id: string
-  type: 'post' | 'event' | 'review_given' | 'review_received'
-  title: string
-  date: string
-  meta?: string
-}
+
 
 const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
 
@@ -64,8 +58,7 @@ export default function ProfileScreen() {
   const [badges, setBadges] = useState<UserBadge[]>([])
   const [recentPosts, setRecentPosts] = useState<Post[]>([])
   const [savedCount, setSavedCount] = useState(0)
-  const [activity, setActivity] = useState<ActivityItem[]>([])
-  const [editingBio, setEditingBio] = useState(false)
+const [editingBio, setEditingBio] = useState(false)
   const [bioText, setBioText] = useState('')
   const [followModal, setFollowModal] = useState<'followers' | 'following' | null>(null)
   const [followList, setFollowList] = useState<{ id: string; name: string; avatar_url: string | null }[]>([])
@@ -178,30 +171,6 @@ export default function ProfileScreen() {
       if (!mountedRef.current) return
       setRecentPosts((posts ?? []) as unknown as Post[])
 
-      // Activity feed
-      const activities: ActivityItem[] = []
-      // Posts
-      ;(posts ?? []).forEach((p: any) => {
-        activities.push({ id: `post-${p.id}`, type: 'post', title: p.title, date: p.created_at })
-      })
-      // Reviews given
-      const { data: givenRevs } = await supabase
-        .from('reviews')
-        .select('id, rating, created_at, reviewed_id')
-        .eq('reviewer_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5)
-      if (!mountedRef.current) return
-      ;(givenRevs ?? []).forEach((r: any) => {
-        activities.push({ id: `rev-${r.id}`, type: 'review_given', title: t('profile.activityReviewGiven'), date: r.created_at, meta: `${r.rating}/5` })
-      })
-      // Reviews received
-      ;(revs ?? []).slice(0, 5).forEach((r: any) => {
-        activities.push({ id: `revr-${r.id}`, type: 'review_received', title: t('profile.activityReviewReceived'), date: r.created_at, meta: `${r.rating}/5` })
-      })
-      activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      if (!mountedRef.current) return
-      setActivity(activities.slice(0, 15))
     } catch {
       // Network error — show whatever we have
       setFetchError(true)
@@ -558,7 +527,7 @@ export default function ProfileScreen() {
               {bioText.length}/200
             </Text>
             <View style={s.bioActions}>
-              <PressableOpacity onPress={() => { setEditingBio(false); setBioText(profile?.bio ?? '') }}><X size={20} color={colors.mutedForeground} /></PressableOpacity>
+              <PressableOpacity onPress={() => { setEditingBio(false); setBioText(profile?.bio ?? '') }} accessibilityLabel={t('common.cancel')} accessibilityRole="button"><X size={20} color={colors.mutedForeground} /></PressableOpacity>
               <PressableOpacity onPress={handleSaveBio} style={[s.bioSaveBtn, { backgroundColor: colors.foreground }]}>
                 <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>{t('common.save')}</Text>
               </PressableOpacity>
@@ -730,7 +699,7 @@ export default function ProfileScreen() {
                           <Text style={[s.myPostActionText, { color: colors.mutedForeground }]}>{t('profile.closePost')}</Text>
                         </PressableOpacity>
                       )}
-                      <PressableOpacity onPress={() => handleDeletePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.destructive}14` }]} hitSlop={8}>
+                      <PressableOpacity onPress={() => handleDeletePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.destructive}14` }]} hitSlop={8} accessibilityLabel={t('common.delete')} accessibilityRole="button">
                         <Trash2 size={13} color={colors.destructive} />
                       </PressableOpacity>
                     </View>
@@ -842,7 +811,7 @@ export default function ProfileScreen() {
             <Text style={[s.modalTitle, { color: colors.foreground }]}>
               {followModal === 'followers' ? t('profile.followersList', { count: followerCount }) : t('profile.followingList', { count: followingCount })}
             </Text>
-            <PressableOpacity onPress={() => setFollowModal(null)} hitSlop={12}>
+            <PressableOpacity onPress={() => setFollowModal(null)} hitSlop={12} accessibilityLabel={t('common.close')} accessibilityRole="button">
               <X size={24} color={colors.foreground} />
             </PressableOpacity>
           </View>

@@ -46,6 +46,7 @@ export function EmptyState({
               : { borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth, backgroundColor: 'transparent' },
           ]}
           accessibilityRole="button"
+          accessibilityLabel={actionLabel}
         >
           {actionIcon}
           <Text style={[
