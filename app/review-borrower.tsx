@@ -266,7 +266,7 @@ const s = StyleSheet.create({
 
   /* Stars */
   starsCard: {
-    borderRadius: 14, borderWidth: 1, padding: 18,
+    borderRadius: 12, borderWidth: 1, padding: 16,
     alignItems: 'center', marginBottom: 16,
   },
   starsLabel: {
@@ -294,7 +294,7 @@ const s = StyleSheet.create({
 
   /* Comment */
   commentInput: {
-    borderRadius: 14, borderWidth: 1, padding: 14,
+    borderRadius: 12, borderWidth: 1, padding: 14,
     fontSize: 13, fontFamily: fonts.body, lineHeight: 20,
     minHeight: 76, textAlignVertical: 'top', marginBottom: 10,
   },

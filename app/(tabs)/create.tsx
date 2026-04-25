@@ -1507,7 +1507,7 @@ const mk = StyleSheet.create({
 
   // v3 Photo uploader
   photoWrap: { paddingHorizontal: 20, paddingTop: 12 },
-  photoDashed: { aspectRatio: 1.25, borderRadius: 18, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  photoDashed: { aspectRatio: 1.25, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
   photoCircle: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   photoMainText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   photoSubText: { fontSize: 10, fontFamily: fonts.body },
@@ -1517,11 +1517,11 @@ const mk = StyleSheet.create({
   imgRemove: { position: 'absolute', top: 4, right: 4, width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   imgMainBadge: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingVertical: 2, alignItems: 'center' },
   imgMainBadgeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
-  imgProgressOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', borderRadius: 19, gap: 6 },
+  imgProgressOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', borderRadius: 20, gap: 6 },
   imgProgressTrack: { width: '70%' as any, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.3)', overflow: 'hidden' },
   imgProgressFill: { height: '100%' as any, borderRadius: 2 },
   imgProgressText: { fontSize: 12, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 16 },
-  imgCompleteOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center', borderRadius: 19 },
+  imgCompleteOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center', borderRadius: 20 },
   imgCompleteCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   imgAddMore: { width: 100, height: 100, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
   imgAddMoreText: { fontSize: 12, fontFamily: fonts.body },

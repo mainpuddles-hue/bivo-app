@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
 
   // Card
   card: {
-    borderRadius: 24,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
   },

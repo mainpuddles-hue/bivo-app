@@ -284,7 +284,7 @@ const s = StyleSheet.create({
   /* Summary */
   summaryCard: {
     flexDirection: 'row', gap: 12, alignItems: 'center',
-    borderRadius: 18, borderWidth: 1, padding: 16, marginBottom: 18,
+    borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 16,
   },
   summaryImage: { width: 52, height: 52, borderRadius: 12 },
   summaryImagePlaceholder: { width: 52, height: 52, borderRadius: 12 },

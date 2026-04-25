@@ -1569,7 +1569,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   errorText: { fontSize: 13, flex: 1 },
   errorRetry: { fontSize: 13, marginLeft: 12 },
@@ -1810,7 +1810,7 @@ const s = StyleSheet.create({
 
   // ── User / event / group cards ──
   userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth },
-  searchEventIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  searchEventIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   userName: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   userNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
 

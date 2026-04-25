@@ -578,7 +578,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
     gap: 5,
     minHeight: 44,
   },

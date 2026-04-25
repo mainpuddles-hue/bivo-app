@@ -1924,7 +1924,7 @@ const styles = StyleSheet.create({
   commentTextInput: { flex: 1, fontSize: 14, fontFamily: fonts.body, minHeight: 44, lineHeight: 20 },
   commentSendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalContent: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, gap: 8, maxHeight: '85%' },
+  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 8, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   modalTitle: { fontSize: 18, fontFamily: fonts.headingSemi, lineHeight: 24 },
   modalLabel: { fontSize: 13, fontFamily: fonts.bodySemi, marginTop: 8, lineHeight: 18 },

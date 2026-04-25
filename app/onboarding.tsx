@@ -603,7 +603,7 @@ const s = StyleSheet.create({
   // ── Illustration slot ──
   illustrationSlot: {
     marginHorizontal: 24,
-    borderRadius: 28,
+    borderRadius: 20,
     height: 280,
     alignItems: 'center',
     justifyContent: 'center',

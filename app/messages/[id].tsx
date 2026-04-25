@@ -1082,7 +1082,7 @@ const s = StyleSheet.create({
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 4 },
   bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10 },
-  msgImage: { width: 200, height: 150, borderRadius: 18, marginBottom: 4 },
+  msgImage: { width: 200, height: 150, borderRadius: 16, marginBottom: 4 },
   msgText: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },
@@ -1173,7 +1173,7 @@ const s = StyleSheet.create({
   // ── Link preview ────────────────────────────────────────────
   linkPreview: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginTop: 4, padding: 8, borderRadius: 18, borderWidth: 1,
+    marginTop: 4, padding: 8, borderRadius: 16, borderWidth: 1,
     maxWidth: '100%',
   },
   linkDomain: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },

@@ -500,7 +500,7 @@ const s = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   tabActive: {
     // shadow applied inline
@@ -530,7 +530,7 @@ const s = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
   statNumber: {
@@ -555,7 +555,7 @@ const s = StyleSheet.create({
   card: {
     flexDirection: 'row',
     padding: 12,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     position: 'relative',
   },
@@ -585,7 +585,7 @@ const s = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: 8,
     marginBottom: 4,
   },
   statusText: {

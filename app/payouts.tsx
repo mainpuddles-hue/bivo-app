@@ -354,13 +354,13 @@ const s = StyleSheet.create({
   },
 
   /* Transactions */
-  txnCard: { borderRadius: 14, borderWidth: 1 },
+  txnCard: { borderRadius: 12, borderWidth: 1 },
   txnRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 12, paddingHorizontal: 12,
   },
-  txnImage: { width: 38, height: 38, borderRadius: 10 },
-  txnImagePlaceholder: { width: 38, height: 38, borderRadius: 10 },
+  txnImage: { width: 38, height: 38, borderRadius: 12 },
+  txnImagePlaceholder: { width: 38, height: 38, borderRadius: 12 },
   txnInfo: { flex: 1 },
   txnTitle: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, letterSpacing: -0.1 },
   txnDate: { fontSize: 12, fontFamily: fonts.body, marginTop: 4 },

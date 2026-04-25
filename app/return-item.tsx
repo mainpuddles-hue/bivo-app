@@ -293,10 +293,10 @@ const s = StyleSheet.create({
   /* Item strip */
   itemStrip: {
     flexDirection: 'row', gap: 12, alignItems: 'center',
-    borderRadius: 14, borderWidth: 1, padding: 10, marginBottom: 16,
+    borderRadius: 12, borderWidth: 1, padding: 10, marginBottom: 16,
   },
-  itemImage: { width: 58, height: 58, borderRadius: 10 },
-  itemImagePlaceholder: { width: 58, height: 58, borderRadius: 10 },
+  itemImage: { width: 58, height: 58, borderRadius: 12 },
+  itemImagePlaceholder: { width: 58, height: 58, borderRadius: 12 },
   itemInfo: { flex: 1 },
   itemSubtitle: { fontSize: 12, fontFamily: fonts.body, letterSpacing: 0.4, marginBottom: 2 },
   itemTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.15 },
@@ -326,10 +326,10 @@ const s = StyleSheet.create({
   photoAddText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   /* Checklist */
-  checklistCard: { borderRadius: 14, borderWidth: 1, marginBottom: 22 },
+  checklistCard: { borderRadius: 12, borderWidth: 1, marginBottom: 22 },
   checkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, paddingHorizontal: 14 },
   checkbox: {
-    width: 22, height: 22, borderRadius: 7,
+    width: 22, height: 22, borderRadius: 8,
     alignItems: 'center', justifyContent: 'center',
   },
   checkLabel: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium, flex: 1 },
@@ -337,7 +337,7 @@ const s = StyleSheet.create({
 
   /* Note */
   noteInput: {
-    borderRadius: 14, borderWidth: 1, padding: 14,
+    borderRadius: 12, borderWidth: 1, padding: 14,
     fontSize: 13, fontFamily: fonts.body, minHeight: 64,
     textAlignVertical: 'top',
   },

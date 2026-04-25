@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   segmentTabActive: {
     elevation: 1,
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 12,
     padding: 12,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     marginBottom: 10,
   },

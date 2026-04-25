@@ -1179,7 +1179,7 @@ const s = StyleSheet.create({
   templateCat: { fontSize: 12, marginTop: 4, fontFamily: fonts.body },
 
   // ── Fields card ──
-  fieldsCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
+  fieldsCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   fieldRow: { paddingHorizontal: 16, paddingVertical: 12 },
   fieldLabel: { fontSize: 12, fontWeight: '500', marginBottom: 4, fontFamily: fonts.bodyMedium },
   fieldValue: { fontSize: 15, fontWeight: '500', padding: 0, minHeight: 24 },
@@ -1187,17 +1187,17 @@ const s = StyleSheet.create({
 
   // ── Step 2: Photos ──
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  photoCell: { width: '31%', aspectRatio: 1, borderRadius: 14, overflow: 'hidden', position: 'relative' },
+  photoCell: { width: '31%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden', position: 'relative' },
   photoImage: { width: '100%', height: '100%' },
   photoBadge: { position: 'absolute', top: 6, left: 6, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   photoBadgeText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.4, textTransform: 'uppercase' },
   photoRemove: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  photoAdd: { width: '31%', aspectRatio: 1, borderRadius: 14, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  photoAdd: { width: '31%', aspectRatio: 1, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
   photoAddText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   photoHint: { fontSize: 12, marginTop: 8, paddingHorizontal: 4, fontFamily: fonts.body },
 
   // ── Description ──
-  descCard: { borderRadius: 18, borderWidth: 1, minHeight: 140, padding: 16 },
+  descCard: { borderRadius: 16, borderWidth: 1, minHeight: 140, padding: 16 },
   descInput: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05 },
 
   // ── Tags ──
@@ -1209,13 +1209,13 @@ const s = StyleSheet.create({
 
   // ── Step 3: Pricing ──
   pricingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pricingCard: { width: '48%', borderRadius: 14, padding: 12 },
+  pricingCard: { width: '48%', borderRadius: 12, padding: 12 },
   pricingLabel: { fontSize: 13, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
   pricingSub: { fontSize: 12, marginTop: 4, fontFamily: fonts.body },
-  priceInputCard: { borderRadius: 18, borderWidth: 1, padding: 16, marginTop: 8 },
+  priceInputCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginTop: 8 },
 
   // ── Deposit ──
-  depositCard: { borderRadius: 18, borderWidth: 1, padding: 16 },
+  depositCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
   depositRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   depositAmount: { fontSize: 36, fontWeight: '600', letterSpacing: -1.2, lineHeight: 40, fontFamily: fonts.bodySemi },
   depositCurrency: { fontSize: 17, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -1225,7 +1225,7 @@ const s = StyleSheet.create({
   depositHint: { fontSize: 12, lineHeight: 16, marginTop: 8, fontFamily: fonts.body },
 
   // ── Suggestion card ──
-  suggestionCard: { borderRadius: 14, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  suggestionCard: { borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 },
   suggestionIcon: { width: 32, height: 32, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   suggestionText: { flex: 1, fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
 
@@ -1235,7 +1235,7 @@ const s = StyleSheet.create({
   weekdayText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // ── Calendar ──
-  calendarCard: { borderRadius: 18, borderWidth: 1, padding: 12 },
+  calendarCard: { borderRadius: 16, borderWidth: 1, padding: 12 },
   calendarRow: { flexDirection: 'row' },
   calendarCell: { flex: 1, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
   calendarDayBtn: { margin: 4 },
@@ -1247,13 +1247,13 @@ const s = StyleSheet.create({
   legendText: { fontSize: 12, fontFamily: fonts.body },
 
   // ── Time windows ──
-  timeCard: { borderRadius: 18, borderWidth: 1, padding: 16 },
+  timeCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
   timeRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
   timeLabel: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   timeValue: { fontSize: 14, fontFamily: fonts.body },
 
   // ── Step 5: Location ──
-  locationCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
+  locationCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   miniMap: { height: 120, alignItems: 'center', justifyContent: 'center' },
   locationInfo: { padding: 12 },
   locationAddress: { fontSize: 14, fontWeight: '600', padding: 0, minHeight: 20 },
@@ -1261,19 +1261,19 @@ const s = StyleSheet.create({
 
   // ── Pickup methods ──
   pickupMethods: { gap: 8 },
-  pickupCard: { borderRadius: 18, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  pickupCard: { borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
   radioOuter: { width: 20, height: 20, borderRadius: 999, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   radioInner: { width: 9, height: 9, borderRadius: 999 },
   pickupLabel: { fontSize: 14, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
   pickupSub: { fontSize: 12, marginTop: 4, fontFamily: fonts.body },
 
   // ── Step 6: Segment tabs ──
-  segmentRow: { borderRadius: 14, padding: 4, flexDirection: 'row', gap: 4, borderWidth: 1 },
+  segmentRow: { borderRadius: 12, padding: 4, flexDirection: 'row', gap: 4, borderWidth: 1 },
   segmentTab: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center' },
   segmentTabText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // ── Checklist items ──
-  checkItem: { borderRadius: 18, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  checkItem: { borderRadius: 16, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   checkItemDashed: { borderStyle: 'dashed', backgroundColor: 'transparent' },
   checkNum: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   checkNumDashed: { borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'transparent' },
@@ -1287,7 +1287,7 @@ const s = StyleSheet.create({
   suggestPillText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
 
   // ── Step 7: Rules ──
-  rulesCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
+  rulesCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   ruleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12 },
   ruleDot: { width: 6, height: 6, borderRadius: 999 },
   ruleText: { fontSize: 14, fontFamily: fonts.body },
@@ -1296,13 +1296,13 @@ const s = StyleSheet.create({
   addRuleInput: { fontSize: 12, paddingVertical: 8, minHeight: 32 },
 
   // ── Damage card ──
-  damageCard: { borderRadius: 18, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  damageCard: { borderRadius: 16, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   damageIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   damageTitle: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   damageSub: { fontSize: 12, marginTop: 4, lineHeight: 16, fontFamily: fonts.body },
 
   // ── Preview card ──
-  previewCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden', maxWidth: '62%' },
+  previewCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden', maxWidth: '62%' },
   previewImage: { height: 140 },
   previewImagePlaceholder: { height: 140, alignItems: 'center', justifyContent: 'center' },
   previewInfo: { padding: 8 },

@@ -189,7 +189,7 @@ const s = StyleSheet.create({
   dateBlock: {
     width: 60,
     minHeight: 68,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
@@ -274,12 +274,12 @@ const s = StyleSheet.create({
   thumb: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   thumbIcon: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

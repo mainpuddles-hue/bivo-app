@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   distanceStep: {
     minWidth: 44,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,

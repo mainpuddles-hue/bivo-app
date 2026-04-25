@@ -801,12 +801,12 @@ function ItemSummaryCard({ booking, colors, t, locale, router, compact }: {
         {booking.post?.image_url ? (
           <ImageWithFallback
             uri={booking.post.image_url}
-            style={{ width: imgSize, height: imgSize, borderRadius: 14 }}
+            style={{ width: imgSize, height: imgSize, borderRadius: 12 }}
             contentFit="cover"
             fallbackIcon={isService ? <ShoppingBag size={24} color={colors.mutedForeground} /> : <Package size={24} color={colors.mutedForeground} />}
           />
         ) : (
-          <View style={[{ width: imgSize, height: imgSize, borderRadius: 14, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+          <View style={[{ width: imgSize, height: imgSize, borderRadius: 12, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
             {isService ? <ShoppingBag size={24} color={colors.mutedForeground} /> : <Package size={24} color={colors.mutedForeground} />}
           </View>
         )}
@@ -1030,7 +1030,7 @@ function BookingLifecycleStepper({ booking, colors, isDark, t }: {
 
 const stepperStyles = StyleSheet.create({
   container: {
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     paddingVertical: 16,
     paddingHorizontal: 12,
@@ -1217,7 +1217,7 @@ const s = StyleSheet.create({
 
   // Card
   card: {
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 16,
   },
@@ -1269,7 +1269,7 @@ const s = StyleSheet.create({
 
   // Ribbon (dark card)
   ribbonCard: {
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 14,
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -1345,7 +1345,7 @@ const s = StyleSheet.create({
   todoCheck: {
     width: 20,
     height: 20,
-    borderRadius: 6,
+    borderRadius: 8,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',

@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   optionInput: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     borderStyle: 'dashed',
     paddingVertical: 12,

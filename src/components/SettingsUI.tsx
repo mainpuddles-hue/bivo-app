@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   rowIconCircle: {
     width: 32,
     height: 32,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

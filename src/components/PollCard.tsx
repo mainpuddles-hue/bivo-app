@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   option: {
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
     minHeight: 48,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   optionContent: {
     flexDirection: 'row',
