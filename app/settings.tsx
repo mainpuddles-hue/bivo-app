@@ -1449,23 +1449,6 @@ const s = StyleSheet.create({
     gap: 4,
   },
 
-  // ── Pro ──
-  proBadgeText: {
-    fontSize: 13,
-    fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-  },
-  proUpgradeChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  proUpgradeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-  },
-
   // ── Security block ──
   securityBlock: {
     padding: 16,

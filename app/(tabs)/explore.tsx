@@ -1059,32 +1059,6 @@ const s = StyleSheet.create({
     paddingTop: 20,
   },
 
-  // ── Map teaser ──
-  mapTeaser: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 20,
-    padding: 20,
-    gap: 16,
-    borderWidth: 1,
-  },
-  mapTeaserContent: {
-    flex: 1,
-    gap: 8,
-  },
-  mapTeaserTitle: {
-    fontSize: 15,
-    fontFamily: fonts.headingSemi,
-    fontWeight: '700',
-    marginTop: 4,
-    lineHeight: 22,
-  },
-  mapTeaserHint: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontFamily: fonts.body,
-  },
-
   // ── Summary cards ──
   summaryRow: {
     gap: 10,
@@ -1243,21 +1217,6 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 20,
-  },
-
-  // ── Group dot ──
-  groupDot: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  groupDotText: {
-    fontSize: 14,
-    fontWeight: '700',
-    fontFamily: fonts.headingSemi,
     lineHeight: 20,
   },
 
