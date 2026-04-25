@@ -57,8 +57,11 @@ function FeedScreenInner() {
   // ── Onboarding overlay ──
   const [showOnboarding, setShowOnboarding] = useState(false)
   useEffect(() => {
-    AsyncStorage.getItem('tackbird_onboarding_completed').then(val => {
-      if (!val) setShowOnboarding(true)
+    Promise.all([
+      AsyncStorage.getItem('tackbird_onboarding_completed'),
+      AsyncStorage.getItem('onboarding_complete'),
+    ]).then(([overlayFlag, layoutFlag]) => {
+      if (!overlayFlag && !layoutFlag) setShowOnboarding(true)
     }).catch(() => {})
   }, [])
 

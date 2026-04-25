@@ -414,16 +414,18 @@ function ConversationScreenInner() {
       // Non-critical: update conversation timestamp for sort order. Don't restore input if only this fails.
       (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch((err: any) => { if (__DEV__) console.warn('[messages] conversation update failed:', err?.message) })
     } catch (err) {
-      // Remove optimistic message on failure
-      setMessages(prev => prev.filter(m => m.id !== optimisticId))
-      // Only restore input if user hasn't typed new text since send (CLICK-PATH-014)
-      if (!inputModifiedSinceSendRef.current) {
-        setInput(content)
+      if (mountedRef.current) {
+        // Remove optimistic message on failure
+        setMessages(prev => prev.filter(m => m.id !== optimisticId))
+        // Only restore input if user hasn't typed new text since send (CLICK-PATH-014)
+        if (!inputModifiedSinceSendRef.current) {
+          setInput(content)
+        }
+        toast.show({ message: t('messages.sendFailed'), type: 'error' })
       }
-      toast.show({ message: t('messages.sendFailed'), type: 'error' })
       if (__DEV__) console.error('[conversation] message send failed:', err)
     } finally {
-      setSending(false)
+      if (mountedRef.current) setSending(false)
       if (typingDebounceRef.current) { clearTimeout(typingDebounceRef.current); typingDebounceRef.current = null }
     }
   }, [input, userId, id, supabase, sending, t, toast])

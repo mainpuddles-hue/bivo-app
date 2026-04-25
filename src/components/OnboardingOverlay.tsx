@@ -79,6 +79,8 @@ export function OnboardingOverlay({ visible, onDone }: Props) {
 
   const finishOnboarding = useCallback(() => {
     AsyncStorage.setItem(STORAGE_KEY, 'true').catch(() => {})
+    // Also set the layout-level key so _layout.tsx won't redirect to old onboarding
+    AsyncStorage.setItem('onboarding_complete', 'true').catch(() => {})
     onDone()
   }, [onDone])
 
@@ -91,7 +93,7 @@ export function OnboardingOverlay({ visible, onDone }: Props) {
   const handleInterestsNext = useCallback(() => {
     // Save interests to AsyncStorage for feed personalization
     if (selectedInterests.size > 0) {
-      AsyncStorage.setItem('tackbird_interests', JSON.stringify([...selectedInterests])).catch(() => {})
+      AsyncStorage.setItem('onboarding_purposes', JSON.stringify([...selectedInterests])).catch(() => {})
     }
     animateTransition(2)
   }, [selectedInterests, animateTransition])

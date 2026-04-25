@@ -52,6 +52,8 @@ function PostDetailScreenInner() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const supabase = useSupabase()
+  const mountedRef = useRef(true)
+  useEffect(() => { return () => { mountedRef.current = false } }, [])
 
   const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
@@ -460,13 +462,15 @@ function PostDetailScreenInner() {
         checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch(() => {})
       }
     } catch (err) {
-      // Restore comment text so the user doesn't lose their input
-      setCommentText(content)
-      if (parentId) setReplyToComment(replyToComment)
-      toast.show({ message: t('engagement.commentFailed'), type: 'error' })
+      if (mountedRef.current) {
+        // Restore comment text so the user doesn't lose their input
+        setCommentText(content)
+        if (parentId) setReplyToComment(replyToComment)
+        toast.show({ message: t('engagement.commentFailed'), type: 'error' })
+      }
       if (__DEV__) console.error('[post] comment insert failed:', err)
     } finally {
-      setSendingComment(false)
+      if (mountedRef.current) setSendingComment(false)
     }
   }, [userId, commentText, sendingComment, id, supabase, replyToComment, t, post])
 

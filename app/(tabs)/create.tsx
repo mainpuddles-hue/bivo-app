@@ -197,6 +197,7 @@ export default function CreateScreen() {
   const [successPostId, setSuccessPostId] = useState<string | null>(null)
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSubmitRef = useRef<number>(0)
+  const submittingRef = useRef(false)
   const [autoTags, setAutoTags] = useState<string[]>([])
   const [hasDraft, setHasDraft] = useState(false)
   const [draftToastVisible, setDraftToastVisible] = useState(false)
@@ -580,9 +581,10 @@ export default function CreateScreen() {
   }, [t])
 
   const handleSubmit = useCallback(async () => {
-    if (submitting) return
+    if (submittingRef.current || submitting) return
+    submittingRef.current = true
     const now = Date.now()
-    if (now - lastSubmitRef.current < 1000) return
+    if (now - lastSubmitRef.current < 1000) { submittingRef.current = false; return }
     lastSubmitRef.current = now
     if (!selectedType || !title.trim() || !description.trim()) {
       setTouchedTitle(true)
@@ -591,15 +593,15 @@ export default function CreateScreen() {
       else if (!description.trim()) { descriptionInputRef.current?.focus() }
       setFormError(t('create.titleAndDescRequired'))
       shakeButton()
-      return
+      submittingRef.current = false; return
     }
     setFormError(null)
     if (!await checkRateLimit('post_create')) {
       toast.show({ message: getRateLimitMessage('post_create', t), type: 'error' })
-      return
+      submittingRef.current = false; return
     }
     const contentWarning = quickContentCheck(title, description)
-    if (contentWarning) { toast.show({ message: contentWarning, type: 'error' }); return }
+    if (contentWarning) { toast.show({ message: contentWarning, type: 'error' }); submittingRef.current = false; return }
     if (selectedType === 'tapahtuma') {
       if (eventMaxCapacity) {
         const maxAtt = parseInt(eventMaxCapacity, 10)
@@ -683,7 +685,7 @@ export default function CreateScreen() {
           const modResult = await modRes.json()
           if (modResult.action === 'block') {
             toast.show({ message: t('create.contentBlocked') || 'Content blocked by moderation', type: 'error' })
-            setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}); return
+            submittingRef.current = false; setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}); return
           }
         }
       } catch {}
@@ -726,7 +728,7 @@ export default function CreateScreen() {
                 toast.show({ message: t('create.rollbackFailed') ?? 'Failed to clean up — please delete the draft from your profile', type: 'error' })
               }
             }
-            setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}); return
+            submittingRef.current = false; setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}); return
           }
         }
       }
@@ -756,7 +758,7 @@ export default function CreateScreen() {
           if (__DEV__) console.error('[create] event insert failed:', eventError.message)
           try { await (supabase.from('posts') as any).delete().eq('id', post.id) } catch {}
           toast.show({ message: t('create.eventCreateFailed') ?? 'Event creation failed', type: 'error' })
-          setSubmitting(false); return
+          submittingRef.current = false; setSubmitting(false); return
         }
       }
       // Activate post as the LAST step — after images + event are done
@@ -808,6 +810,7 @@ export default function CreateScreen() {
       }
       if (mountedRef.current) toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
     } finally {
+      submittingRef.current = false
       if (mountedRef.current) { setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}) }
     }
   }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages, toast])
