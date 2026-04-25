@@ -134,81 +134,61 @@ function ConversationScreenInner() {
         setLoading(false)
         return
       }
-      const { data: profile } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).maybeSingle()
+
+      // Parallel fetch: profile, messages, and post+offer are independent
+      const profilePromise = supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).maybeSingle()
+      const messagesPromise = supabase.from('messages').select('*').eq('conversation_id', id).order('created_at', { ascending: false }).limit(PAGE_SIZE)
+      const postPromise = (conv as any).post_id
+        ? supabase.from('posts').select('id, title, type, image_url').eq('id', (conv as any).post_id).maybeSingle()
+        : Promise.resolve({ data: null })
+      const offerPromise = (conv as any).post_id
+        ? supabase.from('offers').select('id, amount, message, from_user_id, status').eq('conversation_id', id).eq('status', 'pending').order('created_at', { ascending: false }).limit(1).maybeSingle()
+        : Promise.resolve({ data: null })
+
+      const [profileRes, msgsRes, postRes, offerRes] = await Promise.all([profilePromise, messagesPromise, postPromise, offerPromise])
       if (cancelled) return
-      if (profile) {
-        setOtherUser(profile as unknown as Profile)
+
+      if (profileRes.data) {
+        setOtherUser(profileRes.data as unknown as Profile)
       } else {
         setNotFound(true)
         setLoading(false)
         return
       }
 
-      if ((conv as any).post_id) {
-        const { data: postData } = await supabase
-          .from('posts')
-          .select('id, title, type, image_url')
-          .eq('id', (conv as any).post_id)
-          .maybeSingle()
-        if (cancelled) return
-        if (postData) setLinkedPost(postData as any)
+      if (postRes.data) setLinkedPost(postRes.data as any)
+      if (offerRes.data) setPendingOffer(offerRes.data as any)
 
-        // Load pending offer for this conversation
-        const { data: offerData } = await supabase
-          .from('offers')
-          .select('id, amount, message, from_user_id, status')
-          .eq('conversation_id', id)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-        if (cancelled) return
-        if (offerData) setPendingOffer(offerData as any)
-      }
-
-      const { data: msgs } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', id)
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE)
-      if (cancelled) return
-      const sorted = (msgs ?? []).reverse() as Message[]
+      const sorted = (msgsRes.data ?? []).reverse() as Message[]
       setMessages(sorted)
-      setHasOlder((msgs ?? []).length >= PAGE_SIZE)
+      setHasOlder((msgsRes.data ?? []).length >= PAGE_SIZE)
       if (sorted.length > 0) setShowQuickReplies(false)
 
-      // Load reactions for these messages
+      // Load reactions + mark as read (non-blocking, parallel)
       const msgIds = sorted.map(m => m.id)
-      if (msgIds.length > 0) {
-        try {
-          const { data: rxns } = await supabase
-            .from('message_reactions')
-            .select('*')
-            .in('message_id', msgIds)
-          if (cancelled) return
-          if (rxns) {
-            const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
-            for (const r of rxns as any[]) {
-              if (!grouped[r.message_id]) grouped[r.message_id] = []
-              grouped[r.message_id].push({ emoji: r.emoji, user_id: r.user_id })
-            }
-            setReactions(grouped)
-          }
-        } catch {
-          if (__DEV__) console.log('[conversation] message_reactions fetch failed')
-          // Silently fail — reactions just won't show
-        }
-      }
+      const reactionsPromise = msgIds.length > 0
+        ? (async () => {
+            try {
+              const { data: rxns } = await supabase.from('message_reactions').select('*').in('message_id', msgIds)
+              if (cancelled || !rxns) return
+              const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
+              for (const r of rxns as any[]) {
+                if (!grouped[r.message_id]) grouped[r.message_id] = []
+                grouped[r.message_id].push({ emoji: r.emoji, user_id: r.user_id })
+              }
+              setReactions(grouped)
+            } catch { if (__DEV__) console.log('[conversation] message_reactions fetch failed') }
+          })()
+        : Promise.resolve()
+      const markReadPromise = (supabase.from('messages') as any).update({ is_read: true })
+        .eq('conversation_id', id)
+        .neq('sender_id', uid)
+        .eq('is_read', false)
+        .then(({ error: markReadError }: { error: any }) => {
+          if (markReadError && __DEV__) console.warn('[conversation] mark-as-read failed:', markReadError.message)
+        })
 
-      // Mark as read
-      if (!cancelled) {
-        const { error: markReadError } = await (supabase.from('messages') as any).update({ is_read: true })
-          .eq('conversation_id', id)
-          .neq('sender_id', uid)
-          .eq('is_read', false)
-        if (markReadError && __DEV__) console.warn('[conversation] mark-as-read failed:', markReadError.message)
-      }
+      await Promise.all([reactionsPromise, markReadPromise])
 
       if (!cancelled) setLoading(false)
     }
