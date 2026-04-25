@@ -2109,7 +2109,8 @@
     "commentReply": "replied to your comment",
     "eventJoined": "joined your event",
     "loginRequired": "Log in to see notifications",
-    "loginHint": "Log in to stay updated on what's happening in your neighborhood."
+    "loginHint": "Log in to stay updated on what's happening in your neighborhood.",
+    "unread": "Unread"
   },
   "map": {
     "locate": "Locate me",

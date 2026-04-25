@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, memo, type ReactNode } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing } from 'lucide-react-native'
+import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing, Home } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
@@ -23,6 +23,7 @@ import { FEATURES } from '@/lib/featureFlags'
 import { clearAuthCache } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
+import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity } from '@/components/ui'
 import { useReferral, type ApplyResult } from '@/hooks/useReferral'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
@@ -223,6 +224,13 @@ export default function SettingsScreen() {
   // Neighborhood picker
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
 
+  // Building (taloyhtiö)
+  const [userBuilding, setUserBuilding] = useState<{ id: string; street_address: string; member_count: number } | null>(null)
+  const [showBuildingModal, setShowBuildingModal] = useState(false)
+  const [buildingAddress, setBuildingAddress] = useState('')
+  const [selectedBuildingLocation, setSelectedBuildingLocation] = useState<import('@/components/LocationAutocomplete').LocationResult | null>(null)
+  const [savingBuilding, setSavingBuilding] = useState(false)
+
   // Referral code
   const referral = useReferral(profile?.id ?? null)
   const [referralInput, setReferralInput] = useState('')
@@ -277,6 +285,15 @@ export default function SettingsScreen() {
       }
       // Only Helsinki for MVP launch — multi-city later
       if (mounted) setAvailableCities([{ id: 'helsinki', name: 'Helsinki' }])
+      // Load user's building
+      try {
+        const { data: ubData } = await supabase
+          .from('user_buildings')
+          .select('building:buildings(id, street_address, member_count)')
+          .eq('user_id', user.id)
+          .single()
+        if (mounted && (ubData as any)?.building) setUserBuilding((ubData as any).building)
+      } catch {} // No building linked yet
       // Theme is handled by ThemeProvider
       } catch (err) {
         if (__DEV__) console.warn('[settings] load failed:', err)
@@ -313,6 +330,83 @@ export default function SettingsScreen() {
     setSavedSearches(prev => prev.filter(s => s.id !== searchId))
     toast.show({ message: t('savedSearch.deleted') ?? 'Deleted', type: 'success' })
   }, [supabase, toast, t])
+
+  // Save building (taloyhtiö)
+  const handleSaveBuilding = useCallback(async () => {
+    if (!selectedBuildingLocation || !profile) return
+    setSavingBuilding(true)
+    try {
+      const streetAddress = selectedBuildingLocation.street
+        ? (selectedBuildingLocation.housenumber
+            ? `${selectedBuildingLocation.street} ${selectedBuildingLocation.housenumber}`
+            : selectedBuildingLocation.street)
+        : (selectedBuildingLocation.name || buildingAddress)
+
+      const { data: buildingId, error } = await (supabase as any).rpc('resolve_building', {
+        p_street_address: streetAddress,
+        p_postal_code: selectedBuildingLocation.postalCode ?? null,
+        p_city: selectedBuildingLocation.city ?? 'Helsinki',
+        p_neighborhood: selectedBuildingLocation.neighborhood ?? null,
+        p_lat: selectedBuildingLocation.lat,
+        p_lng: selectedBuildingLocation.lng,
+      })
+
+      if (error) {
+        toast.show({ message: t('common.errorOccurred') ?? 'Error', type: 'error' })
+        return
+      }
+
+      // Refetch building info
+      const { data: ubData } = await supabase
+        .from('user_buildings')
+        .select('building:buildings(id, street_address, member_count)')
+        .eq('user_id', profile.id)
+        .single()
+      if ((ubData as any)?.building) setUserBuilding((ubData as any).building)
+
+      setShowBuildingModal(false)
+      setBuildingAddress('')
+      setSelectedBuildingLocation(null)
+      toast.show({ message: t('common.saved') ?? 'Saved', type: 'success' })
+    } catch (err) {
+      if (__DEV__) console.warn('[settings] save building error:', err)
+      toast.show({ message: t('common.errorOccurred') ?? 'Error', type: 'error' })
+    } finally {
+      setSavingBuilding(false)
+    }
+  }, [selectedBuildingLocation, profile, supabase, toast, t, buildingAddress])
+
+  // Remove building link
+  const handleRemoveBuilding = useCallback(async () => {
+    if (!profile) return
+    Alert.alert(
+      locale === 'fi' ? 'Poista taloyhtiö' : 'Remove building',
+      locale === 'fi' ? 'Haluatko poistaa taloyhtiön profiilista?' : 'Remove your building association?',
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete') ?? 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Decrement member count
+              if (userBuilding) {
+                await (supabase.from('buildings') as any)
+                  .update({ member_count: Math.max(0, userBuilding.member_count - 1) })
+                  .eq('id', userBuilding.id)
+              }
+              await (supabase.from('user_buildings') as any).delete().eq('user_id', profile.id)
+              await (supabase.from('profiles') as any).update({ building_id: null }).eq('id', profile.id)
+              setUserBuilding(null)
+              toast.show({ message: t('common.deleted') ?? 'Deleted', type: 'success' })
+            } catch (err) {
+              if (__DEV__) console.warn('[settings] remove building error:', err)
+            }
+          },
+        },
+      ],
+    )
+  }, [profile, userBuilding, supabase, toast, t, locale])
 
   // Detect if user arrived via password recovery flow
   useEffect(() => {
@@ -871,6 +965,45 @@ export default function SettingsScreen() {
           />
         </Group>
 
+        {/* ── Section: Taloyhtiö (Building) ── */}
+        <Group label={locale === 'fi' ? 'Taloyhtiö' : 'Building'} colors={colors}>
+          {userBuilding ? (
+            <>
+              <Row
+                icon={<Home size={16} color={colors.foreground} strokeWidth={1.8} />}
+                label={userBuilding.street_address}
+                value={`${userBuilding.member_count} ${t('feed.neighbors') ?? 'naapuria'}`}
+                colors={colors}
+                isDark={isDark}
+              />
+              <Row
+                icon={<Pencil size={16} color={colors.foreground} strokeWidth={1.8} />}
+                label={locale === 'fi' ? 'Vaihda osoite' : 'Change address'}
+                onPress={() => setShowBuildingModal(true)}
+                colors={colors}
+                isDark={isDark}
+              />
+              <Row
+                icon={<Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />}
+                label={locale === 'fi' ? 'Poista taloyhtiö' : 'Remove building'}
+                onPress={handleRemoveBuilding}
+                danger
+                colors={colors}
+                isDark={isDark}
+              />
+            </>
+          ) : (
+            <Row
+              icon={<Home size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={locale === 'fi' ? 'Lisää osoitteesi' : 'Add your address'}
+              meta={locale === 'fi' ? 'Näe naapurisi ja taloyhtiösi ilmoitukset' : 'See your neighbors and building posts'}
+              onPress={() => setShowBuildingModal(true)}
+              colors={colors}
+              isDark={isDark}
+            />
+          )}
+        </Group>
+
         {/* ── Section: Yksityisyys (Privacy) ── */}
         <Group label={t('settings.sectionPrivacy') ?? 'Privacy'} colors={colors}>
           <Row
@@ -1228,6 +1361,64 @@ export default function SettingsScreen() {
           }
         }}
       />
+
+      {/* Building (Taloyhtiö) Address Modal */}
+      <Modal visible={showBuildingModal} transparent animationType="fade" onRequestClose={() => setShowBuildingModal(false)}>
+        <Pressable style={s.deleteBackdrop} onPress={() => setShowBuildingModal(false)}>
+          <Pressable style={[s.deleteCard, { backgroundColor: colors.card, gap: 12 }]} onPress={() => {}}>
+            <View style={s.deleteHeader}>
+              <Home size={24} color={colors.foreground} />
+              <Text style={[s.deleteTitle, { color: colors.foreground }]}>
+                {locale === 'fi' ? 'Lisää osoitteesi' : 'Add your address'}
+              </Text>
+            </View>
+            <Text style={[s.deleteDesc, { color: colors.mutedForeground }]}>
+              {locale === 'fi'
+                ? 'Kirjoita kotiosoitteesi niin näet taloyhtiösi muut naapurit ja ilmoitukset.'
+                : 'Enter your home address to see neighbors and building posts.'}
+            </Text>
+            <LocationAutocomplete
+              value={buildingAddress}
+              onChangeText={setBuildingAddress}
+              onSelect={(loc) => {
+                setSelectedBuildingLocation(loc)
+                setBuildingAddress(loc.name)
+              }}
+              placeholder={t('onboarding.addressPlaceholder') ?? 'Mannerheimintie 1'}
+              showIcon
+            />
+            {selectedBuildingLocation && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
+                <CheckCircle size={14} color={colors.foreground} />
+                <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.foreground }} numberOfLines={1}>
+                  {selectedBuildingLocation.street
+                    ? `${selectedBuildingLocation.street}${selectedBuildingLocation.housenumber ? ` ${selectedBuildingLocation.housenumber}` : ''}, ${selectedBuildingLocation.city ?? 'Helsinki'}`
+                    : selectedBuildingLocation.name}
+                </Text>
+              </View>
+            )}
+            <View style={s.deleteActions}>
+              <PressableOpacity
+                onPress={() => { setShowBuildingModal(false); setBuildingAddress(''); setSelectedBuildingLocation(null) }}
+                style={[s.deleteCancelBtn, { backgroundColor: colors.muted }]}
+              >
+                <Text style={[s.deleteCancelText, { color: colors.foreground }]}>{t('common.cancel')}</Text>
+              </PressableOpacity>
+              <PressableOpacity
+                onPress={handleSaveBuilding}
+                disabled={!selectedBuildingLocation || savingBuilding}
+                style={[s.deleteConfirmBtn, { backgroundColor: colors.foreground, opacity: !selectedBuildingLocation || savingBuilding ? 0.5 : 1 }]}
+              >
+                {savingBuilding ? (
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
+                ) : (
+                  <Text style={[s.deleteConfirmText, { color: colors.primaryForeground }]}>{t('common.save') ?? 'Tallenna'}</Text>
+                )}
+              </PressableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* Delete Account Confirmation Modal */}
       <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>

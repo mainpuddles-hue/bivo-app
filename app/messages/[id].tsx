@@ -604,12 +604,12 @@ function ConversationScreenInner() {
     return (
       <View>
         {showDateHeader && (
-          <View style={s.dayStampRow}>
-            <View style={[s.dayStampLine, { backgroundColor: colors.border }]} />
-            <Text style={[s.dateHeader, { color: colors.mutedForeground }]}>
-              {formatDateHeader(item.created_at, locale).toUpperCase()}
-            </Text>
-            <View style={[s.dayStampLine, { backgroundColor: colors.border }]} />
+          <View style={s.dayPillRow}>
+            <View style={[s.dayPill, { backgroundColor: isDark ? colors.muted : `${colors.foreground}08` }]}>
+              <Text style={[s.dayPillText, { color: colors.mutedForeground }]}>
+                {formatDateHeader(item.created_at, locale).toUpperCase()}
+              </Text>
+            </View>
           </View>
         )}
         <View style={[s.msgRow, isMine ? s.msgRowMine : s.msgRowTheirs]}>
@@ -798,6 +798,24 @@ function ConversationScreenInner() {
         )}
       </View>
 
+      {/* Context row — linked post (fixed below header) */}
+      {linkedPost && (
+        <PressableOpacity
+          onPress={() => router.push(`/post/${linkedPost.id}`)}
+          style={[contextStyles.row, { backgroundColor: colors.card, borderBottomColor: colors.border }]}
+          accessibilityRole="link"
+          accessibilityLabel={linkedPost.title}
+        >
+          {linkedPost.image_url && getImageUrl(linkedPost.image_url, 'thumbnail') ? (
+            <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.thumb} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={linkedPost.title} onError={() => { if (__DEV__) console.warn('[messages] linked post image failed:', linkedPost.image_url) }} />
+          ) : (
+            <View style={[contextStyles.thumbPlaceholder, { backgroundColor: colors.muted }]} />
+          )}
+          <Text style={[contextStyles.postTitle, { color: colors.foreground }]} numberOfLines={1}>{linkedPost.title}</Text>
+          <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={2} />
+        </PressableOpacity>
+      )}
+
       {/* Messages */}
       <FlatList
         ref={flatListRef}
@@ -820,29 +838,6 @@ function ConversationScreenInner() {
         }}
         ListHeaderComponent={
           <View>
-            {linkedPost && (
-              <View style={[contextStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {linkedPost.image_url && getImageUrl(linkedPost.image_url, 'thumbnail') && (
-                  <Image source={{ uri: getImageUrl(linkedPost.image_url, 'thumbnail')! }} style={contextStyles.image} contentFit="cover" cachePolicy="memory-disk" accessibilityLabel={linkedPost.title} onError={() => { if (__DEV__) console.warn('[messages] linked post image failed:', linkedPost.image_url) }} />
-                )}
-                <View style={contextStyles.info}>
-                  <Text style={[contextStyles.eyebrow, { color: colors.mutedForeground }]}>
-                    {(t('messages.aboutPost') ?? 'KESKUSTELETTE KOHTEESTA').toUpperCase()}
-                  </Text>
-                  <Text style={[contextStyles.title, { color: colors.foreground }]} numberOfLines={1}>{linkedPost.title}</Text>
-                </View>
-                <PressableOpacity
-                  onPress={() => router.push(`/post/${linkedPost.id}`)}
-                  hitSlop={8}
-                  accessibilityRole="link"
-                  accessibilityLabel={t('common.show') ?? 'Näytä'}
-                >
-                  <Text style={[contextStyles.showLink, { color: colors.foreground }]}>
-                    {t('common.show') ?? 'Näytä'}
-                  </Text>
-                </PressableOpacity>
-              </View>
-            )}
             {pendingOffer && (
               <View style={[offerStyles.banner, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={offerStyles.bannerTop}>
@@ -1064,13 +1059,16 @@ const s = StyleSheet.create({
   onlineText: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   // ── Messages ────────────────────────────────────────────────
   msgList: { padding: 16, gap: 4, flexGrow: 1 },
-  dayStampRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+  dayPillRow: {
+    alignItems: 'center', justifyContent: 'center',
     marginVertical: 12,
   },
-  dayStampLine: { flex: 1, height: StyleSheet.hairlineWidth },
-  dateHeader: {
-    fontSize: 11, fontWeight: '600', letterSpacing: 1.4,
+  dayPill: {
+    paddingHorizontal: 12, paddingVertical: 4,
+    borderRadius: 999,
+  },
+  dayPillText: {
+    fontSize: 11, fontWeight: '600', letterSpacing: 0.6,
     fontFamily: fonts.bodySemi, textTransform: 'uppercase',
   },
   msgRow: { flexDirection: 'row', gap: 8, marginVertical: 4 },
@@ -1177,16 +1175,17 @@ const s = StyleSheet.create({
 })
 
 const contextStyles = StyleSheet.create({
-  card: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: 16, marginVertical: 8, padding: 12,
-    borderRadius: 20, borderWidth: 1,
+  row: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 16, paddingVertical: 8,
+    borderBottomWidth: 1,
   },
-  image: { width: 46, height: 46, borderRadius: 12 },
-  info: { flex: 1, minWidth: 0, gap: 4 },
-  eyebrow: { fontSize: 11, fontWeight: '600', letterSpacing: 1.4, textTransform: 'uppercase', fontFamily: fonts.bodySemi, lineHeight: 14 },
-  title: { fontSize: 13, fontWeight: '600', lineHeight: 18, letterSpacing: -0.1, fontFamily: fonts.displayMedium },
-  showLink: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16, textDecorationLine: 'underline' },
+  thumb: { width: 32, height: 32, borderRadius: 8 },
+  thumbPlaceholder: { width: 32, height: 32, borderRadius: 8 },
+  postTitle: {
+    flex: 1, fontSize: 13, fontWeight: '600', lineHeight: 18,
+    letterSpacing: -0.1, fontFamily: fonts.bodySemi,
+  },
 })
 
 const offerStyles = StyleSheet.create({

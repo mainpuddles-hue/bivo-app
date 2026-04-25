@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { View, Text, SectionList, RefreshControl, ScrollView, StyleSheet, Animated, Alert } from 'react-native'
+import { View, Text, SectionList, RefreshControl, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
@@ -21,17 +21,8 @@ import { FEATURES } from '@/lib/featureFlags'
 import type { Notification } from '@/lib/types'
 import { prioritizeNotifications, type PrioritizedNotification } from '@/lib/notificationPriority'
 
-const ALL_FILTERS = [
-  { key: 'all', label: 'common.all' },
-  { key: 'rentals', label: 'notifications.prefRentals' },
-  { key: 'messages', label: 'nav.messages' },
-  { key: 'reviews', label: 'profile.reviews' },
-] as const
-
-// Hide rental filter when lending feature is disabled
-const FILTERS = FEATURES.LENDING
-  ? ALL_FILTERS
-  : ALL_FILTERS.filter(f => f.key !== 'rentals')
+// Segmented control tabs: "Kaikki" (all) / "Lukemattomat" (unread)
+type SegmentKey = 'all' | 'unread'
 
 function getFilterForType(type: string): string {
   if (type === 'new_message') return 'messages'
@@ -134,6 +125,38 @@ function hasActionButtons(type: string): boolean {
   return type === 'rental_request' || type === 'new_follower'
 }
 
+/** Build the action verb + context display for v3 row layout */
+function getNotificationActionText(
+  item: PrioritizedNotification,
+  t: (k: string, p?: Record<string, string | number>) => string
+): { name: string; action: string; context: string } {
+  const name = item.from_user?.name ?? ''
+  const resolvedTitle = getLocalizedTypeTitle(item.type, t) ?? item.title ?? ''
+
+  if (item.isGrouped && item.groupCount && item.groupCount > 1) {
+    const firstName = item.groupNames?.[0] ?? name
+    const othersCount = item.groupCount - 1
+    if (item.type === 'post_like') {
+      return {
+        name: firstName,
+        action: t('notifications.andOthers', { count: othersCount }),
+        context: resolvedTitle,
+      }
+    }
+    return {
+      name: firstName,
+      action: `${t('notifications.andOthers', { count: othersCount })}`,
+      context: resolvedTitle,
+    }
+  }
+
+  return {
+    name,
+    action: resolvedTitle,
+    context: item.body ?? '',
+  }
+}
+
 function NotificationSkeleton() {
   const { colors } = useTheme()
   const opacity = useShimmer()
@@ -149,7 +172,7 @@ function NotificationSkeleton() {
 }
 
 const skeletonStyles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingVertical: 14 },
+  row: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
   avatar: { width: 40, height: 40, borderRadius: 20 },
   content: { flex: 1, gap: 6, paddingTop: 2 },
   titleLine: { width: '80%', height: 14, borderRadius: 6 },
@@ -167,13 +190,11 @@ function NotificationsScreenInner() {
   const [loading, setLoading] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
-  const [activeFilter, setActiveFilter] = useState('all')
+  const [activeSegment, setActiveSegment] = useState<SegmentKey>('all')
   // Expanded groups state — tracks which grouped notifications are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [fetchError, setFetchError] = useState(false)
   const mountedRef = useRef(true)
-
-  const warmTint = useMemo(() => isDark ? 'rgba(240,238,233,0.08)' : '#F0EEE9', [isDark])
 
   const fetchNotifications = useCallback(async () => {
     setFetchError(false)
@@ -314,99 +335,81 @@ function NotificationsScreenInner() {
     }
   }, [supabase, router, expandedGroups, toggleGroup])
 
+  // v3: filter by segment — "all" shows everything, "unread" shows only unread
   const filtered = useMemo(() => {
-    if (activeFilter === 'all') return notifications
-    return notifications.filter(n => getFilterForType(n.type) === activeFilter)
-  }, [notifications, activeFilter])
+    if (activeSegment === 'unread') return notifications.filter(n => !n.is_read)
+    return notifications
+  }, [notifications, activeSegment])
 
   const sections = useMemo(() => groupByTime(filtered, t), [filtered, t])
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
 
-  // Per-filter unread counts — used for accessibility labels
-  const unreadByFilter = useMemo(() => {
-    const counts: Record<string, number> = { all: unreadCount }
-    for (const n of notifications) {
-      if (n.is_read) continue
-      const f = getFilterForType(n.type)
-      counts[f] = (counts[f] ?? 0) + 1
-    }
-    return counts
-  }, [notifications, unreadCount])
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header — Bar pattern: centered title, left circle back, right "Merkitse" text */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        {/* Left: circle back button */}
-        <PressableOpacity
-          onPress={() => router.back()}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-          style={[styles.headerBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-        >
-          <ArrowLeft size={18} color={colors.foreground} />
-        </PressableOpacity>
+      {/* v3 Header — large title left + "Merkitse luetuksi" text-button right */}
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.headerLeft}>
+          <PressableOpacity
+            onPress={() => router.back()}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            style={[styles.headerBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <ArrowLeft size={18} color={colors.foreground} />
+          </PressableOpacity>
+          <Text style={[styles.pageTitle, { color: colors.foreground }]}>
+            {t('nav.notifications')}
+          </Text>
+        </View>
 
-        {/* Center: title */}
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>
-          {t('nav.notifications')}
-        </Text>
-
-        {/* Right: "Merkitse" text */}
         {unreadCount > 0 ? (
           <PressableOpacity
             onPress={markAllRead}
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={t('notifications.markAllRead')}
-            style={styles.headerRightBtn}
+            style={styles.markReadBtn}
           >
-            <Text style={[styles.headerRightText, { color: colors.foreground }]}>
+            <Text style={[styles.markReadText, { color: colors.foreground }]}>
               {t('notifications.markAllRead')}
             </Text>
           </PressableOpacity>
         ) : (
-          <View style={styles.headerRightBtn} />
+          <View style={styles.markReadBtn} />
         )}
       </View>
 
-      {/* Filter chips row */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterScrollView}
-        contentContainerStyle={styles.filterRow}
-      >
-        {FILTERS.map((f) => {
-          const isActive = activeFilter === f.key
-          const count = unreadByFilter[f.key] ?? 0
+      {/* v3 Segmented control — "Kaikki / Lukemattomat" */}
+      <View style={[styles.segmented, { backgroundColor: colors.surfaceTinted }]}>
+        {([
+          { key: 'all' as SegmentKey, label: t('common.all') },
+          { key: 'unread' as SegmentKey, label: unreadCount > 0 ? `${t('notifications.unread')} \u00B7 ${unreadCount}` : t('notifications.unread') },
+        ]).map((seg) => {
+          const isActive = activeSegment === seg.key
           return (
             <PressableOpacity
-              key={f.key}
-              onPress={() => setActiveFilter(f.key)}
+              key={seg.key}
+              onPress={() => setActiveSegment(seg.key)}
               accessibilityRole="button"
-              accessibilityLabel={count > 0 ? `${t(f.label)} (${count})` : t(f.label)}
+              accessibilityLabel={seg.label}
               accessibilityState={{ selected: isActive }}
               style={[
-                styles.filterChip,
-                isActive
-                  ? { backgroundColor: colors.foreground, borderWidth: 0 }
-                  : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+                styles.segItem,
+                isActive && [styles.segItemActive, { backgroundColor: colors.card }],
               ]}
             >
               <Text style={[
-                styles.filterText,
-                isActive
-                  ? { color: colors.background, fontFamily: fonts.bodySemi }
-                  : { color: colors.foreground, fontFamily: fonts.bodyMedium },
+                styles.segText,
+                { color: isActive ? colors.foreground : colors.mutedForeground },
+                isActive && { fontFamily: fonts.bodySemi, fontWeight: '600' },
               ]}>
-                {t(f.label)}
+                {seg.label}
               </Text>
             </PressableOpacity>
           )
         })}
-      </ScrollView>
+      </View>
 
       {fetchError && !loading && (
         <PressableOpacity
@@ -446,124 +449,89 @@ function NotificationsScreenInner() {
               </Text>
             </View>
           )}
-          renderItem={({ item, index, section }) => {
+          renderItem={({ item }) => {
             const isGroupedMulti = item.isGrouped && item.groupCount && item.groupCount > 1
             const groupKey = `${item.type}:${item.link_id ?? item.id}`
             const isExpanded = expandedGroups.has(groupKey)
-            const initial = getInitial(item)
-            const isLast = index === section.data.length - 1
-            const isFirst = index === 0
             const isSystem = !item.from_user
             const showActions = hasActionButtons(item.type) && !item.is_read
+            const actionText = getNotificationActionText(item, t)
 
             return (
               <View>
-                {/* Grouped container card: first item gets top radius, last gets bottom */}
-                <View style={[
-                  styles.rowCard,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: colors.border,
-                    marginHorizontal: 16,
-                  },
-                  isFirst && { borderTopLeftRadius: 16, borderTopRightRadius: 16, borderTopWidth: 1 },
-                  isLast && { borderBottomLeftRadius: 16, borderBottomRightRadius: 16, borderBottomWidth: 1 },
-                  !isFirst && { borderTopWidth: 0 },
-                  !isLast && { borderBottomWidth: 0 },
-                  { borderLeftWidth: 1, borderRightWidth: 1 },
-                ]}>
-                  <PressableOpacity
-                    onPress={() => handleTap(item)}
-                    onLongPress={() => handleLongPress(item)}
-                    delayLongPress={500}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
-                    accessibilityState={{ selected: !item.is_read }}
-                    accessibilityHint={t('notifications.deleteNotification')}
-                    style={[
-                      styles.notifRow,
-                      !item.is_read && { backgroundColor: warmTint },
-                      isFirst && { borderTopLeftRadius: 16, borderTopRightRadius: 16 },
-                      isLast && { borderBottomLeftRadius: 16, borderBottomRightRadius: 16 },
-                    ]}
-                  >
-                    {/* Avatar — 40px */}
-                    {isSystem ? (
-                      <View style={[styles.avatarSystem, { backgroundColor: colors.foreground }]}>
-                        <Bell size={18} color={colors.background} />
-                      </View>
-                    ) : (
-                      <Avatar
-                        url={item.from_user?.avatar_url}
-                        name={item.from_user?.name}
-                        size={40}
-                      />
-                    )}
-
-                    {/* Text content */}
-                    <View style={styles.notifContent}>
-                      <Text
-                        style={[
-                          styles.notifTitle,
-                          { color: colors.foreground },
-                          !item.is_read && styles.notifTitleBold,
-                        ]}
-                        numberOfLines={2}
-                      >
-                        {getGroupedTitle(item, t)}
-                      </Text>
-
-                      {item.body && (
-                        <Text
-                          style={[styles.notifBody, { color: colors.foreground }]}
-                          numberOfLines={2}
-                        >
-                          {item.body}
-                        </Text>
-                      )}
-
-                      <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
-                        {formatTimeAgo(item.created_at, t, locale)}
-                      </Text>
-
-                      {/* Action buttons for actionable notifications */}
-                      {showActions && (
-                        <View style={styles.actionRow}>
-                          <PressableOpacity
-                            onPress={() => handleTap(item)}
-                            style={[styles.actionPrimary, { backgroundColor: colors.foreground }]}
-                            accessibilityRole="button"
-                            accessibilityLabel={item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
-                          >
-                            <Text style={[styles.actionPrimaryText, { color: colors.background }]}>
-                              {item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
-                            </Text>
-                          </PressableOpacity>
-                          <PressableOpacity
-                            onPress={() => handleLongPress(item)}
-                            style={[styles.actionSecondary, { backgroundColor: colors.card, borderColor: colors.border }]}
-                            accessibilityRole="button"
-                            accessibilityLabel={t('common.decline')}
-                          >
-                            <Text style={[styles.actionSecondaryText, { color: colors.foreground }]}>
-                              {t('common.decline')}
-                            </Text>
-                          </PressableOpacity>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* Unread dot */}
-                    {!item.is_read && (
-                      <View style={[styles.unreadDot, { backgroundColor: colors.foreground }]} />
-                    )}
-                  </PressableOpacity>
-
-                  {/* Divider between rows (not after last) */}
-                  {!isLast && (
-                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                <PressableOpacity
+                  onPress={() => handleTap(item)}
+                  onLongPress={() => handleLongPress(item)}
+                  delayLongPress={500}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${getGroupedTitle(item, t)}${item.body ? `, ${item.body}` : ''}`}
+                  accessibilityState={{ selected: !item.is_read }}
+                  accessibilityHint={t('notifications.deleteNotification')}
+                  style={styles.notifRow}
+                >
+                  {/* v3: Unread dot — 6px ink dot on LEFT */}
+                  {!item.is_read ? (
+                    <View style={[styles.unreadDot, { backgroundColor: colors.foreground }]} />
+                  ) : (
+                    <View style={styles.unreadDotSpacer} />
                   )}
-                </View>
+
+                  {/* Avatar — 40px */}
+                  {isSystem ? (
+                    <View style={[styles.avatarSystem, { backgroundColor: colors.foreground }]}>
+                      <Bell size={18} color={colors.background} />
+                    </View>
+                  ) : (
+                    <Avatar
+                      url={item.from_user?.avatar_url}
+                      name={item.from_user?.name}
+                      size={40}
+                    />
+                  )}
+
+                  {/* v3: 2-line text — {name} {action} {context} + time muted */}
+                  <View style={styles.notifContent}>
+                    <Text style={[styles.notifAction, { color: colors.foreground }]} numberOfLines={2}>
+                      {actionText.name ? (
+                        <Text style={styles.notifName}>{actionText.name} </Text>
+                      ) : null}
+                      {actionText.action}
+                      {actionText.context ? (
+                        <Text style={{ color: colors.mutedForeground }}> {'\u00B7'} {actionText.context}</Text>
+                      ) : null}
+                    </Text>
+
+                    <Text style={[styles.notifTime, { color: colors.mutedForeground }]}>
+                      {formatTimeAgo(item.created_at, t, locale)}
+                    </Text>
+
+                    {/* Action buttons for actionable notifications */}
+                    {showActions && (
+                      <View style={styles.actionRow}>
+                        <PressableOpacity
+                          onPress={() => handleTap(item)}
+                          style={[styles.actionPrimary, { backgroundColor: colors.foreground }]}
+                          accessibilityRole="button"
+                          accessibilityLabel={item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
+                        >
+                          <Text style={[styles.actionPrimaryText, { color: colors.background }]}>
+                            {item.type === 'rental_request' ? t('common.accept') : t('common.confirm')}
+                          </Text>
+                        </PressableOpacity>
+                        <PressableOpacity
+                          onPress={() => handleLongPress(item)}
+                          style={[styles.actionSecondary, { backgroundColor: colors.card, borderColor: colors.border }]}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('common.decline')}
+                        >
+                          <Text style={[styles.actionSecondaryText, { color: colors.foreground }]}>
+                            {t('common.decline')}
+                          </Text>
+                        </PressableOpacity>
+                      </View>
+                    )}
+                  </View>
+                </PressableOpacity>
 
                 {/* Expanded group — show individual notification names */}
                 {isGroupedMulti && isExpanded && item.groupNames && item.groupNames.length > 0 && (
@@ -621,13 +589,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // --- Header: Bar pattern (back circle 36px + centered title + "Merkitse" action) ---
+  // --- v3 Header: large page title left + mark-read text-button right ---
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   headerBackBtn: {
     width: 36,
@@ -637,52 +610,60 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
   },
-  headerTitle: {
-    fontSize: 17,
+  pageTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: -0.6,
     fontFamily: fonts.display,
-    fontWeight: '600',
-    lineHeight: 22,
-    letterSpacing: -0.3,
+    lineHeight: 34,
   },
-  headerRightBtn: {
+  markReadBtn: {
     minWidth: 36,
     alignItems: 'flex-end',
   },
-  headerRightText: {
+  markReadText: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     lineHeight: 16,
   },
 
-  // --- Filter chips (pill shape, borderRadius 999) ---
-  filterScrollView: {
-    flexGrow: 0,
-    flexShrink: 0,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-  },
-  filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  // --- v3 Segmented control (pill shape, Kaikki / Lukemattomat) ---
+  segmented: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 8,
+    padding: 4,
     borderRadius: 999,
-    minHeight: 44,
+    flexDirection: 'row',
+    gap: 4,
   },
-  filterText: {
-    fontSize: 12,
+  segItem: {
+    flex: 1,
+    height: 36,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segItemActive: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  segText: {
+    fontSize: 13,
     fontWeight: '500',
-    lineHeight: 16,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 18,
   },
 
-  // --- Section headers (uppercase section label, 10.5px muted 600, 0.9 tracking) ---
+  // --- v3 Section headers (inline time group labels) ---
   sectionHeader: {
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    paddingTop: 18,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+    paddingTop: 16,
   },
   sectionTitle: {
     fontSize: 11,
@@ -693,30 +674,30 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
 
-  // --- Row card container ---
-  rowCard: {
-    overflow: 'hidden',
-  },
-
-  // --- Notification row ---
+  // --- v3 Notification row: unread-dot + avatar + text ---
   notifRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingRight: 20,
+    paddingVertical: 12,
+    paddingLeft: 12,
+  },
+
+  // --- v3 Unread dot: 6px ink dot on LEFT ---
+  unreadDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    flexShrink: 0,
+    marginTop: 17, // vertically center with avatar (40px avatar -> center at 20px -> dot top = 20 - 3)
+  },
+  unreadDotSpacer: {
+    width: 6,
+    flexShrink: 0,
   },
 
   // --- Avatar ---
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  avatarFallback: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   avatarSystem: {
     width: 40,
     height: 40,
@@ -724,44 +705,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarInitial: {
-    fontSize: 16,
-    fontFamily: fonts.bodySemi,
-  },
 
-  // --- Content (title bold + body 13.5px + time 11px muted) ---
+  // --- v3 Content: 2-line action text + time muted ---
   notifContent: {
     flex: 1,
     gap: 2,
+    minWidth: 0,
   },
-  notifTitle: {
+  notifAction: {
     fontSize: 14,
     lineHeight: 20,
     fontFamily: fonts.body,
   },
-  notifTitleBold: {
+  notifName: {
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
-  },
-  notifBody: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontFamily: fonts.body,
   },
   notifTime: {
     fontSize: 12,
     lineHeight: 16,
     fontFamily: fonts.body,
-    marginTop: 3,
-  },
-
-  // --- Unread dot ---
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    flexShrink: 0,
-    marginTop: 6,
+    marginTop: 4,
   },
 
   // --- Action buttons (CTA: ink pill primary + surface pill border secondary) ---
@@ -794,12 +758,6 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
-  // --- Divider (1px, indent past avatar) ---
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 60, // indent past avatar
-  },
-
   // --- Error banner ---
   errorBanner: {
     flexDirection: 'row',
@@ -827,8 +785,8 @@ const styles = StyleSheet.create({
 
   // --- Expanded group ---
   expandedGroup: {
-    marginLeft: 60,
-    marginRight: 16,
+    marginLeft: 38,
+    marginRight: 20,
     borderRadius: 16,
     paddingVertical: 4,
     marginBottom: 4,

@@ -708,24 +708,22 @@ function FeedScreenInner() {
               </View>
             )}
 
-            {/* ── Banners ── */}
-            <View style={{ paddingHorizontal: 20, gap: 8 }}>
-              {/* Missed posts banner */}
-              {showMissedBanner && missedCount > 0 && (
-                <View style={[styles.missedBanner, { backgroundColor: colors.foreground }]}>
-                  <Text style={[styles.missedBannerText, { color: colors.primaryForeground }]}>
-                    {t('feed.missedPosts', { count: missedCount })}
+            {/* ── Banner slot (max 1 — priority: error → newPosts → missed → poll) ── */}
+            <View style={{ paddingHorizontal: 20 }}>
+              {feed.error ? (
+                <PressableOpacity
+                  onPress={feed.handleRefresh}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${feed.error}. ${t('errors.tryAgain')}`}
+                  style={[styles.errorRow, { backgroundColor: `${colors.destructive}10`, borderWidth: 1, borderColor: `${colors.destructive}30` }]}
+                >
+                  <RefreshCw size={14} color={colors.destructive} />
+                  <Text style={[styles.errorRowText, { color: colors.destructive }]} numberOfLines={1}>{feed.error}</Text>
+                  <Text style={[styles.errorRowText, { color: colors.destructive, fontFamily: fonts.bodySemi, textDecorationLine: 'underline' }]}>
+                    {t('errors.tryAgain')}
                   </Text>
-                  <PressableOpacity onPress={() => setShowMissedBanner(false)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
-                    <XIcon size={16} color={colors.primaryForeground} />
-                  </PressableOpacity>
-                </View>
-              )}
-
-              <AlertBanner />
-
-              {/* New posts banner */}
-              {feed.hasNewPosts && (
+                </PressableOpacity>
+              ) : feed.hasNewPosts ? (
                 <PressableOpacity
                   onPress={feed.handleRefresh}
                   accessibilityRole="button"
@@ -740,27 +738,20 @@ function FeedScreenInner() {
                   </Text>
                   <RefreshCw size={14} color={colors.foreground} style={{ opacity: 0.7 }} />
                 </PressableOpacity>
-              )}
-
-              {/* Error banner */}
-              {feed.error && (
-                <PressableOpacity
-                  onPress={feed.handleRefresh}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${feed.error}. ${t('errors.tryAgain')}`}
-                  style={[styles.errorRow, { backgroundColor: `${colors.destructive}10`, borderWidth: 1, borderColor: `${colors.destructive}30` }]}
-                >
-                  <RefreshCw size={14} color={colors.destructive} />
-                  <Text style={[styles.errorRowText, { color: colors.destructive }]} numberOfLines={1}>{feed.error}</Text>
-                  <Text style={[styles.errorRowText, { color: colors.destructive, fontFamily: fonts.bodySemi, textDecorationLine: 'underline' }]}>
-                    {t('errors.tryAgain')}
+              ) : showMissedBanner && missedCount > 0 ? (
+                <View style={[styles.missedBanner, { backgroundColor: colors.foreground }]}>
+                  <Text style={[styles.missedBannerText, { color: colors.primaryForeground }]}>
+                    {t('feed.missedPosts', { count: missedCount })}
                   </Text>
-                </PressableOpacity>
-              )}
+                  <PressableOpacity onPress={() => setShowMissedBanner(false)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.dismiss') ?? 'Dismiss'}>
+                    <XIcon size={16} color={colors.primaryForeground} />
+                  </PressableOpacity>
+                </View>
+              ) : null}
             </View>
 
             {/* ── Building card (v3 ink-fill) ── */}
-            {userBuilding && userBuilding.member_count > 1 && (
+            {userBuilding && (
               <PressableOpacity
                 onPress={() => { try { Haptics.selectionAsync() } catch {}; setViewMode('map') }}
                 style={[styles.bldCard, { backgroundColor: colors.foreground }]}
@@ -778,8 +769,14 @@ function FeedScreenInner() {
                     {userBuilding.street_address}
                   </Text>
                   <Text style={[styles.bldStats, { color: colors.onInkMuted }]}>
-                    <Text style={[styles.bldStatsStrong, { color: colors.background }]}>{userBuilding.member_count - 1}</Text>
-                    {' '}{t('feed.neighbors') ?? 'naapuria'}
+                    {userBuilding.member_count > 1 ? (
+                      <>
+                        <Text style={[styles.bldStatsStrong, { color: colors.background }]}>{userBuilding.member_count - 1}</Text>
+                        {' '}{t('feed.neighbors') ?? 'naapuria'}
+                      </>
+                    ) : (
+                      <>{locale === 'fi' ? 'Kutsu naapurisi!' : 'Invite your neighbors!'}</>
+                    )}
                   </Text>
                 </View>
                 <View style={[styles.bldArrow, { backgroundColor: colors.background }]}>

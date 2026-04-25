@@ -2109,7 +2109,8 @@
     "commentReply": "svarade på din kommentar",
     "eventJoined": "gick med i ditt evenemang",
     "loginRequired": "Logga in for att se aviseringar",
-    "loginHint": "Logga in for att halla dig uppdaterad om vad som hander i ditt grannskap."
+    "loginHint": "Logga in for att halla dig uppdaterad om vad som hander i ditt grannskap.",
+    "unread": "Olästa"
   },
   "map": {
     "locate": "Hitta mig",

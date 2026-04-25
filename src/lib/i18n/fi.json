@@ -2109,7 +2109,8 @@
     "commentReply": "vastasi kommenttiisi",
     "eventJoined": "liittyi tapahtumaasi",
     "loginRequired": "Kirjaudu sisään nähdäksesi ilmoitukset",
-    "loginHint": "Kirjaudu sisään pysyäksesi ajan tasalla naapurustosi tapahtumista."
+    "loginHint": "Kirjaudu sisään pysyäksesi ajan tasalla naapurustosi tapahtumista.",
+    "unread": "Lukemattomat"
   },
   "map": {
     "locate": "Paikanna minut",

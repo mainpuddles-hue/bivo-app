@@ -9,9 +9,10 @@ import { useRouter } from 'expo-router'
 import { useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import {
-  Settings, LogOut, LogIn, Star, Pencil, Camera, X,
+  Settings, LogOut, LogIn, Star, Pencil, Camera, X, Bell,
   Crown, Heart, FileText, CalendarDays, ChevronRight,
   Zap, RotateCcw, XCircle, Trash2, Building2, RefreshCw,
+  Bookmark,
 } from 'lucide-react-native'
 import { ProfileSkeleton } from '@/components/SkeletonLoaders'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
@@ -54,7 +55,7 @@ export default function ProfileScreen() {
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'activity'>('overview')
+  const [activeTab, setActiveTab] = useState<'ilmoitukset' | 'arviot' | 'tallennetut'>('ilmoitukset')
   const [postCount, setPostCount] = useState(0)
   const [followerCount, setFollowerCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
@@ -75,6 +76,9 @@ export default function ProfileScreen() {
   const [allPostsLoaded, setAllPostsLoaded] = useState(false)
   const [postFilter, setPostFilter] = useState<'all' | 'active' | 'expired' | 'closed'>('all')
   const [visiblePostCount, setVisiblePostCount] = useState(20)
+  const [savedPosts, setSavedPosts] = useState<Post[]>([])
+  const [savedPostsLoaded, setSavedPostsLoaded] = useState(false)
+  const [savedPostsLoading, setSavedPostsLoading] = useState(false)
   const [fetchError, setFetchError] = useState(false)
   const trust = useTrustLevel(profile?.id)
   const identity = useIdentityVerification(profile?.id ?? null)
@@ -280,7 +284,7 @@ export default function ProfileScreen() {
     setFollowList((data ?? []).map((d: any) => d.user).filter(Boolean))
   }, [profile, supabase])
 
-  // Load all user posts when posts tab selected
+  // Load all user posts when ilmoitukset tab selected
   const loadAllPosts = useCallback(async () => {
     if (!profile || allPostsLoaded) return
     setAllPostsLoading(true)
@@ -298,11 +302,36 @@ export default function ProfileScreen() {
   }, [profile, supabase, allPostsLoaded])
 
   useEffect(() => {
-    if (activeTab !== 'posts' || allPostsLoaded) return
+    if (activeTab !== 'ilmoitukset' || allPostsLoaded) return
     let mounted = true
     loadAllPosts().finally(() => { if (!mounted) return })
     return () => { mounted = false }
   }, [activeTab, allPostsLoaded, loadAllPosts])
+
+  // Load saved posts when tallennetut tab selected
+  const loadSavedPosts = useCallback(async () => {
+    if (!profile || savedPostsLoaded) return
+    setSavedPostsLoading(true)
+    try {
+      const { data } = await supabase
+        .from('saved_posts')
+        .select('post_id, post:posts!saved_posts_post_id_fkey(id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at)')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(50)
+      const fetchedPosts = (data ?? []).map((d: any) => d.post).filter(Boolean) as Post[]
+      setSavedPosts(fetchedPosts)
+      setSavedPostsLoaded(true)
+    } catch { /* ignore */ }
+    finally { setSavedPostsLoading(false) }
+  }, [profile, supabase, savedPostsLoaded])
+
+  useEffect(() => {
+    if (activeTab !== 'tallennetut' || savedPostsLoaded) return
+    let mounted = true
+    loadSavedPosts().finally(() => { if (!mounted) return })
+    return () => { mounted = false }
+  }, [activeTab, savedPostsLoaded, loadSavedPosts])
 
   // Post status helpers — pure function, no closure deps
   const getPostStatus = (post: Post): 'active' | 'expired' | 'closed' => {
@@ -409,33 +438,34 @@ export default function ProfileScreen() {
     )
   }
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'post': return <FileText size={16} color={colors.foreground} />
-      case 'event': return <CalendarDays size={16} color={colors.success} />
-      case 'review_given': case 'review_received': return <Star size={16} color={colors.foreground} />
-      default: return <FileText size={16} color={colors.mutedForeground} />
-    }
-  }
-
   return (
     <ScreenErrorBoundary screenName="Profile">
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Header — mockup 08: centered title + settings circle */}
+      {/* Header v3 — Bell + Settings icons at top-right */}
       <View style={[s.header, { paddingTop: insets.top + 12 }]}>
-        <View style={{ width: 36 }} />
         <Animated.View style={{ opacity: titleOpacity }}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
         </Animated.View>
-        <PressableOpacity
-          onPress={() => router.push('/settings')}
-          hitSlop={8}
-          style={[s.headerCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
-          accessibilityLabel={t('settings.title')}
-          accessibilityRole="button"
-        >
-          <Settings size={14} color={colors.foreground} strokeWidth={2} />
-        </PressableOpacity>
+        <View style={s.headerIcons}>
+          <PressableOpacity
+            onPress={() => router.push('/notifications')}
+            hitSlop={8}
+            style={[s.headerCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+            accessibilityLabel={t('nav.notifications')}
+            accessibilityRole="button"
+          >
+            <Bell size={14} color={colors.foreground} strokeWidth={2} />
+          </PressableOpacity>
+          <PressableOpacity
+            onPress={() => router.push('/settings')}
+            hitSlop={8}
+            style={[s.headerCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+            accessibilityLabel={t('settings.title')}
+            accessibilityRole="button"
+          >
+            <Settings size={14} color={colors.foreground} strokeWidth={2} />
+          </PressableOpacity>
+        </View>
       </View>
 
       <Animated.ScrollView
@@ -461,19 +491,27 @@ export default function ProfileScreen() {
           </PressableOpacity>
         )}
 
-        {/* Hero — mockup 08: centered avatar + name + location */}
+        {/* Hero v3 — 88px avatar, name, neighborhood, trust shield */}
         <View style={s.hero}>
           <PressableOpacity onPress={handleAvatarUpload} accessibilityLabel={`${profile.name} — ${t('profile.avatarUpdated')}`} accessibilityRole="button" style={s.avatarWrap}>
-            <Avatar url={profile.avatar_url} name={profile.name} size={104} borderColor={profile.is_pro ? colors.foreground : colors.border} borderWidth={1} />
+            <Avatar url={profile.avatar_url} name={profile.name} size={88} borderColor={profile.is_pro ? colors.foreground : colors.border} borderWidth={1} />
             <View style={[s.cameraBtn, { backgroundColor: colors.foreground }]} accessibilityElementsHidden>
               <Camera size={12} color={colors.primaryForeground} />
             </View>
           </PressableOpacity>
 
-          <View style={s.heroCenterInfo}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
-              {!trust.loading && <TrustBadge level={trust.level} size="small" showLabel showExplainer />}
+          <Text style={[s.profileName, { color: colors.foreground }]} numberOfLines={1}>{profile.name}</Text>
+
+          <View style={s.trustRow}>
+            {!trust.loading && <TrustBadge level={trust.level} size="small" showLabel showExplainer />}
+            <Text style={[s.trustLocation, { color: colors.mutedForeground }]}>
+              {profile.naapurusto ? `· ${profile.naapurusto}` : ''}
+            </Text>
+          </View>
+
+          {/* Pro / Business badges */}
+          {(profile.is_pro || profile.is_business) && (
+            <View style={s.heroBadgesRow}>
               {profile.is_pro && (
                 <View style={[s.inlineBadge, { backgroundColor: `${colors.foreground}20` }]}>
                   <Crown size={10} color={colors.foreground} fill={colors.foreground} />
@@ -487,162 +525,114 @@ export default function ProfileScreen() {
                 </View>
               )}
             </View>
-            <Text style={[s.heroSubtitle, { color: colors.mutedForeground }]} numberOfLines={1}>
-              {[profile.naapurusto, 'Helsinki'].filter(Boolean).join(', ')}
-              {profile.created_at ? ` · TackBird ${formatTimeAgo(profile.created_at, t, locale)}` : ''}
+          )}
+        </View>
+
+        {/* Bio */}
+        {editingBio ? (
+          <View style={s.bioEditWrap}>
+            <TextInput
+              style={[s.bioInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
+              value={bioText}
+              onChangeText={setBioText}
+              multiline
+              maxLength={200}
+              placeholder={t('profile.bioPlaceholder')}
+              placeholderTextColor={colors.mutedForeground}
+              inputAccessoryViewID={KEYBOARD_DONE_ID}
+            />
+            <Text style={{ fontSize: 12, color: bioText.length >= 180 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body }}>
+              {bioText.length}/200
             </Text>
+            <View style={s.bioActions}>
+              <PressableOpacity onPress={() => { setEditingBio(false); setBioText(profile?.bio ?? '') }}><X size={20} color={colors.mutedForeground} /></PressableOpacity>
+              <PressableOpacity onPress={handleSaveBio} style={[s.bioSaveBtn, { backgroundColor: colors.foreground }]}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>{t('common.save')}</Text>
+              </PressableOpacity>
+            </View>
           </View>
+        ) : profile.bio ? (
+          <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'flex-start', gap: 6 }]} accessibilityLabel={t('profile.editBio')} accessibilityRole="button">
+            <Text style={[s.bio, { color: colors.foreground, flex: 1, textAlign: 'center' }]} numberOfLines={3}>
+              {profile.bio}
+            </Text>
+            <Pencil size={12} color={colors.mutedForeground} style={{ marginTop: 2 }} />
+          </PressableOpacity>
+        ) : (
+          <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { backgroundColor: `${colors.foreground}10`, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'center' }]} accessibilityLabel={t('profile.clickToAddBio')} accessibilityRole="button">
+            <Text style={[s.bio, { color: colors.mutedForeground }]}>{t('profile.clickToAddBio')}</Text>
+          </PressableOpacity>
+        )}
 
-          {/* Bio */}
-          {editingBio ? (
-            <View style={s.bioEditWrap}>
-              <TextInput
-                style={[s.bioInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
-                value={bioText}
-                onChangeText={setBioText}
-                multiline
-                maxLength={200}
-                placeholder={t('profile.bioPlaceholder')}
-                placeholderTextColor={colors.mutedForeground}
-                inputAccessoryViewID={KEYBOARD_DONE_ID}
-              />
-              <Text style={{ fontSize: 12, color: bioText.length >= 180 ? colors.destructive : colors.mutedForeground, textAlign: 'right', marginTop: 2, fontFamily: fonts.body }}>
-                {bioText.length}/200
-              </Text>
-              <View style={s.bioActions}>
-                <PressableOpacity onPress={() => { setEditingBio(false); setBioText(profile?.bio ?? '') }}><X size={20} color={colors.mutedForeground} /></PressableOpacity>
-                <PressableOpacity onPress={handleSaveBio} style={[s.bioSaveBtn, { backgroundColor: colors.foreground }]}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>{t('common.save')}</Text>
-                </PressableOpacity>
-              </View>
-            </View>
-          ) : profile.bio ? (
-            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { flexDirection: 'row', alignItems: 'flex-start', gap: 6 }]} accessibilityLabel={t('profile.editBio')} accessibilityRole="button">
-              <Text style={[s.bio, { color: colors.foreground, flex: 1, textAlign: 'center' }]} numberOfLines={3}>
-                {profile.bio}
-              </Text>
-              <Pencil size={12} color={colors.mutedForeground} style={{ marginTop: 2 }} />
-            </PressableOpacity>
-          ) : (
-            <PressableOpacity onPress={() => setEditingBio(true)} style={[s.bioTapArea, { backgroundColor: `${colors.foreground}10`, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'center' }]} accessibilityLabel={t('profile.clickToAddBio')} accessibilityRole="button">
-              <Text style={[s.bio, { color: colors.mutedForeground }]}>{t('profile.clickToAddBio')}</Text>
-            </PressableOpacity>
-          )}
-
-          {/* Badges */}
-          {badges.length > 0 && (
-            <View style={[s.badgesRow, { justifyContent: 'center' }]}>
-              {badges.map((b) => {
-                const cfg = BADGE_ICONS[b.badge_type]
-                if (!cfg) return null
-                const Icon = cfg.icon
-                return (
-                  <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: `${cfg.color}15` }]}>
-                    <Icon size={11} color={cfg.color} />
-                    <Text style={[s.badgeText, { color: cfg.color }]}>{t(`badges.${b.badge_type}`)}</Text>
-                  </View>
-                )
-              })}
-            </View>
-          )}
-        </View>
-
-        {/* Stats grid — mockup 08: 3-column surface cards */}
-        <View style={s.statsGrid}>
-          <PressableOpacity onPress={() => avgRating !== null ? setActiveTab('overview') : undefined} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating?.toFixed(1) ?? '—'}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.rating') ?? 'Arvio'}</Text>
-          </PressableOpacity>
-          <PressableOpacity onPress={() => postCount > 0 ? setActiveTab('posts') : router.push('/(tabs)/create')} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{postCount}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
-          </PressableOpacity>
-          <PressableOpacity onPress={() => followerCount > 0 ? openFollowList('followers') : undefined} style={[s.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount}</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
-          </PressableOpacity>
-        </View>
-
-        {/* Menu rows — mockup 08: individual surface cards with chevrons */}
-        <View style={s.menuSection}>
-          <PressableOpacity onPress={() => router.push('/my-listings')} style={[s.menuRow, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button">
-            <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('profile.myPosts')}</Text>
-            <View style={s.menuRowRight}>
-              <Text style={[s.menuRowMeta, { color: colors.mutedForeground }]}>{postCount > 0 ? `${postCount} ${t('profile.active').toLowerCase()}` : ''}</Text>
-              <ChevronRight size={10} color={colors.mutedForeground} strokeWidth={2.5} />
-            </View>
-          </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('overview')} style={[s.menuRow, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button">
-            <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('profile.reviews') ?? 'Arviot'}</Text>
-            <View style={s.menuRowRight}>
-              <Text style={[s.menuRowMeta, { color: colors.mutedForeground }]}>{reviews.length > 0 ? `${reviews.length}` : ''}</Text>
-              <ChevronRight size={10} color={colors.mutedForeground} strokeWidth={2.5} />
-            </View>
-          </PressableOpacity>
-          <PressableOpacity onPress={() => router.push('/saved')} style={[s.menuRow, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button">
-            <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('saved.title')}</Text>
-            <View style={s.menuRowRight}>
-              <Text style={[s.menuRowMeta, { color: colors.mutedForeground }]}>{savedCount > 0 ? `${savedCount}` : ''}</Text>
-              <ChevronRight size={10} color={colors.mutedForeground} strokeWidth={2.5} />
-            </View>
-          </PressableOpacity>
-        </View>
-
-        {/* Tabs */}
-        <View style={[s.tabRow, { borderBottomColor: colors.border }]} accessibilityRole="tablist">
-          <PressableOpacity onPress={() => setActiveTab('overview')} style={[s.tab, activeTab === 'overview' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityLabel={t('profile.overview')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'overview' }}>
-            <Text style={[s.tabText, { color: activeTab === 'overview' ? colors.foreground : colors.mutedForeground }]}>{t('profile.overview')}</Text>
-          </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('posts')} style={[s.tab, activeTab === 'posts' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityLabel={t('profile.myPosts')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'posts' }}>
-            <Text style={[s.tabText, { color: activeTab === 'posts' ? colors.foreground : colors.mutedForeground }]}>{t('profile.myPosts')}</Text>
-          </PressableOpacity>
-          <PressableOpacity onPress={() => setActiveTab('activity')} style={[s.tab, activeTab === 'activity' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityLabel={t('profile.activity')} accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'activity' }}>
-            <Text style={[s.tabText, { color: activeTab === 'activity' ? colors.foreground : colors.mutedForeground }]}>{t('profile.activity')}</Text>
-          </PressableOpacity>
-        </View>
-
-        {/* Overview Tab */}
-        {activeTab === 'overview' && (
-          <View style={s.tabContent}>
-            {/* Reviews */}
-            <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('profile.reviewsCount', { count: reviews.length })}</Text>
-            {reviews.length === 0 ? (
-              <View style={s.emptyActivity}>
-                <Star size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
-                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
-              </View>
-            ) : (
-              reviews.map((rev) => (
-                <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
-                  <View style={s.reviewHeader}>
-                    <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={32} />
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={[s.reviewName, { color: colors.foreground }]} numberOfLines={1}>{rev.reviewer?.name ?? t('common.user')}</Text>
-                      <StarRating rating={rev.rating} size={12} />
-                    </View>
-                    <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
-                  </View>
-                  {rev.comment && <Text style={[s.reviewComment, { color: colors.foreground }]} numberOfLines={3}>{rev.comment}</Text>}
+        {/* Badges */}
+        {badges.length > 0 && (
+          <View style={[s.badgesRow, { justifyContent: 'center' }]}>
+            {badges.map((b) => {
+              const cfg = BADGE_ICONS[b.badge_type]
+              if (!cfg) return null
+              const Icon = cfg.icon
+              return (
+                <View key={b.badge_type} style={[s.badgeChip, { backgroundColor: `${cfg.color}15` }]}>
+                  <Icon size={11} color={cfg.color} />
+                  <Text style={[s.badgeText, { color: cfg.color }]}>{t(`badges.${b.badge_type}`)}</Text>
                 </View>
-              ))
-            )}
-
-            {/* Recent posts */}
-            {recentPosts.length > 0 && (
-              <>
-                <Text style={[s.sectionTitle, { color: colors.foreground }]}>{t('profile.ownPosts', { count: postCount })}</Text>
-                {recentPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </>
-            )}
+              )
+            })}
           </View>
         )}
 
-        {/* Posts Tab */}
-        {activeTab === 'posts' && (
+        {/* Stats row v3 — single card, 3 columns with dividers */}
+        <View style={[s.statsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <PressableOpacity onPress={() => postCount > 0 ? setActiveTab('ilmoitukset') : router.push('/(tabs)/create')} style={s.statCol}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{postCount}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.posts')}</Text>
+          </PressableOpacity>
+          <View style={[s.statDivider, { backgroundColor: colors.border }]} />
+          <PressableOpacity onPress={() => setActiveTab('arviot')} style={s.statCol}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{avgRating?.toFixed(1) ?? '—'}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>
+              {reviews.length > 0 ? `★ ${reviews.length} ${(t('profile.reviews') ?? 'arviot').toLowerCase()}` : (t('profile.reviews') ?? 'Arviot')}
+            </Text>
+          </PressableOpacity>
+          <View style={[s.statDivider, { backgroundColor: colors.border }]} />
+          <View style={s.statCol}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>~12m</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.responseRate')}</Text>
+          </View>
+        </View>
+
+        {/* Segmented tabs v3 — pill-style segmented control */}
+        <View style={[s.segmented, { backgroundColor: isDark ? colors.muted : `${colors.foreground}08` }]} accessibilityRole="tablist">
+          {([
+            { key: 'ilmoitukset' as const, label: t('profile.posts') },
+            { key: 'arviot' as const, label: t('profile.reviews') ?? 'Arviot' },
+            { key: 'tallennetut' as const, label: t('saved.title') },
+          ]).map(tab => (
+            <PressableOpacity
+              key={tab.key}
+              onPress={() => setActiveTab(tab.key)}
+              style={[
+                s.segItem,
+                activeTab === tab.key && [s.segItemActive, { backgroundColor: colors.card }],
+              ]}
+              accessibilityLabel={tab.label}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: activeTab === tab.key }}
+            >
+              <Text style={[
+                s.segItemText,
+                { color: activeTab === tab.key ? colors.foreground : colors.mutedForeground },
+              ]}>
+                {tab.label}
+              </Text>
+            </PressableOpacity>
+          ))}
+        </View>
+
+        {/* Ilmoitukset tab (posts) */}
+        {activeTab === 'ilmoitukset' && (
           <View style={s.tabContent}>
-            {/* 2c: Filter chips */}
+            {/* Filter chips */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
               {([
                 { key: 'all' as const, label: t('profile.filterAll') },
@@ -693,7 +683,6 @@ export default function ProfileScreen() {
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                         <Text style={[s.myPostTitle, { color: colors.foreground, flex: 1 }]} numberOfLines={1}>{post.title}</Text>
-                        {/* 2a: Status badge */}
                         <View style={[s.myPostStatusBadge, { backgroundColor: `${statusColor}14` }]}>
                           <Text style={[s.myPostStatusText, { color: statusColor }]}>
                             {statusLabel}
@@ -715,7 +704,6 @@ export default function ProfileScreen() {
                         )}
                       </View>
                     </PressableOpacity>
-                    {/* 2b: Action buttons */}
                     <View style={s.myPostActions}>
                       {status === 'expired' && (
                         <PressableOpacity onPress={() => handleReactivatePost(post.id)} style={[s.myPostActionBtn, { backgroundColor: `${colors.foreground}14` }]} hitSlop={8}>
@@ -754,29 +742,48 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        {/* Activity Tab */}
-        {activeTab === 'activity' && (
+        {/* Arviot tab (reviews) */}
+        {activeTab === 'arviot' && (
           <View style={s.tabContent}>
-            {activity.length === 0 ? (
+            {reviews.length === 0 ? (
               <View style={s.emptyActivity}>
-                <Zap size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
-                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noActivity')}</Text>
-                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('profile.noActivityHint')}</Text>
+                <Star size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
+                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('profile.noReviews')}</Text>
               </View>
             ) : (
-              activity.map((item) => (
-                <View key={item.id} style={[s.activityItem, { borderLeftColor: colors.foreground }]}>
-                  <View style={[s.activityDot, { backgroundColor: colors.card, borderColor: colors.foreground }]}>
-                    {getActivityIcon(item.type)}
-                  </View>
-                  <View style={s.activityContent}>
-                    <Text style={[s.activityTitle, { color: colors.foreground }]} numberOfLines={2}>{item.title}</Text>
-                    <View style={s.activityMeta}>
-                      <Text style={[s.activityTime, { color: colors.mutedForeground }]}>{formatTimeAgo(item.date, t, locale)}</Text>
-                      {item.meta && <Text style={[s.activityMetaBadge, { color: colors.foreground }]}>{item.meta}</Text>}
+              reviews.map((rev) => (
+                <View key={rev.id} style={[s.reviewCard, { backgroundColor: colors.card }]}>
+                  <View style={s.reviewHeader}>
+                    <Avatar url={rev.reviewer?.avatar_url} name={rev.reviewer?.name} size={28} />
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={[s.reviewName, { color: colors.foreground }]} numberOfLines={1}>{rev.reviewer?.name ?? t('common.user')}</Text>
+                      <StarRating rating={rev.rating} size={12} />
                     </View>
+                    <Text style={[s.reviewTime, { color: colors.mutedForeground }]}>{formatTimeAgo(rev.created_at, t, locale)}</Text>
                   </View>
+                  {rev.comment && <Text style={[s.reviewComment, { color: colors.foreground }]} numberOfLines={3}>{rev.comment}</Text>}
                 </View>
+              ))
+            )}
+          </View>
+        )}
+
+        {/* Tallennetut tab (saved) */}
+        {activeTab === 'tallennetut' && (
+          <View style={s.tabContent}>
+            {savedPostsLoading ? (
+              <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.loading')}</Text>
+              </View>
+            ) : savedPosts.length === 0 ? (
+              <View style={s.emptyActivity}>
+                <Bookmark size={28} color={colors.mutedForeground} strokeWidth={1.6} style={{ opacity: 0.4 }} />
+                <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('saved.empty')}</Text>
+                <Text style={[s.emptyHint, { color: colors.mutedForeground }]}>{t('saved.emptyHint')}</Text>
+              </View>
+            ) : (
+              savedPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
               ))
             )}
           </View>
@@ -805,14 +812,13 @@ export default function ProfileScreen() {
             },
           ]}
         >
-          <View style={{ width: 36 }} />
           <View style={s.compactCenter}>
             <Avatar url={profile.avatar_url} name={profile.name} size={28} />
             <Text style={[s.compactName, { color: colors.foreground }]} numberOfLines={1}>
               {profile.name}
             </Text>
           </View>
-          <View style={{ width: 36 }} />
+          <View style={{ width: 80 }} />
         </Animated.View>
       )}
 
@@ -870,6 +876,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12,
   },
   headerTitle: { fontSize: 15, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
+  headerIcons: { flexDirection: 'row', gap: 8 },
   headerCircle: {
     width: 36, height: 36, borderRadius: 999,
     alignItems: 'center', justifyContent: 'center',
@@ -906,33 +913,36 @@ const s = StyleSheet.create({
     maxWidth: 160,
   },
 
-  // Hero — centered (mockup 08)
-  hero: { alignItems: 'center', gap: 12, paddingTop: 8 },
+  // Hero v3 — centered column: avatar, name, trust+location
+  hero: { alignItems: 'center', gap: 8, paddingTop: 8 },
   avatarWrap: { position: 'relative' },
-  heroCenterInfo: { alignItems: 'center', gap: 4, marginTop: 2 },
   profileName: { fontSize: 24, fontWeight: '700', fontFamily: fonts.display, lineHeight: 30, letterSpacing: -0.4 },
-  heroSubtitle: { fontSize: 13, fontFamily: fonts.body, lineHeight: 16, letterSpacing: 0.1, textAlign: 'center' },
+  trustRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  trustLocation: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
+  heroBadgesRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 
-  // Stats grid (mockup 08)
-  statsGrid: { flexDirection: 'row', gap: 8 },
-  statCard: {
-    flex: 1, borderRadius: 20, borderWidth: 1,
-    paddingVertical: 14, paddingHorizontal: 10,
-    alignItems: 'center', gap: 2,
+  // Stats row v3 — single card, 3 columns with dividers
+  statsCard: {
+    flexDirection: 'row', borderRadius: 20, borderWidth: 1,
+    paddingVertical: 16, paddingHorizontal: 16,
+    alignItems: 'center',
   },
+  statCol: { flex: 1, alignItems: 'center', gap: 2 },
+  statDivider: { width: 1, height: 32, alignSelf: 'center' },
   statNum: { fontSize: 22, fontWeight: '700', fontFamily: fonts.display, letterSpacing: -0.4, lineHeight: 28 },
   statLabel: { fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 16, letterSpacing: 0.6, textTransform: 'uppercase' },
 
-  // Menu rows (mockup 08)
-  menuSection: { gap: 8 },
-  menuRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderRadius: 20, borderWidth: 1,
-    paddingHorizontal: 16, paddingVertical: 14, minHeight: 48,
+  // Segmented control v3
+  segmented: { flexDirection: 'row', padding: 4, borderRadius: 999, gap: 4 },
+  segItem: { flex: 1, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  segItemActive: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  menuRowLabel: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  menuRowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  menuRowMeta: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
+  segItemText: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18 },
 
   // Inline badge (Pro, Business) next to name
   inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
@@ -968,17 +978,6 @@ const s = StyleSheet.create({
   emptyHint: { fontSize: 13, marginTop: 4, fontFamily: fonts.body, lineHeight: 18 },
   emptyPostsIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyActivity: { alignItems: 'center', paddingTop: 24, gap: 4 },
-  activityItem: { flexDirection: 'row', gap: 12, paddingLeft: 16, borderLeftWidth: 2, paddingVertical: 8 },
-  activityDot: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: -24 },
-  activityContent: { flex: 1, gap: 4 },
-  activityTitle: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  activityMeta: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  activityTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
-  activityMetaBadge: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
-  tabRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
-  tab: { flex: 1, paddingVertical: 14, alignItems: 'center', minHeight: 44 },
-  tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 20 },
   tabContent: { gap: 12, paddingTop: 4 },
   emptyLogin: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 12 },
   emptyIconCircle: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
