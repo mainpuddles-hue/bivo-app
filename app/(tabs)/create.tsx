@@ -1483,19 +1483,19 @@ function LeafletMapPicker({ coords, onCoordsChange, colors }: {
 const mk = StyleSheet.create({
   container: { flex: 1 },
 
-  // Header
+  // v3 Header
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12 },
-  headerCloseBtn: { width: 36, height: 36, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 15, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading },
-  headerDraft: { width: 56, fontSize: 12, fontWeight: '500', textAlign: 'right', textDecorationLine: 'underline', fontFamily: fonts.bodyMedium },
+  headerCloseBtn: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 17, fontWeight: '500', letterSpacing: -0.3, fontFamily: fonts.displayMedium },
+  headerDraft: { width: 56, fontSize: 14, fontWeight: '600', textAlign: 'right', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
 
   // Step indicator
   stepRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingBottom: 10 },
   stepDot: { width: 6, height: 6, borderRadius: 3 },
   stepLabel: { fontSize: 12, fontWeight: '500' as const, marginLeft: 4, fontFamily: fonts.bodyMedium },
 
-  // Section label
-  sectionLabel: { fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: '500', fontFamily: fonts.bodyMedium, marginBottom: 8 },
+  // v3 Section label — uppercase, bold, wide tracking
+  sectionLabel: { fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '700', fontFamily: fonts.bodySemi, marginBottom: 12 },
 
   // Scroll
   scrollPad: { paddingBottom: 32 },
@@ -1506,22 +1506,22 @@ const mk = StyleSheet.create({
   pill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 999 },
   pillText: { fontSize: 13, fontFamily: fonts.bodyMedium },
 
-  // Category grid
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
-  catCard: { width: '47%' as any, borderRadius: 20 },
+  // v3 Category grid — icon-cards
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 },
+  catCard: { width: '47%' as any, borderRadius: 16 },
   catCardFull: { width: '100%' as any },
-  catCardInner: { padding: 16, gap: 8, alignItems: 'center', minHeight: 130, justifyContent: 'center', borderRadius: 20 },
-  catIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  catCardInner: { padding: 14, gap: 8, alignItems: 'center', minHeight: 110, justifyContent: 'center', borderRadius: 16 },
+  catIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   lockBadge: { position: 'absolute', top: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
-  catName: { fontSize: 16, fontWeight: '700', fontFamily: fonts.headingSemi, lineHeight: 20, textAlign: 'center' },
-  catSub: { fontSize: 13, fontFamily: fonts.body, lineHeight: 16, textAlign: 'center' },
+  catName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18, textAlign: 'center', letterSpacing: -0.1 },
+  catSub: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textAlign: 'center' },
 
-  // Photo uploader
-  photoWrap: { paddingHorizontal: 20, paddingTop: 18 },
-  photoDashed: { aspectRatio: 1.25, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  // v3 Photo uploader
+  photoWrap: { paddingHorizontal: 20, paddingTop: 12 },
+  photoDashed: { aspectRatio: 1.25, borderRadius: 18, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
   photoCircle: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  photoMainText: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
-  photoSubText: { fontSize: 12, fontFamily: fonts.body },
+  photoMainText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
+  photoSubText: { fontSize: 10, fontFamily: fonts.body },
   imgRow: { flexDirection: 'row', gap: 8 },
   imgThumb: { width: 100, height: 100, borderRadius: 20, overflow: 'hidden', position: 'relative', borderWidth: 1 },
   imgThumbImg: { width: '100%', height: '100%' },
@@ -1537,11 +1537,11 @@ const mk = StyleSheet.create({
   imgAddMore: { width: 100, height: 100, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
   imgAddMoreText: { fontSize: 12, fontFamily: fonts.body },
 
-  // Form fields
+  // v3 Form fields
   fieldWrap: { gap: 4, paddingHorizontal: 20, paddingTop: 14 },
-  input: { height: 50, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, fontSize: 15, fontWeight: '600', fontFamily: fonts.heading },
-  textarea: { minHeight: 90, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 20, fontFamily: fonts.body, textAlignVertical: 'top' },
-  charCount: { fontSize: 12, textAlign: 'right', fontFamily: fonts.body },
+  input: { minHeight: 70, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, fontSize: 28, fontWeight: '500', fontFamily: fonts.displayMedium, letterSpacing: -0.7 },
+  textarea: { minHeight: 110, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 22, fontFamily: fonts.body, textAlignVertical: 'top' },
+  charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
 
   // 2-column
   twoCol: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 14 },
@@ -1578,22 +1578,22 @@ const mk = StyleSheet.create({
   urgencyOpt: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 999, borderWidth: 1.5, minHeight: 44 },
   urgencyOptText: { fontSize: 14, fontWeight: '700' },
 
-  // Sticky publish
-  stickyWrap: { position: 'absolute', left: 16, right: 16 },
+  // v3 Sticky publish
+  stickyWrap: { position: 'absolute', left: 14, right: 14 },
   formError: { fontSize: 13, fontFamily: fonts.bodyMedium, textAlign: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, marginBottom: 8, overflow: 'hidden' },
-  publishBtn: { height: 54, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  publishText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.heading },
+  publishBtn: { flex: 1, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
+  publishText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
   publishLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
   // Pro banner
   proBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, marginHorizontal: 20, marginTop: 8, borderRadius: 20 },
   proBannerText: { flex: 1, fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
 
-  // Success overlay
+  // v3 Success overlay
   successOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 32 },
-  successCard: { borderRadius: 28, padding: 32, alignItems: 'center', gap: 12, width: '100%', maxWidth: 300 },
+  successCard: { borderRadius: 20, padding: 32, alignItems: 'center', gap: 12, width: '100%', maxWidth: 300 },
   successIcon: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  successTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.headingSemi, textAlign: 'center' },
+  successTitle: { fontSize: 18, fontWeight: '500', fontFamily: fonts.displayMedium, textAlign: 'center', letterSpacing: -0.3 },
   successSub: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
   shareBtn: { borderRadius: 999, paddingHorizontal: 24, paddingVertical: 12, marginTop: 4 },
   shareBtnText: { fontSize: 14, fontWeight: '700', fontFamily: fonts.bodySemi },
