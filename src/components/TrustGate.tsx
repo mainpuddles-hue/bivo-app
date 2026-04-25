@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: '100%',
-    borderRadius: 28,
+    borderRadius: 20,
     padding: 24,
     gap: 12,
     alignItems: 'center',

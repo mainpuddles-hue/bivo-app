@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   container: { gap: 8 },
   alertCard: {
     borderRadius: 20, borderWidth: 1,
-    paddingHorizontal: 12, paddingVertical: 12,
+    paddingHorizontal: 16, paddingVertical: 12,
   },
   alertHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

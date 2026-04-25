@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pressable } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Receipt, ChevronRight, CreditCard } from 'lucide-react-native'
@@ -12,6 +12,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
+import { SectionSkeleton } from '@/components/SkeletonLoaders'
 import { formatPrice } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 
@@ -238,7 +239,9 @@ function PaymentHistoryScreenInner() {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
+        <View style={{ paddingHorizontal: 16, paddingTop: 24 }}>
+          <SectionSkeleton count={5} />
+        </View>
       ) : fetchError ? (
         <View style={styles.empty}>
           <CreditCard size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />

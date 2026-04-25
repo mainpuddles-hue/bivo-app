@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useRef } from 'react'
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, Alert,
+  View, Text, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
@@ -54,6 +54,7 @@ function EventDetailScreenInner() {
   const [eventImgError, setEventImgError] = useState(false)
   const [fetchError, setFetchError] = useState(false)
   const joiningRef = useRef(false)
+  const [joining, setJoining] = useState(false)
 
   // Derived
   const myParticipation = participants.find(p => p.user_id === userId)
@@ -129,6 +130,7 @@ function EventDetailScreenInner() {
       }
     }
     joiningRef.current = true
+    setJoining(true)
     try {
       const status = event.approval_required ? 'pending' : 'joined'
       const { error } = await (supabase.from('community_event_participants') as any)
@@ -186,6 +188,7 @@ function EventDetailScreenInner() {
       toast.show({ message: t('events.joinFailed'), type: 'error' })
     } finally {
       joiningRef.current = false
+      setJoining(false)
     }
   }, [userId, event, supabase, fetchEvent, t, router, toast])
 
@@ -601,22 +604,27 @@ function EventDetailScreenInner() {
         <View style={[s.stickyBar, { paddingBottom: insets.bottom + 12, backgroundColor: colors.background, borderTopColor: colors.border }]}>
           <Pressable
             onPress={actionOnPress ?? undefined}
-            disabled={actionDisabled}
+            disabled={actionDisabled || joining}
             accessibilityRole="button"
             accessibilityLabel={actionLabel}
+            accessibilityState={{ disabled: actionDisabled || joining, busy: joining }}
             style={({ pressed }) => [
               s.ctaButton,
               isLeaveBtn
                 ? { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border }
-                : { backgroundColor: actionDisabled ? colors.muted : colors.foreground },
-              { opacity: actionDisabled ? 0.6 : pressed ? 0.85 : 1 },
+                : { backgroundColor: (actionDisabled || joining) ? colors.muted : colors.foreground },
+              { opacity: (actionDisabled || joining) ? 0.6 : pressed ? 0.85 : 1 },
             ]}
           >
-            <Text style={[s.ctaButtonText, {
-              color: isLeaveBtn ? colors.mutedForeground : actionDisabled ? colors.mutedForeground : colors.primaryForeground,
-            }]}>
-              {actionLabel}
-            </Text>
+            {joining ? (
+              <ActivityIndicator size="small" color={colors.primaryForeground} />
+            ) : (
+              <Text style={[s.ctaButtonText, {
+                color: isLeaveBtn ? colors.mutedForeground : actionDisabled ? colors.mutedForeground : colors.primaryForeground,
+              }]}>
+                {actionLabel}
+              </Text>
+            )}
           </Pressable>
           {event.max_participants != null && !isFull && !isLeaveBtn && myStatus !== 'pending' && (
             <Text style={[s.spotsHint, { color: (event.max_participants - participantCount) <= 3 ? colors.destructive : colors.mutedForeground }]}>
