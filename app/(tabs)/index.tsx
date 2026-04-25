@@ -191,20 +191,30 @@ function FeedScreenInner() {
   }, [supabase])
 
   // Fetch user's building info for community card
-  const [userBuilding, setUserBuilding] = useState<{ street_address: string; member_count: number } | null>(null)
+  const [userBuilding, setUserBuilding] = useState<{ street_address: string; member_count: number; org_id: string | null } | null>(null)
   useEffect(() => {
     if (!feed.currentUserId) return
     let mounted = true
     Promise.resolve(
       supabase
         .from('user_buildings')
-        .select('building:buildings(street_address, member_count)')
+        .select('building:buildings(id, street_address, member_count)')
         .eq('user_id', feed.currentUserId)
         .single()
-    ).then(({ data, error }: any) => {
+    ).then(async ({ data, error }: any) => {
       if (!mounted) return
       if (error && error.code !== 'PGRST116') { if (__DEV__) console.warn('[feed] user building failed:', error.message) }
-      if (data?.building) setUserBuilding(data.building)
+      if (data?.building) {
+        const bld = data.building
+        // Get org for this building
+        const { data: orgData } = await (supabase
+          .from('organizations') as any)
+          .select('id')
+          .eq('building_id', bld.id)
+          .eq('type', 'building')
+          .single()
+        if (mounted) setUserBuilding({ street_address: bld.street_address, member_count: bld.member_count, org_id: (orgData as any)?.id ?? null })
+      }
     }).catch((err: any) => { if (__DEV__) console.warn('[feed] user building error:', err) })
     return () => { mounted = false }
   }, [feed.currentUserId, supabase])
@@ -753,7 +763,12 @@ function FeedScreenInner() {
             {/* ── Building card (v3 ink-fill) ── */}
             {userBuilding && (
               <PressableOpacity
-                onPress={() => { try { Haptics.selectionAsync() } catch {}; setViewMode('map') }}
+                onPress={() => {
+                  try { Haptics.selectionAsync() } catch {}
+                  if (userBuilding.org_id) {
+                    router.push(`/building/${userBuilding.org_id}`)
+                  }
+                }}
                 style={[styles.bldCard, { backgroundColor: colors.foreground }]}
                 accessibilityLabel={`${userBuilding.street_address} — ${userBuilding.member_count - 1} ${t('feed.neighbors') ?? 'naapuria'}`}
               >

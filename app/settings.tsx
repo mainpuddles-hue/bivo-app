@@ -225,7 +225,7 @@ export default function SettingsScreen() {
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
 
   // Building (taloyhtiö)
-  const [userBuilding, setUserBuilding] = useState<{ id: string; street_address: string; member_count: number } | null>(null)
+  const [userBuilding, setUserBuilding] = useState<{ id: string; street_address: string; member_count: number; org_id: string | null } | null>(null)
   const [showBuildingModal, setShowBuildingModal] = useState(false)
   const [buildingAddress, setBuildingAddress] = useState('')
   const [selectedBuildingLocation, setSelectedBuildingLocation] = useState<import('@/components/LocationAutocomplete').LocationResult | null>(null)
@@ -292,7 +292,17 @@ export default function SettingsScreen() {
           .select('building:buildings(id, street_address, member_count)')
           .eq('user_id', user.id)
           .single()
-        if (mounted && (ubData as any)?.building) setUserBuilding((ubData as any).building)
+        if (mounted && (ubData as any)?.building) {
+          const bld = (ubData as any).building
+          // Get org for this building
+          const { data: orgData } = await (supabase
+            .from('organizations') as any)
+            .select('id')
+            .eq('building_id', bld.id)
+            .eq('type', 'building')
+            .single()
+          setUserBuilding({ ...bld, org_id: (orgData as any)?.id ?? null })
+        }
       } catch {} // No building linked yet
       // Theme is handled by ThemeProvider
       } catch (err) {
@@ -362,7 +372,16 @@ export default function SettingsScreen() {
         .select('building:buildings(id, street_address, member_count)')
         .eq('user_id', profile.id)
         .single()
-      if ((ubData as any)?.building) setUserBuilding((ubData as any).building)
+      if ((ubData as any)?.building) {
+        const bld = (ubData as any).building
+        const { data: orgData } = await (supabase
+          .from('organizations') as any)
+          .select('id')
+          .eq('building_id', bld.id)
+          .eq('type', 'building')
+          .single()
+        setUserBuilding({ ...bld, org_id: (orgData as any)?.id ?? null })
+      }
 
       setShowBuildingModal(false)
       setBuildingAddress('')
@@ -973,6 +992,7 @@ export default function SettingsScreen() {
                 icon={<Home size={16} color={colors.foreground} strokeWidth={1.8} />}
                 label={userBuilding.street_address}
                 value={`${userBuilding.member_count} ${t('feed.neighbors') ?? 'naapuria'}`}
+                onPress={userBuilding.org_id ? () => router.push(`/building/${userBuilding.org_id}`) : undefined}
                 colors={colors}
                 isDark={isDark}
               />
