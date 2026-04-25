@@ -8,7 +8,12 @@
  * Type scale: typeScale.bodySmall, typeScale.title, etc.
  */
 export const fonts = {
-  // Headings (Instrument Sans — same family, heavier weight)
+  // Display headings (Bricolage Grotesque — hero titles, section heads)
+  display: 'BricolageGrotesque_600SemiBold',
+  displayMedium: 'BricolageGrotesque_500Medium',
+  displayBold: 'BricolageGrotesque_700Bold',
+
+  // Headings (Instrument Sans — card titles, labels)
   heading: 'InstrumentSans_600SemiBold',
   headingSemi: 'InstrumentSans_600SemiBold',
   headingMedium: 'InstrumentSans_500Medium',

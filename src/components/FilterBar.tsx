@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef } from 'react'
-import { Text, StyleSheet, Animated } from 'react-native'
+import { View, Text, StyleSheet, Animated } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
@@ -15,21 +15,18 @@ interface FilterBarProps {
   onFilterChange: (type: PostType | null) => void
 }
 
-// Inner chip — isolates animated scale per chip with spring physics (Apple HIG)
+// v3 pill chip — 36px height, pill radius, with spring press
 interface FilterChipProps {
   label: string
-  color: string
   isActive: boolean
-  foregroundColor: string
   onPress: () => void
 }
-const FilterChip = memo(function FilterChip({ label, color, isActive, foregroundColor, onPress }: FilterChipProps) {
+const FilterChip = memo(function FilterChip({ label, isActive, onPress }: FilterChipProps) {
   const { colors } = useTheme()
   const reduceMotion = useReduceMotion()
   const scale = useRef(new Animated.Value(1)).current
   const isFirstRun = useRef(true)
 
-  // Pulse spring when selection state flips — skip initial mount run
   useEffect(() => {
     if (isFirstRun.current) { isFirstRun.current = false; return }
     if (reduceMotion) return
@@ -50,11 +47,15 @@ const FilterChip = memo(function FilterChip({ label, color, isActive, foreground
         style={[
           styles.chip,
           isActive
-            ? { backgroundColor: colors.foreground }
-            : { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+            ? { backgroundColor: colors.foreground, borderColor: colors.foreground }
+            : { backgroundColor: 'transparent', borderColor: colors.border },
         ]}
       >
-        <Text style={[styles.chipText, { color: isActive ? colors.background : colors.foreground }, isActive && { fontFamily: fonts.bodySemi }]}>
+        <Text style={[
+          styles.chipText,
+          { color: isActive ? colors.background : colors.foreground },
+          isActive && { fontFamily: fonts.bodySemi, fontWeight: '600' },
+        ]}>
           {label}
         </Text>
       </PressableOpacity>
@@ -63,7 +64,6 @@ const FilterChip = memo(function FilterChip({ label, color, isActive, foreground
 })
 
 export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange }: FilterBarProps) {
-  const { colors } = useTheme()
   const { t } = useI18n()
 
   return (
@@ -71,9 +71,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
       <FilterChip
         key="all"
         label={t('feed.filterAll')}
-        color={colors.foreground}
         isActive={activeFilter === null}
-        foregroundColor={colors.primaryForeground}
         onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(null) }}
       />
       {(Object.entries(CATEGORIES) as [PostType, (typeof CATEGORIES)[PostType]][]).filter(([type]) => {
@@ -85,9 +83,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
           <FilterChip
             key={type}
             label={t(cat.label)}
-            color={cat.color}
             isActive={isActive}
-            foregroundColor={colors.primaryForeground}
             onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(isActive ? null : type) }}
           />
         )
@@ -98,12 +94,17 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
 
 const styles = StyleSheet.create({
   chip: {
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderRadius: 999,
-    minHeight: 44,
+    borderWidth: 1,
   },
-  chipText: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
+  chipText: {
+    fontSize: 13,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 18,
+  },
 })

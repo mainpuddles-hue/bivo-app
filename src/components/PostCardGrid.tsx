@@ -1,20 +1,17 @@
 /**
- * PostCardGrid — 2-col Pinterest-style feed card.
+ * PostCardGrid v3 — Helsinki Monochrome, three-variant card system.
  *
- * Layout (Helsinki Monochrome mockup 05):
- *   - image-hero: photo fills top, frosted-glass category pill overlaid,
- *     title + mini avatar + meta below
- *   - event: ink background, inverted text, calendar + category, attendee hint
- *   - text: warm tint background (#F0EEE9), uppercase category, large title, mini avatar + meta
- *
- * No Threads-style header. Photo-first, content-dense, Pinterest masonry.
+ * Variants (intentional visual rhythm in 2-col masonry):
+ *   IMAGE → 4:5 photo hero, gradient overlay, price pill, category chip
+ *   INK   → solid foreground bg (events), large date display, inverted text
+ *   TINT  → warm-tint bg, text-only posts, category label, large title
  */
 import { memo, useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { Heart, Calendar, Clock, Eye } from 'lucide-react-native'
+import { Heart, Calendar, Clock, Eye, Users, ShieldCheck } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useReduceMotion } from '@/hooks/useReduceMotion'
 import { useI18n } from '@/lib/i18n'
@@ -26,13 +23,13 @@ import { isHumanAction } from '@/lib/abuseDetection'
 import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType } from '@/lib/types'
 
-type CardVariant = 'image-hero' | 'event' | 'text'
+type CardVariant = 'image' | 'ink' | 'tint'
 
 function getCardVariant(post: Post, hasImageOverride?: boolean): CardVariant {
   const hasImage = hasImageOverride ?? !!post.image_url
-  if (post.type === 'tapahtuma') return 'event'
-  if (hasImage) return 'image-hero'
-  return 'text'
+  if (post.type === 'tapahtuma') return 'ink'
+  if (hasImage) return 'image'
+  return 'tint'
 }
 
 interface PostCardGridProps {
@@ -44,8 +41,6 @@ interface PostCardGridProps {
   followedIds?: string[]
   viewCount?: number
 }
-
-// Warm tint for text-only cards — now from theme.warmTint
 
 export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds, viewCount }: PostCardGridProps) {
   const { colors, isDark } = useTheme()
@@ -64,7 +59,6 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const likeAnim = useRef(new Animated.Value(1)).current
   const shimmerAnim = useRef(new Animated.Value(0.4)).current
 
-  // Cleanup mountedRef + grace timer on unmount
   useEffect(() => {
     mountedRef.current = true
     return () => {
@@ -86,7 +80,6 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     return () => loop.stop()
   }, [imgLoaded, imgError, post.image_url, post.images?.[0]?.image_url, shimmerAnim])
 
-  // Sync state when post prop changes (e.g., feed refresh)
   useEffect(() => {
     if (!likingRef.current) {
       if (post.is_liked !== undefined) setLiked(post.is_liked)
@@ -95,7 +88,6 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   }, [post.id, post.is_liked, post.like_count])
 
   const category = CATEGORIES[post.type as PostType]
-  // Fallback: use post_images[0] if post.image_url is null
   const effectiveImageUrl = post.image_url || (post.images?.[0]?.image_url ?? null)
   const hasImage = !!(effectiveImageUrl && !imgError)
   const variant = getCardVariant(post, hasImage)
@@ -106,19 +98,10 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : (user?.name ?? '')
   const timeAgo = post.created_at ? formatTimeAgo(post.created_at, t, locale) : ''
 
-  // Recommendation reason (only shown when sort is 'recommended')
-  const isFollowed = sortBy === 'recommended' && followedIds?.includes(post.user_id)
-  const isBoosted = sortBy === 'recommended' && (post as any).is_boosted === true
-
-  // Consistent image height — FlatList numColumns forces equal row heights,
-  // so variable heights only create uneven whitespace below shorter cards.
-  const imageHeight = 150
-
   const a11yLabel = useMemo(() => {
     const parts: string[] = []
     if (category) parts.push(t(category.label))
     parts.push(post.title)
-    if (post.description && variant !== 'image-hero') parts.push(post.description.slice(0, 120))
     if (authorName) parts.push(`${t('common.by') ?? ''} ${authorName}`.trim())
     if (post.location) parts.push(post.location)
     if (timeAgo) parts.push(timeAgo)
@@ -128,7 +111,6 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const handlePress = () => {
     try { Haptics.selectionAsync() } catch {}
     onInteraction?.(post.id, 'click')
-    // Inline event cards have id prefixed with "event-"
     if (post.id.startsWith('event-')) {
       router.push(`/event/${post.id.replace('event-', '')}`)
     } else {
@@ -143,7 +125,6 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     if (post.is_seed) return
     if (likingRef.current) return
     likingRef.current = true
-    // Clear any previous grace timer so back-to-back taps don't stack
     if (likeGraceTimerRef.current) clearTimeout(likeGraceTimerRef.current)
     const wasLiked = liked
     const prevCount = likeCount
@@ -177,15 +158,24 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
       likingRef.current = false
       return
     }
-    // Grace period: keep likingRef true for 2s so the sync useEffect
-    // won't reset optimistic state from stale server data
     likeGraceTimerRef.current = setTimeout(() => {
       likingRef.current = false
     }, 2000)
   }
 
-  // ── Mini avatar + meta footer (shared across variants) ──
-  const MetaFooter = (metaColor: string) => (
+  // Spring-physics press feedback
+  const cardScale = useRef(new Animated.Value(1)).current
+  const handleCardPressIn = useCallback(() => {
+    if (reduceMotion) { cardScale.setValue(0.97); return }
+    Animated.spring(cardScale, { toValue: 0.97, friction: 4, tension: 200, useNativeDriver: true }).start()
+  }, [cardScale, reduceMotion])
+  const handleCardPressOut = useCallback(() => {
+    if (reduceMotion) { cardScale.setValue(1); return }
+    Animated.spring(cardScale, { toValue: 1, friction: 3, tension: 300, useNativeDriver: true }).start()
+  }, [cardScale, reduceMotion])
+
+  // ── Mini avatar + meta footer ──
+  const MetaFooter = (metaColor: string, nameColor?: string) => (
     <View style={styles.metaRow}>
       {user?.avatar_url && !isAnonymous ? (
         <Image
@@ -198,24 +188,25 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         />
       ) : (
         <View style={[styles.miniAvatar, styles.miniAvatarFallback, { backgroundColor: `${metaColor}20` }]}>
-          <Text style={{ fontSize: 12, fontFamily: fonts.bodySemi, color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
+          <Text style={{ fontSize: 9, fontFamily: fonts.bodySemi, color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
         </View>
       )}
-      <Text style={[styles.metaText, { color: metaColor }]} numberOfLines={1}>
-        {authorName}{post.location ? ` · ${post.location}` : ''}
+      <Text style={[styles.metaName, { color: nameColor ?? colors.foreground }]} numberOfLines={1}>
+        {authorName}
       </Text>
-      {viewCount != null && viewCount > 2 && (
-        <View style={styles.viewCountPill}>
-          <Eye size={12} color={metaColor} strokeWidth={2} />
-          <Text style={[styles.viewCountText, { color: metaColor }]}>{viewCount}</Text>
-        </View>
+      {(user as any)?.is_verified && (
+        <ShieldCheck size={11} color={colors.success} strokeWidth={2.4} />
       )}
+      <Text style={[styles.metaDivider, { color: colors.tertiaryForeground }]}>·</Text>
+      <Text style={[styles.metaDistance, { color: metaColor }]} numberOfLines={1}>
+        {post.location ?? timeAgo}
+      </Text>
     </View>
   )
 
-  // ── Like pill (overlaid on image cards, inline on others) ──
-  const LikePill = (overlaid: boolean) => {
-    if (!overlaid && likeCount === 0 && !liked) return null
+  // ── Like count chip (overlaid on image) ──
+  const LikeChip = () => {
+    if (likeCount < 10 && !liked) return null
     return (
       <Pressable
         onPress={(e) => { e?.stopPropagation?.(); handleLike() }}
@@ -223,41 +214,23 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         accessibilityRole="button"
         accessibilityLabel={liked ? t('engagement.unlike') : t('engagement.like')}
         accessibilityState={{ selected: liked }}
-        style={({ pressed }) => [
-          overlaid ? styles.likePillOverlaid : styles.likePillInline,
-          pressed && { opacity: 0.7 },
-        ]}
+        style={({ pressed }) => [styles.countChip, pressed && { opacity: 0.7 }]}
       >
         <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
           <Heart
-            size={12}
-            color={overlaid ? colors.primaryForeground : (liked ? colors.destructive : colors.mutedForeground)}
-            fill={liked ? (overlaid ? colors.primaryForeground : colors.destructive) : 'transparent'}
+            size={11}
+            color="#FFFFFF"
+            fill={liked ? '#FFFFFF' : 'transparent'}
             strokeWidth={2}
           />
         </Animated.View>
-        {likeCount > 0 && (
-          <Text style={[styles.likePillText, { color: overlaid ? colors.primaryForeground : (liked ? colors.destructive : colors.mutedForeground) }]}>
-            {likeCount}
-          </Text>
-        )}
+        <Text style={styles.countChipText}>{likeCount}</Text>
       </Pressable>
     )
   }
 
-  // Spring-physics press feedback
-  const cardScale = useRef(new Animated.Value(1)).current
-  const handleCardPressIn = useCallback(() => {
-    if (reduceMotion) { cardScale.setValue(0.96); return }
-    Animated.spring(cardScale, { toValue: 0.96, friction: 4, tension: 200, useNativeDriver: true }).start()
-  }, [cardScale, reduceMotion])
-  const handleCardPressOut = useCallback(() => {
-    if (reduceMotion) { cardScale.setValue(1); return }
-    Animated.spring(cardScale, { toValue: 1, friction: 3, tension: 300, useNativeDriver: true }).start()
-  }, [cardScale, reduceMotion])
-
-  // ─── image-hero: photo-first Pinterest card ───
-  if (variant === 'image-hero') {
+  // ─── IMAGE: photo-first, 4:5 aspect ratio ───
+  if (variant === 'image') {
     return (
       <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
         <Pressable
@@ -272,8 +245,8 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             isExpired && { opacity: 0.55 },
           ]}
         >
-          {/* Photo with overlaid badges */}
-          <View style={[styles.imageWrap, { height: imageHeight, backgroundColor: colors.muted }]}>
+          {/* Photo with 4:5 aspect ratio */}
+          <View style={[styles.imageWrap, { backgroundColor: colors.muted }]}>
             {!imgLoaded && (
               <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.muted, opacity: shimmerAnim, zIndex: 1 }]} />
             )}
@@ -288,55 +261,44 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
               recyclingKey={effectiveImageUrl!}
               accessibilityLabel={post.title}
             />
-            {/* Category pill — frosted glass, top-left */}
-            {category && (
-              <View style={styles.categoryPill}>
-                <Text style={styles.categoryPillText}>{t(category.label)}</Text>
+            {/* Gradient overlay */}
+            <View style={styles.imgGradient} />
+            {/* Top row: category chip + like/urgent chip */}
+            <View style={styles.imgTopRow}>
+              {category && (
+                <View style={styles.catChip}>
+                  <Text style={styles.catChipText}>{t(category.label)}</Text>
+                </View>
+              )}
+              {isUrgent ? (
+                <View style={[styles.urgentChip, { backgroundColor: colors.destructive }]}>
+                  <Clock size={10} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text style={styles.urgentChipText}>{t('postCard.urgent')}</Text>
+                </View>
+              ) : (
+                <LikeChip />
+              )}
+            </View>
+            {/* Bottom row: price pill */}
+            {(post.daily_fee != null || (post.service_price != null && post.service_price > 0)) && (
+              <View style={styles.imgBottomRow}>
+                <View style={styles.pricePill}>
+                  <Text style={styles.pricePillText}>
+                    {post.daily_fee != null
+                      ? t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })
+                      : formatPrice(post.service_price, locale)}
+                  </Text>
+                </View>
               </View>
             )}
-            {/* Urgent pill — top-right */}
-            {isUrgent && (
-              <View style={[styles.urgentPill, { backgroundColor: colors.destructive }]}>
-                <Clock size={12} color={colors.primaryForeground} strokeWidth={2.5} />
-                <Text style={[styles.urgentText, { color: colors.primaryForeground }]}>{t('postCard.urgent')}</Text>
-              </View>
-            )}
-            {/* Like count pill — top-right (if not urgent) */}
-            {!isUrgent && likeCount > 0 && LikePill(true)}
           </View>
           {/* Content below image */}
-          <View style={styles.imageCardContent}>
-            <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
+          <View style={styles.imgContent}>
+            <Text style={[styles.imgTitle, { color: colors.foreground }]} numberOfLines={2}>
               {post.title}
             </Text>
             {post.is_seed && (
               <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
-            )}
-            {(post.daily_fee != null || (post.service_price != null && post.service_price > 0)) && (
-              <Text style={[styles.price, { color: colors.foreground }]}>
-                {post.daily_fee != null
-                  ? t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })
-                  : formatPrice(post.service_price, locale)}
-              </Text>
-            )}
-            {/* Recommendation reason pills */}
-            {(isBoosted || isFollowed) && (
-              <View style={styles.reasonRow}>
-                {isBoosted && (
-                  <View style={[styles.reasonPill, { backgroundColor: `${colors.primary}15` }]}>
-                    <Text style={[styles.reasonPillText, { color: colors.primary }]}>
-                      {t('postCard.boosted')}
-                    </Text>
-                  </View>
-                )}
-                {isFollowed && (
-                  <View style={[styles.reasonPill, { backgroundColor: `${colors.primary}15` }]}>
-                    <Text style={[styles.reasonPillText, { color: colors.primary }]}>
-                      {t('postCard.fromFollowed')}
-                    </Text>
-                  </View>
-                )}
-              </View>
             )}
             {MetaFooter(colors.mutedForeground)}
           </View>
@@ -345,8 +307,17 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     )
   }
 
-  // ─── event: ink background, inverted text ───
-  if (variant === 'event') {
+  // ─── INK: events with dark background, large date display ───
+  if (variant === 'ink') {
+    // Parse event date for display
+    const eventDateStr = post.event_date ? new Date(post.event_date) : null
+    const dayLabel = eventDateStr
+      ? eventDateStr.toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale, { weekday: 'short' }).toUpperCase()
+      : ''
+    const dateNum = eventDateStr
+      ? `${eventDateStr.getDate()}.${eventDateStr.getMonth() + 1}.`
+      : ''
+
     return (
       <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
         <Pressable
@@ -357,27 +328,25 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           accessibilityLabel={a11yLabel}
           style={[
             styles.card,
-            styles.eventCard,
+            styles.inkCard,
             { backgroundColor: colors.foreground },
             isExpired && { opacity: 0.55 },
           ]}
         >
-          <View style={styles.eventContent}>
-            {/* Calendar + category */}
-            <View style={styles.eventCategoryRow}>
-              <Calendar size={12} color={colors.onInkMuted} strokeWidth={2} />
-              <Text style={[styles.eventCategoryText, { color: colors.mutedForeground }]}>
-                {t(category?.label ?? 'categories.tapahtuma')}
-              </Text>
-            </View>
-            {/* Title */}
-            <Text style={[styles.eventTitle, { color: colors.background }]} numberOfLines={2}>
-              {post.title}
-            </Text>
-            {/* Date + location */}
-            <Text style={[styles.eventMeta, { color: colors.mutedForeground }]} numberOfLines={1}>
-              {post.location ? `${post.location} · ` : ''}
-              {post.event_date ? formatEventDateShort(post.event_date, locale) : t('events.eventPending')}
+          {/* Date display */}
+          <View>
+            <Text style={[styles.inkDay, { color: colors.onInkMuted }]}>{dayLabel}</Text>
+            <Text style={[styles.inkDate, { color: colors.background }]}>{dateNum}</Text>
+          </View>
+          {/* Title */}
+          <Text style={[styles.inkTitle, { color: colors.background }]} numberOfLines={3}>
+            {post.title}
+          </Text>
+          {/* Bottom meta */}
+          <View style={[styles.inkBottom, { borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.12)' }]}>
+            <Users size={12} color={colors.onInkMuted} strokeWidth={2} />
+            <Text style={[styles.inkBottomText, { color: colors.onInkMuted }]}>
+              {post.location ?? ''}
             </Text>
           </View>
         </Pressable>
@@ -385,7 +354,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     )
   }
 
-  // ─── text: warm tint background, no image ───
+  // ─── TINT: warm-tint background, text-only posts ───
   return (
     <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
       <Pressable
@@ -396,27 +365,35 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         accessibilityLabel={a11yLabel}
         style={[
           styles.card,
+          styles.tintCard,
           { backgroundColor: colors.warmTint, borderColor: colors.border },
           isExpired && { opacity: 0.55 },
         ]}
       >
-        <View style={styles.textContent}>
-          {/* Category label — uppercase, muted */}
+        {/* Top row: category + urgent */}
+        <View style={styles.tintTopRow}>
           {category && (
-            <Text style={[styles.textCategoryLabel, { color: colors.mutedForeground }]}>
+            <Text style={[styles.tintCatLabel, { color: colors.mutedForeground }]}>
               {t(category.label)}
             </Text>
           )}
-          {/* Title — larger for text-only cards */}
-          <Text style={[styles.textTitle, { color: colors.foreground }]} numberOfLines={3}>
-            {post.title}
-          </Text>
-          {post.is_seed && (
-            <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
+          {isUrgent && (
+            <View style={[styles.urgentInline, { backgroundColor: colors.foreground }]}>
+              <Text style={[styles.urgentInlineText, { color: colors.background }]}>
+                {t('postCard.urgent')}
+              </Text>
+            </View>
           )}
-          {/* Meta footer */}
-          {MetaFooter(colors.mutedForeground)}
         </View>
+        {/* Title */}
+        <Text style={[styles.tintTitle, { color: colors.foreground }]} numberOfLines={4}>
+          {post.title}
+        </Text>
+        {post.is_seed && (
+          <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
+        )}
+        {/* Meta footer */}
+        {MetaFooter(colors.mutedForeground)}
       </Pressable>
     </Animated.View>
   )
@@ -429,136 +406,214 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
 
-  // ── Image hero card ──
+  // ── IMAGE variant ──
   imageWrap: {
     position: 'relative',
     overflow: 'hidden',
+    aspectRatio: 4 / 5,
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  categoryPill: {
+  imgGradient: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    ...Platform.select({
-      ios: { },
-      default: { },
-    }),
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    // Linear gradient approximation using overlapping transparent views
+    // RN doesn't support CSS gradients, using semi-transparent overlay at bottom
+    backgroundColor: 'transparent',
   },
-  categoryPillText: {
-    fontSize: 12,
-    fontWeight: '600',
+  imgTopRow: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    right: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  catChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+  },
+  catChipText: {
+    fontSize: 10,
+    fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.4,
+    letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: '#1A1D1F',
   },
-  urgentPill: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  urgentText: {
-    fontSize: 12,
-    fontWeight: '700',
-    fontFamily: fonts.bodySemi,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  imageCardContent: {
-    padding: 12,
-    paddingTop: 12,
-    gap: 8,
-  },
-
-  // ── Like pills ──
-  likePillOverlaid: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
+  urgentChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  urgentChipText: {
+    fontSize: 10,
+    fontWeight: '700',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: '#FFFFFF',
+  },
+  countChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 999,
     backgroundColor: 'rgba(0,0,0,0.55)',
   },
-  likePillInline: {
+  countChipText: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    color: '#FFFFFF',
+    lineHeight: 14,
+  },
+  imgBottomRow: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    minHeight: 44,
-    minWidth: 44,
-    paddingHorizontal: 2,
+    justifyContent: 'space-between',
   },
-  likePillText: {
-    fontSize: 12,
-    fontWeight: '600',
+  pricePill: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+  },
+  pricePillText: {
+    fontSize: 13,
+    fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    lineHeight: 16,
+    letterSpacing: -0.1,
+    color: '#1A1D1F',
+  },
+  imgContent: {
+    padding: 14,
+    gap: 8,
+  },
+  imgTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    fontFamily: fonts.displayMedium,
+    letterSpacing: -0.3,
+    lineHeight: 18,
   },
 
-  // ── Reason pills ──
-  reasonRow: {
-    flexDirection: 'row',
-    gap: 4,
-    flexWrap: 'wrap',
+  // ── INK variant (events) ──
+  inkCard: {
+    borderWidth: 0,
+    padding: 14,
+    gap: 10,
+    minHeight: 250,
   },
-  reasonPill: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+  inkDay: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+  inkDate: {
+    fontSize: 32,
+    fontWeight: '500',
+    fontFamily: fonts.displayMedium,
+    letterSpacing: -1,
+    lineHeight: 32,
+    marginTop: 2,
+  },
+  inkTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: fonts.displayMedium,
+    letterSpacing: -0.3,
+    lineHeight: 19,
+    flex: 1,
+  },
+  inkBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  inkBottomText: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    lineHeight: 14,
+    flex: 1,
+  },
+
+  // ── TINT variant (text-only) ──
+  tintCard: {
+    padding: 14,
+    gap: 10,
+    minHeight: 220,
+  },
+  tintTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  tintCatLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+  urgentInline: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 999,
   },
-  reasonPillText: {
-    fontSize: 12,
-    fontWeight: '600',
+  urgentInlineText: {
+    fontSize: 9,
+    fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.2,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    lineHeight: 16,
+    lineHeight: 12,
+  },
+  tintTitle: {
+    fontSize: 17,
+    fontWeight: '500',
+    fontFamily: fonts.displayMedium,
+    letterSpacing: -0.4,
+    lineHeight: 20,
+    flex: 1,
   },
 
-  // ── Typography ──
-  title: {
-    fontSize: 13,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.1,
-    lineHeight: 16,
-  },
+  // ── Shared ──
   seedLabel: {
     fontSize: 11,
     fontFamily: fonts.body,
     fontStyle: 'italic',
     lineHeight: 14,
-    marginTop: 2,
   },
-  price: {
-    fontSize: 12,
-    fontWeight: '700',
-    fontFamily: fonts.bodySemi,
-    lineHeight: 16,
-  },
-
-  // ── Mini avatar + meta (shared) ──
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
+    gap: 6,
   },
   miniAvatar: {
     width: 16,
@@ -569,76 +624,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  metaText: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    lineHeight: 16,
+  metaName: {
+    fontSize: 11,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
     flex: 1,
+    lineHeight: 14,
   },
-  viewCountPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
+  metaDivider: {
+    fontSize: 11,
+    lineHeight: 14,
   },
-  viewCountText: {
-    fontSize: 12,
-    fontFamily: fonts.bodySemi,
-    lineHeight: 16,
-  },
-
-  // ── Event card (ink bg, inverted) ──
-  eventCard: {
-    borderWidth: 0,
-  },
-  eventContent: {
-    padding: 14,
-    gap: 8,
-  },
-  eventCategoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  eventCategoryText: {
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    lineHeight: 16,
-  },
-  eventTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.25,
-    lineHeight: 20,
-  },
-  eventMeta: {
-    fontSize: 12,
+  metaDistance: {
+    fontSize: 11,
     fontFamily: fonts.body,
-    lineHeight: 16,
-  },
-
-  // ── Text card (warm tint bg) ──
-  textContent: {
-    padding: 14,
-    gap: 6,
-  },
-  textCategoryLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    marginBottom: 2,
-    lineHeight: 16,
-  },
-  textTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.25,
-    lineHeight: 20,
+    lineHeight: 14,
   },
 })

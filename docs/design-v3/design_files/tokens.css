@@ -1,0 +1,101 @@
+/* TackBird v2 — Design tokens, mirror of src/lib/theme.ts (Helsinki Monochrome) */
+:root {
+  /* Light */
+  --primary: #1A1D1F;
+  --accent: #2A2D30;
+  --secondary: #FF9500;
+  --background: #F5F6F7;
+  --foreground: #1A1D1F;
+  --card: #FFFFFF;
+  --card-elevated: #FAFAFB;
+  --border: #E8EAEC;
+  --border-strong: #C8CBCE;
+  --muted: #EEF0F2;
+  --muted-foreground: #535A60;
+  --tertiary-foreground: #848B93;
+  --destructive: #C44536;
+  --danger: #C44536;
+  --success: #2D7A4F;
+  --info: #3B82F6;
+  --pro: #F59E0B;
+  --purple: #7C5CBF;
+  --purple-muted: #F4F0FF;
+  --primary-foreground: #FFFFFF;
+  --accent-foreground: #FFFFFF;
+  --on-ink-muted: #B8BCC0;
+  --warm-tint: #F0EEE9;
+  --surface-overlay: rgba(255,255,255,0.82);
+  --surface-tinted: rgba(26,29,31,0.04);
+
+  /* Category colors (light) */
+  --cat-tarvitsen: #C75B3A;
+  --cat-tarjoan:   #7C5CBF;
+  --cat-ilmaista:  #3B7DD8;
+  --cat-lainaa:    #A97A1E;
+  --cat-tapahtuma: #2B8A62;
+
+  /* Type */
+  --font-heading: 'Instrument Sans', system-ui, sans-serif;
+  --font-body:    'Instrument Sans', system-ui, sans-serif;
+
+  /* Radii */
+  --r-pill: 999px;
+  --r-card: 20px;
+  --r-input: 14px;
+  --r-chip: 10px;
+
+  /* Spacing scale (multiples of 4) */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px;
+}
+
+/* Dark theme — toggled with [data-theme="dark"] on <html> or container */
+[data-theme="dark"] {
+  --primary: #F5F6F7;
+  --accent: #E8EAEC;
+  --secondary: #FFAD33;
+  --background: #0E1012;
+  --foreground: #F5F6F7;
+  --card: #17191C;
+  --card-elevated: #1C1E21;
+  --border: #2E3136;
+  --border-strong: #4A4D51;
+  --muted: #202326;
+  --muted-foreground: #8B8F94;
+  --tertiary-foreground: #7D838A;
+  --destructive: #FF453A;
+  --danger: #FF453A;
+  --success: #34D399;
+  --info: #0A84FF;
+  --pro: #FBBF24;
+  --purple: #BF5AF2;
+  --purple-muted: #1E1628;
+  --primary-foreground: #1A1D1F;
+  --accent-foreground: #1A1D1F;
+  --on-ink-muted: #4A4D51;
+  --warm-tint: #2A2722;
+  --surface-overlay: rgba(14,16,18,0.82);
+  --surface-tinted: rgba(245,246,247,0.06);
+
+  --cat-tarvitsen: #D4734F;
+  --cat-tarjoan:   #9B7DD4;
+  --cat-ilmaista:  #5B9BF0;
+  --cat-lainaa:    #C99A3E;
+  --cat-tapahtuma: #3AAE7A;
+}
+
+/* Reset for screens inside iOS frames */
+*, *::before, *::after { box-sizing: border-box; }
+.tb-screen {
+  width: 100%; height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: 14px; line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  position: relative;
+}
+.tb-screen * { font-family: inherit; }
+.tb-scroll { overflow-y: auto; height: 100%; -webkit-overflow-scrolling: touch; }
+.tb-scroll::-webkit-scrollbar { display: none; }

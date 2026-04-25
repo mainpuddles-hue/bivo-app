@@ -1,0 +1,300 @@
+/* TackBird Design System — Helsinki Monochrome · v3
+ *
+ * Brand direction:
+ *   A black-and-white neighborhood app. No brand color, no accent. The UI is
+ *   a quiet, confident frame — the content (photos of people, items, events)
+ *   brings color. Inspired by TripGlide / Famio-era mobile editorial style.
+ *
+ *   Canvas:   #F5F6F7 warm-neutral wash (never pure white).
+ *   Surface:  #FFFFFF for cards, search, inactive pills.
+ *   Ink:      #1A1D1F near-black — text, active pill, primary CTA fill.
+ *   Line:     #E8EAEC hairline for dividers and card edges.
+ *   Muted:    #6B7075 for meta/captions.
+ *
+ *   Type:     Instrument Sans for everything. Display/H1 tight tracking,
+ *             body relaxed. No secondary family.
+ *
+ *   Shape:    Pill (999px) for chips, tabs, CTAs. 24px for cards. 20px for
+ *             search/input. No shadows on cards — hairline borders only.
+ *             One elevation layer (bottom nav + FAB-adjacent) uses a soft
+ *             ink shadow at very low opacity.
+ */
+
+/* Local brand font — Instrument Sans is the single family. */
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('fonts/InstrumentSans_400Regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('fonts/InstrumentSans_500Medium.ttf') format('truetype');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('fonts/InstrumentSans_600SemiBold.ttf') format('truetype');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+
+:root {
+  /* ── Core palette — monochrome, no accent ── */
+  --tb-ink:          #1A1D1F;   /* primary text, active states, CTA fill */
+  --tb-ink-soft:     #2A2D30;   /* hover on ink surfaces */
+  --tb-fg:           #1A1D1F;
+  --tb-bg:           #F5F6F7;   /* page canvas */
+  --tb-surface:      #FFFFFF;   /* cards, search, inactive pills */
+  --tb-surface-2:    #FAFAFB;   /* slightly recessed blocks */
+  --tb-wash:         #EEF0F2;   /* muted tint fill */
+  --tb-border:       #E8EAEC;   /* hairline */
+  --tb-border-strong:#D4D7DA;   /* focus, hover border */
+  --tb-muted-fg:     #6B7075;   /* meta, captions */
+  --tb-tertiary-fg:  #9AA0A6;   /* placeholder, disabled */
+
+  /* On-ink (reversed — content sitting on ink surfaces) */
+  --tb-on-ink:       #FFFFFF;
+  --tb-on-ink-muted: #B8BCC0;
+
+  /* ── Semantic (used sparingly — validation, not brand) ── */
+  --tb-destructive:  #C44536;
+  --tb-success:      #2D7A4F;
+  --tb-warning:      #B6782A;
+
+  /* ── Type — one family ── */
+  --tb-font-ui:      'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --tb-font-heading: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+
+  /* Scale — editorial mobile weight; Display is large and heavy, body relaxed. */
+  --tb-display-size: 32px; --tb-display-weight: 600; --tb-display-track: -0.9px; --tb-display-lh: 36px;
+  --tb-h1-size: 24px;      --tb-h1-weight: 600;      --tb-h1-track: -0.5px;      --tb-h1-lh: 30px;
+  --tb-h2-size: 19px;      --tb-h2-weight: 600;      --tb-h2-track: -0.3px;      --tb-h2-lh: 25px;
+  --tb-h3-size: 16px;      --tb-h3-weight: 600;      --tb-h3-track: -0.15px;     --tb-h3-lh: 22px;
+  --tb-body-size: 15px;    --tb-body-weight: 400;    --tb-body-lh: 22px;
+  --tb-body-sm-size: 13px; --tb-body-sm-lh: 18px;
+  --tb-caption-size: 12px; --tb-caption-weight: 500; --tb-caption-track: 0;    --tb-caption-lh: 16px;
+  --tb-meta-size: 11px;    --tb-meta-weight: 500;    --tb-meta-track: 0.3px;
+
+  /* ── Spacing (4pt grid) ── */
+  --tb-space-1: 4px; --tb-space-2: 8px; --tb-space-3: 12px; --tb-space-4: 16px;
+  --tb-space-5: 20px; --tb-space-6: 24px; --tb-space-8: 32px; --tb-space-10: 40px; --tb-space-12: 48px;
+
+  /* ── Radii — pill-heavy, generous card corners ── */
+  --tb-radius-chip:   999px;
+  --tb-radius-pill:   999px;
+  --tb-radius-input:  20px;
+  --tb-radius-card:   20px;
+  --tb-radius-post:   24px;
+  --tb-radius-modal:  28px;
+  --tb-radius-hero:   32px;
+
+  /* ── Elevation — one soft ink shadow for lifted elements (bottom nav, etc.) ── */
+  --tb-shadow-sm: 0 1px 2px rgba(26,29,31,0.04);
+  --tb-shadow-md: 0 6px 16px rgba(26,29,31,0.06), 0 2px 4px rgba(26,29,31,0.03);
+  --tb-shadow-lg: 0 16px 40px rgba(26,29,31,0.10), 0 4px 12px rgba(26,29,31,0.04);
+
+  --tb-hairline: 1px solid var(--tb-border);
+}
+
+/* ── Dark (inverted, still monochrome) ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tb-ink:          #F5F6F7;
+    --tb-ink-soft:     #E8EAEC;
+    --tb-fg:           #F5F6F7;
+    --tb-bg:           #0E1012;
+    --tb-surface:      #17191C;
+    --tb-surface-2:    #1C1E21;
+    --tb-wash:         #202326;
+    --tb-border:       #26292D;
+    --tb-border-strong:#363A3F;
+    --tb-muted-fg:     #8B8F94;
+    --tb-tertiary-fg:  #5B5F64;
+    --tb-on-ink:       #1A1D1F;
+    --tb-on-ink-muted: #4A4D51;
+
+    --tb-shadow-sm: 0 1px 2px rgba(0,0,0,0.40);
+    --tb-shadow-md: 0 4px 12px rgba(0,0,0,0.50);
+    --tb-shadow-lg: 0 16px 32px rgba(0,0,0,0.60);
+  }
+}
+
+.tb-dark {
+  --tb-ink: #F5F6F7; --tb-ink-soft: #E8EAEC; --tb-fg: #F5F6F7;
+  --tb-bg: #0E1012; --tb-surface: #17191C; --tb-surface-2: #1C1E21; --tb-wash: #202326;
+  --tb-border: #26292D; --tb-border-strong: #363A3F;
+  --tb-muted-fg: #8B8F94; --tb-tertiary-fg: #5B5F64;
+  --tb-on-ink: #1A1D1F; --tb-on-ink-muted: #4A4D51;
+}
+
+/* ── Semantic element styles ── */
+body {
+  font-family: var(--tb-font-ui);
+  color: var(--tb-fg);
+  background: var(--tb-bg);
+  font-size: var(--tb-body-size);
+  line-height: var(--tb-body-lh);
+  letter-spacing: -0.05px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, .tb-display {
+  font-family: var(--tb-font-heading);
+  font-weight: var(--tb-display-weight);
+  font-size: var(--tb-display-size);
+  letter-spacing: var(--tb-display-track);
+  line-height: var(--tb-display-lh);
+  margin: 0;
+}
+.tb-h1 {
+  font-family: var(--tb-font-heading);
+  font-weight: var(--tb-h1-weight);
+  font-size: var(--tb-h1-size);
+  letter-spacing: var(--tb-h1-track);
+  line-height: var(--tb-h1-lh);
+  margin: 0;
+}
+h2, .tb-h2 {
+  font-family: var(--tb-font-ui);
+  font-weight: var(--tb-h2-weight);
+  font-size: var(--tb-h2-size);
+  letter-spacing: var(--tb-h2-track);
+  line-height: var(--tb-h2-lh);
+  margin: 0;
+}
+h3, .tb-h3 {
+  font-family: var(--tb-font-ui);
+  font-weight: var(--tb-h3-weight);
+  font-size: var(--tb-h3-size);
+  letter-spacing: var(--tb-h3-track);
+  line-height: var(--tb-h3-lh);
+  margin: 0;
+}
+p, .tb-body { font-size: var(--tb-body-size); line-height: var(--tb-body-lh); margin: 0; }
+.tb-body-sm { font-size: var(--tb-body-sm-size); line-height: var(--tb-body-sm-lh); color: var(--tb-muted-fg); }
+.tb-caption {
+  font-family: var(--tb-font-ui);
+  font-weight: var(--tb-caption-weight);
+  font-size: var(--tb-caption-size);
+  letter-spacing: var(--tb-caption-track);
+  line-height: var(--tb-caption-lh);
+  color: var(--tb-muted-fg);
+}
+.tb-meta {
+  font-family: var(--tb-font-ui);
+  font-feature-settings: 'tnum';
+  font-weight: var(--tb-meta-weight);
+  font-size: var(--tb-meta-size);
+  letter-spacing: var(--tb-meta-track);
+  text-transform: uppercase;
+  color: var(--tb-muted-fg);
+}
+
+/* ── Primitive components ── */
+.tb-card {
+  background: var(--tb-surface);
+  border-radius: var(--tb-radius-post);
+  border: var(--tb-hairline);
+  padding: var(--tb-space-4);
+}
+
+/* Primary action — ink fill, white label, pill. */
+.tb-btn-primary {
+  background: var(--tb-ink);
+  color: var(--tb-on-ink);
+  border: none;
+  border-radius: var(--tb-radius-pill);
+  padding: 14px 26px;
+  font-family: var(--tb-font-ui);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.1px;
+  line-height: 20px;
+  min-height: 48px;
+  cursor: pointer;
+  transition: background 180ms ease, transform 180ms ease;
+}
+.tb-btn-primary:hover  { background: var(--tb-ink-soft); }
+.tb-btn-primary:active { transform: scale(0.98); }
+
+/* Secondary — ink outline, surface fill, pill. */
+.tb-btn-secondary {
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  border: 1px solid var(--tb-border-strong);
+  border-radius: var(--tb-radius-pill);
+  padding: 14px 26px;
+  font-family: var(--tb-font-ui);
+  font-weight: 500;
+  font-size: 15px;
+  min-height: 48px;
+  cursor: pointer;
+}
+.tb-btn-secondary:hover { border-color: var(--tb-ink); }
+
+/* Tertiary — underlined link-style, no fill. */
+.tb-btn-tertiary {
+  background: transparent;
+  color: var(--tb-ink);
+  border: none;
+  padding: 12px 4px;
+  font-family: var(--tb-font-ui);
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* Pill tab (category chooser). Inactive: surface+border. Active: ink fill. */
+.tb-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--tb-radius-pill);
+  border: 1px solid var(--tb-border);
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  font-family: var(--tb-font-ui);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.tb-chip:hover { border-color: var(--tb-border-strong); }
+.tb-chip[aria-selected="true"] {
+  background: var(--tb-ink);
+  color: var(--tb-on-ink);
+  border-color: var(--tb-ink);
+  font-weight: 600;
+}
+
+/* Search / input field — pill, surface fill, hairline border. */
+.tb-input {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px;
+  border-radius: var(--tb-radius-pill);
+  border: 1px solid var(--tb-border);
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  font-family: var(--tb-font-ui);
+  font-size: 14px;
+  min-height: 48px;
+}
+.tb-input::placeholder, .tb-input .tb-placeholder { color: var(--tb-tertiary-fg); }
+
+/* Circular icon button — used for filter toggle, heart, back, close. */
+.tb-icon-btn {
+  width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  color: var(--tb-ink);
+  cursor: pointer;
+}
+.tb-icon-btn--ink {
+  background: var(--tb-ink);
+  color: var(--tb-on-ink);
+  border-color: var(--tb-ink);
+}

@@ -3,9 +3,9 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ScrollView, ActionShe
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Plus, Search, SlidersHorizontal, CheckCircle, X as XIcon, Map, LayoutGrid, Home, ChevronRight } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, Home, ChevronRight, ArrowUpRight } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
-import { PressableOpacity, AnimatedEntrance, MagneticPressable } from '@/components/ui'
+import { PressableOpacity, MagneticPressable } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -34,6 +34,7 @@ import { CATEGORIES } from '@/lib/constants'
 type FeedItem =
   | { _kind: 'section'; key: string; categoryType: PostType; posts: Post[] }
   | { _kind: 'gridRow'; key: string; posts: Post[] }
+  | { _kind: 'sortRow'; key: string; count: number }
   | { _kind: 'ad'; key: string; ad: Ad }
 
 function FeedScreenInner() {
@@ -431,10 +432,12 @@ function FeedScreenInner() {
 
   const feedItems = useMemo((): FeedItem[] => {
     if (feed.activeFilter) {
-      // Filtered: 2-column grid
+      // Filtered: sort row + 2-column mosaic grid
       const section = categorySections.find(s => s.type === feed.activeFilter)
       const posts = section?.posts || []
-      const items: FeedItem[] = []
+      const items: FeedItem[] = [
+        { _kind: 'sortRow', key: 'sort-row', count: posts.length },
+      ]
       for (let i = 0; i < posts.length; i += 2) {
         items.push({ _kind: 'gridRow', key: `row-${i}`, posts: posts.slice(i, i + 2) })
       }
@@ -452,13 +455,46 @@ function FeedScreenInner() {
   }, [feed.activeFilter, categorySections, feedAds])
 
   const renderFeedItem = useCallback(({ item }: { item: FeedItem }) => {
-    const hCardWidth = screenWidth * 0.65
-    const hGap = 12
-    const gCardWidth = (screenWidth - 32 - 10) / 2
+    const gCardWidth = (screenWidth - 40 - 10) / 2  // 20px padding each side, 10px gap
 
+    if (item._kind === 'sortRow') {
+      return (
+        <View style={styles.sortRow}>
+          <Text style={[styles.sortLabel, { color: colors.tertiaryForeground }]}>
+            {item.count} {t('feed.results') ?? 'osumaa'}
+          </Text>
+          <PressableOpacity
+            onPress={() => {
+              const labels = SORT_OPTIONS.map(o => feed.sortBy === o.key ? `${o.label} ✓` : o.label).concat(t('common.cancel') ?? 'Cancel')
+              if (Platform.OS === 'ios') {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
+                  (idx) => { if (idx < SORT_OPTIONS.length) handleSortChangeWithHaptics(SORT_OPTIONS[idx].key) },
+                )
+              } else {
+                Alert.alert(t('feed.sort') ?? 'Sort', '', SORT_OPTIONS.map(o => ({
+                  text: o.label + (feed.sortBy === o.key ? ' ✓' : ''),
+                  onPress: () => handleSortChangeWithHaptics(o.key),
+                })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
+              }
+            }}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('feed.sort') ?? 'Sort'}
+          >
+            <View style={styles.sortBtn}>
+              <Text style={[styles.sortBtnText, { color: colors.foreground }]}>
+                {SORT_OPTIONS.find(o => o.key === feed.sortBy)?.label ?? t('feed.sortRecommended')}
+              </Text>
+              <ChevronRight size={11} color={colors.foreground} strokeWidth={2} />
+            </View>
+          </PressableOpacity>
+        </View>
+      )
+    }
     if (item._kind === 'ad') {
       return (
-        <View style={{ paddingHorizontal: 16 }}>
+        <View style={{ paddingHorizontal: 20 }}>
           <AdCard ad={item.ad} />
         </View>
       )
@@ -468,30 +504,33 @@ function FeedScreenInner() {
         <View style={styles.gridRow}>
           {item.posts.map((post, idx) => (
             <View key={post.id} style={{ width: gCardWidth }}>
-              <AnimatedEntrance index={idx} stagger={60} duration={350} slideDistance={16}>
-                <PostCardGrid
-                  post={post}
-                  userId={feed.currentUserId}
-                  onInteraction={trackInteraction}
-                  index={idx}
-                  sortBy={feed.sortBy}
-                  followedIds={feed.followedIds}
-                  viewCount={viewCounts[post.id]}
-                />
-              </AnimatedEntrance>
+              <PostCardGrid
+                post={post}
+                userId={feed.currentUserId}
+                onInteraction={trackInteraction}
+                index={idx}
+                sortBy={feed.sortBy}
+                followedIds={feed.followedIds}
+                viewCount={viewCounts[post.id]}
+              />
             </View>
           ))}
         </View>
       )
     }
-    // _kind === 'section': horizontal category row
+    // _kind === 'section': horizontal category row with v3 section heads
     const category = CATEGORIES[item.categoryType]
     return (
       <View style={styles.categorySection}>
-        <View style={styles.categorySectionHeader}>
-          <Text style={[styles.categorySectionTitle, { color: colors.foreground }]}>
-            {t(category.label)}
-          </Text>
+        <View style={styles.sectionHead}>
+          <View style={styles.sectionTitleWrap}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              {t(category.label)}
+            </Text>
+            <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>
+              {item.posts.length} {t('feed.nearby') ?? 'lähellä'}
+            </Text>
+          </View>
           <PressableOpacity
             onPress={() => handleFilterChangeWithHaptics(item.categoryType)}
             hitSlop={8}
@@ -499,22 +538,22 @@ function FeedScreenInner() {
             accessibilityLabel={`${t(category.label)} — ${t('feed.seeAll') ?? 'Näytä kaikki'}`}
           >
             <View style={styles.seeAllRow}>
-              <Text style={[styles.seeAllText, { color: colors.primary }]}>
+              <Text style={[styles.seeAllText, { color: colors.foreground }]}>
                 {t('feed.seeAll') ?? 'Näytä kaikki'}
               </Text>
-              <ChevronRight size={14} color={colors.primary} strokeWidth={2} />
+              <ChevronRight size={13} color={colors.foreground} strokeWidth={2} />
             </View>
           </PressableOpacity>
         </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: hGap }}
-          snapToInterval={hCardWidth + hGap}
+          contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+          snapToInterval={230 + 10}
           decelerationRate="fast"
         >
           {item.posts.slice(0, 10).map((post, index) => (
-            <View key={post.id} style={{ width: hCardWidth }}>
+            <View key={post.id} style={{ width: 230 }}>
               <PostCardGrid
                 post={post}
                 userId={feed.currentUserId}
@@ -529,45 +568,37 @@ function FeedScreenInner() {
         </ScrollView>
       </View>
     )
-  }, [colors, t, feed.currentUserId, feed.sortBy, feed.followedIds, trackInteraction, viewCounts, handleFilterChangeWithHaptics, screenWidth])
+  }, [colors, t, feed.currentUserId, feed.sortBy, feed.followedIds, trackInteraction, viewCounts, handleFilterChangeWithHaptics, handleSortChangeWithHaptics, screenWidth, SORT_OPTIONS])
 
   // ── Render ──
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {viewMode === 'map' ? (
         <>
-          {/* Map header — same top area as list mode */}
-          <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
-            <View style={styles.headerRow}>
-              <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.headerLeft} hitSlop={8}>
-                <Text style={[styles.headerLocation, { color: colors.mutedForeground }]}>
+          {/* Map header */}
+          <View style={[styles.topArea, { paddingTop: insets.top + 12 }]}>
+            <View style={styles.searchRow}>
+              <PressableOpacity
+                onPress={() => router.push('/search')}
+                style={[styles.searchInput, { backgroundColor: colors.card, borderColor: colors.border }]}
+                accessibilityLabel={t('common.search')}
+                accessibilityRole="button"
+              >
+                <Search size={18} color={colors.mutedForeground} strokeWidth={2} />
+                <Text style={[styles.searchPlaceholder, { color: colors.mutedForeground }]}>
                   {feed.userNeighborhood ?? 'Helsinki'}
-                  {onlineCount > 0 ? ` · ${onlineCount} ${t('feed.online') ?? 'paikalla'}` : ''}
-                </Text>
-                <Text style={[styles.headerTitle, { color: colors.foreground }]}>
-                  {t('feed.nearbyNow') ?? 'Nearby now'}
                 </Text>
               </PressableOpacity>
-              <View style={styles.headerRight}>
-                <PressableOpacity
-                  onPress={() => router.push('/search')}
-                  style={[styles.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-                  accessibilityLabel={t('common.search')}
-                  accessibilityRole="button"
-                >
-                  <Search size={16} color={colors.foreground} strokeWidth={2} />
-                </PressableOpacity>
-                <PressableOpacity
-                  onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode('list') }}
-                  style={[styles.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-                  accessibilityLabel={t('feed.listView') ?? 'List view'}
-                  accessibilityRole="button"
-                >
-                  <LayoutGrid size={16} color={colors.foreground} strokeWidth={2} />
-                </PressableOpacity>
-              </View>
+              <PressableOpacity
+                onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode('list') }}
+                style={[styles.iconBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                accessibilityLabel={t('feed.listView') ?? 'List view'}
+                accessibilityRole="button"
+              >
+                <LayoutGrid size={20} color={colors.foreground} strokeWidth={1.8} />
+              </PressableOpacity>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, alignItems: 'center' }} style={styles.pillRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }} style={styles.pillRow}>
               <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
             </ScrollView>
           </View>
@@ -587,72 +618,73 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
-              {/* 1. Header row — Monochrome 05 */}
-              <View style={styles.headerRow}>
-                <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.headerLeft} hitSlop={8}>
-                  <Text style={[styles.headerLocation, { color: colors.mutedForeground }]}>
+              {/* 1. v3 Header — location eyebrow + Bricolage title + pulse row */}
+              <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.header} hitSlop={8}>
+                <View style={styles.hLocLine}>
+                  <View style={[styles.hLocPin, { backgroundColor: colors.success }]}>
+                    <View style={styles.hLocPinDot} />
+                  </View>
+                  <Text style={[styles.hLocText, { color: colors.mutedForeground }]}>
+                    {t('feed.yourNeighborhood') ?? 'Naapurustosi'}
+                  </Text>
+                </View>
+                <View style={styles.hTitleRow}>
+                  <Text style={[styles.hTitle, { color: colors.foreground }]}>
                     {feed.userNeighborhood ?? 'Helsinki'}
-                    {onlineCount > 0 ? ` · ${onlineCount} ${t('feed.online') ?? 'paikalla'}` : ''}
                   </Text>
-                  <Text style={[styles.headerTitle, { color: colors.foreground }]}>
-                    {t('feed.nearbyNow') ?? 'Nearby now'}
-                  </Text>
-                  {weeklyActiveCount > 0 && (
-                    <Text style={[styles.headerActivity, { color: colors.mutedForeground }]}>
-                      {t('feed.neighborsActiveThisWeek', { count: weeklyActiveCount }) ?? `${weeklyActiveCount} naapuria aktiivisena tällä viikolla`}
+                </View>
+                <View style={styles.hPulse}>
+                  <View style={styles.pulseGroup}>
+                    <View style={[styles.pulseDot, { backgroundColor: colors.success }]} />
+                    <Text style={[styles.pulseText, { color: colors.foreground }]}>
+                      <Text style={{ fontFamily: fonts.bodySemi }}>{onlineCount || 0}</Text>
+                      {' '}{t('feed.neighborsNow') ?? 'naapuria juuri nyt'}
                     </Text>
+                  </View>
+                  {weeklyActiveCount > 0 && (
+                    <>
+                      <Text style={[styles.pulseDivider, { color: colors.tertiaryForeground }]}>·</Text>
+                      <Text style={[styles.pulseText, { color: colors.foreground }]}>
+                        <Text style={{ fontFamily: fonts.bodySemi }}>{feed.posts.length}</Text>
+                        {' '}{t('feed.postsThisWeek') ?? 'ilmoitusta'}
+                      </Text>
+                    </>
+                  )}
+                </View>
+              </PressableOpacity>
+
+              {/* 2. Search input pill + map button */}
+              <View style={styles.searchRow}>
+                <PressableOpacity
+                  onPress={() => router.push('/search')}
+                  style={[styles.searchInput, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  accessibilityLabel={t('common.search')}
+                  accessibilityRole="button"
+                >
+                  <Search size={18} color={colors.mutedForeground} strokeWidth={2} />
+                  <Text style={[styles.searchPlaceholder, { color: colors.mutedForeground }]}>
+                    {t('feed.searchPlaceholder') ?? 'Etsi naapurustosta…'}
+                  </Text>
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode(v => v === 'list' ? 'map' : 'list') }}
+                  style={[styles.iconBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  accessibilityLabel={viewMode === 'list' ? (t('feed.mapView') ?? 'Map view') : (t('feed.listView') ?? 'List view')}
+                  accessibilityRole="button"
+                >
+                  {viewMode === 'list' ? (
+                    <Map size={20} color={colors.foreground} strokeWidth={1.8} />
+                  ) : (
+                    <LayoutGrid size={20} color={colors.foreground} strokeWidth={1.8} />
                   )}
                 </PressableOpacity>
-                <View style={styles.headerRight}>
-                  <PressableOpacity
-                    onPress={() => router.push('/search')}
-                    style={[styles.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-                    accessibilityLabel={t('common.search')}
-                    accessibilityRole="button"
-                  >
-                    <Search size={16} color={colors.foreground} strokeWidth={2} />
-                  </PressableOpacity>
-                  <PressableOpacity
-                    onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode(v => v === 'list' ? 'map' : 'list') }}
-                    style={[styles.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-                    accessibilityLabel={viewMode === 'list' ? (t('feed.mapView') ?? 'Map view') : (t('feed.listView') ?? 'List view')}
-                    accessibilityRole="button"
-                  >
-                    {viewMode === 'list' ? (
-                      <Map size={16} color={colors.foreground} strokeWidth={2} />
-                    ) : (
-                      <LayoutGrid size={16} color={colors.foreground} strokeWidth={2} />
-                    )}
-                  </PressableOpacity>
-                  <PressableOpacity
-                    onPress={() => {
-                      const labels = SORT_OPTIONS.map(o => feed.sortBy === o.key ? `${o.label} ✓` : o.label).concat(t('common.cancel') ?? 'Cancel')
-                      if (Platform.OS === 'ios') {
-                        ActionSheetIOS.showActionSheetWithOptions(
-                          { options: labels, cancelButtonIndex: labels.length - 1, title: t('feed.sort') ?? 'Sort' },
-                          (idx) => { if (idx < SORT_OPTIONS.length) handleSortChangeWithHaptics(SORT_OPTIONS[idx].key) },
-                        )
-                      } else {
-                        Alert.alert(t('feed.sort') ?? 'Sort', '', SORT_OPTIONS.map(o => ({
-                          text: o.label + (feed.sortBy === o.key ? ' ✓' : ''),
-                          onPress: () => handleSortChangeWithHaptics(o.key),
-                        })).concat({ text: t('common.cancel') ?? 'Cancel', onPress: () => {} }))
-                      }
-                    }}
-                    style={[styles.circleBtnDark, { backgroundColor: colors.foreground }]}
-                    accessibilityLabel={t('feed.sort') ?? 'Sort'}
-                    accessibilityRole="button"
-                  >
-                    <SlidersHorizontal size={16} color={colors.background} strokeWidth={2} />
-                  </PressableOpacity>
-                </View>
               </View>
 
-              {/* 2. Category pills */}
+              {/* 3. Category pills */}
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 8, alignItems: 'center' }}
+                contentContainerStyle={{ gap: 6, paddingVertical: 4 }}
                 style={styles.pillRow}
               >
                 <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
@@ -661,8 +693,8 @@ function FeedScreenInner() {
 
             {/* ── Active sort indicator ── */}
             {feed.sortBy !== 'recommended' && (
-              <View style={[styles.sortIndicator, { paddingHorizontal: 20 }]}>
-                <Text style={[styles.sortIndicatorText, { color: colors.mutedForeground }]}>
+              <View style={[styles.sortIndicator, { paddingHorizontal: 20, marginTop: 4 }]}>
+                <Text style={[styles.sortIndicatorText, { color: colors.tertiaryForeground }]}>
                   {SORT_OPTIONS.find(o => o.key === feed.sortBy)?.label}
                 </Text>
                 <PressableOpacity
@@ -727,28 +759,33 @@ function FeedScreenInner() {
               )}
             </View>
 
-            {/* ── Building community card ── */}
+            {/* ── Building card (v3 ink-fill) ── */}
             {userBuilding && userBuilding.member_count > 1 && (
-              <View style={[styles.buildingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.buildingIconWrap, { backgroundColor: `${colors.foreground}10` }]}>
-                  <Home size={18} color={colors.foreground} />
+              <PressableOpacity
+                onPress={() => { try { Haptics.selectionAsync() } catch {}; setViewMode('map') }}
+                style={[styles.bldCard, { backgroundColor: colors.foreground }]}
+                accessibilityLabel={`${userBuilding.street_address} — ${userBuilding.member_count - 1} ${t('feed.neighbors') ?? 'naapuria'}`}
+              >
+                <View style={styles.bldDecor} />
+                <View style={styles.bldIconWrap}>
+                  <Home size={20} color={colors.background} strokeWidth={1.8} />
                 </View>
-                <View style={styles.buildingCardText}>
-                  <Text style={[styles.buildingCardTitle, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
+                <View style={styles.bldText}>
+                  <Text style={[styles.bldLabel, { color: colors.onInkMuted }]}>
+                    {t('feed.yourBuilding') ?? 'Taloyhtiösi'}
+                  </Text>
+                  <Text style={[styles.bldName, { color: colors.background }]}>
                     {userBuilding.street_address}
                   </Text>
-                  <Text style={[styles.buildingCardSub, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-                    {t('feed.neighborsInBuilding', { count: userBuilding.member_count - 1 })}
+                  <Text style={[styles.bldStats, { color: colors.onInkMuted }]}>
+                    <Text style={[styles.bldStatsStrong, { color: colors.background }]}>{userBuilding.member_count - 1}</Text>
+                    {' '}{t('feed.neighbors') ?? 'naapuria'}
                   </Text>
                 </View>
-                <PressableOpacity
-                  onPress={() => { try { Haptics.selectionAsync() } catch {}; setViewMode('map') }}
-                  style={[styles.buildingMapBtn, { backgroundColor: colors.foreground }]}
-                  accessibilityLabel={t('feed.mapView') ?? 'Map view'}
-                >
-                  <Map size={14} color={colors.primaryForeground} />
-                </PressableOpacity>
-              </View>
+                <View style={[styles.bldArrow, { backgroundColor: colors.background }]}>
+                  <ArrowUpRight size={16} color={colors.foreground} strokeWidth={2} />
+                </View>
+              </PressableOpacity>
             )}
 
             {/* ── Active polls ── */}
@@ -776,16 +813,18 @@ function FeedScreenInner() {
             ) : visiblePosts.length > 0 ? (
               <FadeIn>
                 <View style={styles.categorySection}>
-                  <View style={styles.categorySectionHeader}>
-                    <Text style={[styles.categorySectionTitle, { color: colors.foreground }]}>
-                      {t('feed.popularThisWeek') ?? 'Suositut'}
-                    </Text>
+                  <View style={styles.sectionHead}>
+                    <View style={styles.sectionTitleWrap}>
+                      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                        {t('feed.popularThisWeek') ?? 'Suositut'}
+                      </Text>
+                    </View>
                   </View>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
-                    snapToInterval={screenWidth * 0.65 + 12}
+                    contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+                    snapToInterval={230 + 10}
                     decelerationRate="fast"
                   >
                     {visiblePosts
@@ -793,7 +832,7 @@ function FeedScreenInner() {
                       .sort((a, b) => (b.like_count ?? 0) - (a.like_count ?? 0))
                       .slice(0, 6)
                       .map((post, index) => (
-                        <View key={post.id} style={{ width: screenWidth * 0.65 }}>
+                        <View key={post.id} style={{ width: 230 }}>
                           <PostCardGrid
                             post={post}
                             userId={feed.currentUserId}
@@ -850,17 +889,6 @@ function FeedScreenInner() {
       />
       )}
 
-      {/* FAB — create new post (magnetic spring press) */}
-      <MagneticPressable
-        onPress={() => router.push('/(tabs)/create')}
-        style={[styles.fab, { backgroundColor: colors.foreground }]}
-        accessibilityLabel={t('feed.createPost') ?? 'Create post'}
-        accessibilityRole="button"
-        pressedScale={0.88}
-      >
-        <Plus size={24} color={colors.background} strokeWidth={2.5} />
-      </MagneticPressable>
-
       <NeighborhoodPicker
         visible={feed.showNeighborhoodPicker}
         onClose={() => feed.setShowNeighborhoodPicker(false)}
@@ -885,60 +913,108 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  // 1. Header row — Monochrome 05
-  headerRow: {
+  // ── v3 Header ──
+  header: {
+    marginBottom: 4,
+  },
+  hLocLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
+    gap: 6,
+    marginBottom: 4,
   },
-  headerLeft: {
-    flex: 1,
-    marginRight: 12,
-  },
-  headerLocation: {
-    fontSize: 12,
-    fontFamily: fonts.bodyMedium,
-    fontWeight: '500',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    lineHeight: 14,
-    marginBottom: 2,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.8,
-    lineHeight: 32,
-  },
-  headerActivity: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  circleBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 999,
+  hLocPin: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
   },
-  circleBtnDark: {
-    width: 44,
-    height: 44,
+  hLocPinDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
+  },
+  hLocText: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    letterSpacing: -0.1,
+    lineHeight: 16,
+  },
+  hTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 2,
+  },
+  hTitle: {
+    fontSize: 38,
+    fontWeight: '600',
+    fontFamily: fonts.display,
+    letterSpacing: -1.4,
+    lineHeight: 38,
+  },
+  hPulse: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+  },
+  pulseGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  pulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  pulseText: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+    lineHeight: 18,
+  },
+  pulseDivider: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+
+  // ── Search row ──
+  searchRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+  },
+  searchInput: {
+    flex: 1,
+    height: 48,
     borderRadius: 999,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 18,
+  },
+  searchPlaceholder: {
+    fontSize: 15,
+    fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 20,
+  },
+  iconBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // Sort indicator
+  // ── Sort indicator ──
   sortIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -946,35 +1022,46 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   sortIndicatorText: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+
+  // ── Category pills ──
+  pillRow: {
+    marginTop: 20,
+    marginBottom: 8,
+  },
+
+  // ── Section heads (v3 Bricolage) ──
+  categorySection: {
+    marginTop: 28,
+  },
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
+  sectionTitleWrap: {
+    gap: 3,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '500',
+    fontFamily: fonts.displayMedium,
+    letterSpacing: -0.7,
+    lineHeight: 24,
+  },
+  sectionSub: {
     fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-  },
-
-  // 2. Category pills
-  pillRow: {
-    marginBottom: 18,
-  },
-
-  // ── Wolt-style category sections ──
-  categorySection: {
-    marginTop: 4,
-  },
-  categorySectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  categorySectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.4,
-    lineHeight: 24,
+    lineHeight: 16,
   },
   seeAllRow: {
     flexDirection: 'row',
@@ -983,29 +1070,50 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   seeAllText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
-    lineHeight: 20,
+    lineHeight: 18,
+  },
+
+  // ── Sort row (filtered view) ──
+  sortRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
+  sortLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+  sortBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  sortBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    lineHeight: 16,
   },
 
   // ── Filtered grid rows ──
   gridRow: {
     flexDirection: 'row',
     gap: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
 
-  // FAB
-  fab: {
-    position: 'absolute', right: 20, bottom: 92,
-    width: 56, height: 56, borderRadius: 28,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
-  },
-
-  // Banners
+  // ── Banners ──
   newBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, borderRadius: 999, paddingVertical: 12, minHeight: 44,
@@ -1022,33 +1130,83 @@ const styles = StyleSheet.create({
   },
   missedBannerText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
 
-  // Cold start / empty
+  // ── Cold start / empty ──
   coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
-  coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18, fontFamily: fonts.heading, lineHeight: 24 },
-  coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18, fontFamily: fonts.display, lineHeight: 24 },
+  coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
   coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999, marginTop: 8, minHeight: 48 },
   coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
 
-  // Building community card
-  buildingCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    marginHorizontal: 20, marginTop: 12, marginBottom: 4,
-    paddingHorizontal: 16, paddingVertical: 14,
-    borderRadius: 20, borderWidth: 1,
+  // ── Building card (v3 ink-fill) ──
+  bldCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 4,
+    padding: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  buildingIconWrap: {
-    width: 36, height: 36, borderRadius: 18,
-    alignItems: 'center', justifyContent: 'center',
+  bldDecor: {
+    position: 'absolute',
+    right: -30,
+    top: -40,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
-  buildingCardText: { flex: 1, gap: 2 },
-  buildingCardTitle: { fontSize: 14, lineHeight: 18 },
-  buildingCardSub: { fontSize: 12, lineHeight: 16 },
-  buildingMapBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    alignItems: 'center', justifyContent: 'center',
+  bldIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  bldText: {
+    flex: 1,
+  },
+  bldLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+  bldName: {
+    fontSize: 18,
+    fontWeight: '500',
+    fontFamily: fonts.displayMedium,
+    letterSpacing: -0.4,
+    lineHeight: 20,
+    marginTop: 2,
+  },
+  bldStats: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+    marginTop: 4,
+  },
+  bldStatsStrong: {
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+  },
+  bldArrow: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  // Footer
+  // ── Footer ──
   allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },
   allLoadedLine: { height: 1, width: '100%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },

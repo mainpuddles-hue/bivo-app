@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TackBird v2 — UX review &amp; redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="tokens.css"/>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #ECEEF0; font-family: 'Instrument Sans', system-ui, sans-serif; color: #1A1D1F; -webkit-font-smoothing: antialiased; }
+  #root { height: 100%; }
+
+  /* Annotation overlays for "before vs after" */
+  .annot {
+    position: absolute;
+    background: rgba(255,255,255,0.96);
+    border: 1px solid #E8EAEC;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #1A1D1F;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-width: 220px;
+  }
+  .annot strong { display: block; font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: #535A60; margin-bottom: 4px; font-weight: 600; }
+  .annot::before {
+    content: ""; position: absolute; width: 8px; height: 8px;
+    background: rgba(255,255,255,0.96); border-left: 1px solid #E8EAEC; border-top: 1px solid #E8EAEC;
+    transform: rotate(-45deg);
+  }
+  .annot.left::before { right: -5px; top: 12px; transform: rotate(135deg); }
+  .annot.right::before { left: -5px; top: 12px; transform: rotate(-45deg); }
+
+  /* Banner above canvas */
+  .doc-banner {
+    position: fixed; top: 16px; left: 16px; right: 16px;
+    z-index: 30; pointer-events: none;
+  }
+  .doc-banner-inner {
+    pointer-events: auto;
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(10px);
+    border: 1px solid #E8EAEC;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+    max-width: 560px; margin: 0 auto;
+  }
+  .doc-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1A1D1F; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+  .doc-title { font-size: 14px; font-weight: 600; color: #1A1D1F; line-height: 1.2; }
+  .doc-sub { font-size: 12px; color: #535A60; margin-top: 2px; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="primitives.jsx"></script>
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="design-canvas.jsx"></script>
+
+  <script type="text/babel" src="seed.jsx"></script>
+  <script type="text/babel" src="post-card.jsx"></script>
+  <script type="text/babel" src="screen-feed.jsx"></script>
+  <script type="text/babel" src="screen-search.jsx"></script>
+  <script type="text/babel" src="screen-post-detail.jsx"></script>
+  <script type="text/babel" src="screens-rest.jsx"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    /* global React, ReactDOM, IOSDevice, DesignCanvas, DCSection, DCArtboard, DCPostIt,
+       FeedV2, SearchV2, PostDetailV2, CreateV2, MessagesThreadV2, ProfileV2,
+       NotificationsV2, OnboardingV2 */
+
+    const SCREEN_W = 402;
+    const SCREEN_H = 874;
+
+    // Frame helper — wraps any v2 screen in an iOS device + status bar.
+    function Frame({ children, statusDark = false, hideHomeIndicator = false }) {
+      return (
+        <IOSDevice width={SCREEN_W} height={SCREEN_H} dark={statusDark}>
+          {children}
+        </IOSDevice>
+      );
+    }
+
+    function App() {
+      return (
+        <>
+          <div className="doc-banner">
+            <div className="doc-banner-inner">
+              <div className="doc-mark">T</div>
+              <div>
+                <div className="doc-title">TackBird v2 · UX-arvio &amp; redesign</div>
+                <div className="doc-sub">9 ydinruutua · ennen/jälkeen-vertailu Feed-näytöstä · Helsinki Monochrome -järjestelmä säilytetään</div>
+              </div>
+            </div>
+          </div>
+
+          <DesignCanvas>
+
+            <DCSection id="feed-compare"
+              title="Feed — ennen vs. jälkeen"
+              subtitle="Tärkein muutos: pelkistetty header, search-input näkyväksi, banner-prioriteetti, FAB poistettu (floating-nav riittää).">
+
+              {/* BEFORE — text-based audit (avoids embedding mismatched preview) */}
+              <DCArtboard id="feed-v1-audit" label="V1 · auditointi" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{
+                  padding: 24, height: SCREEN_H, width: SCREEN_W,
+                  background: "#FAFAFB",
+                  border: "1px solid #E8EAEC", borderRadius: 24,
+                  display: "flex", flexDirection: "column", gap: 14,
+                  fontFamily: "Instrument Sans",
+                }}>
+                  <div style={{
+                    fontSize: 11, fontWeight: 600, letterSpacing: 1.4,
+                    textTransform: "uppercase", color: "#535A60"
+                  }}>Nykyinen Feed · ongelmat</div>
+                  <div style={{fontSize: 22, fontWeight: 700, letterSpacing: -0.4, color: "#1A1D1F", lineHeight: 1.2}}>
+                    Mitä korjataan
+                  </div>
+                  {[
+                    {n: "1", t: "Header tukossa", d: "6 informaatiotasoa ennen ensimmäistä ilmoitusta: location-label, otsikko, 3 nappia (Search/Map/Sort), online-count, viikko-aktiviteetti."},
+                    {n: "2", t: "Search circle button", d: "Päivittäin käytetty toiminto on saman painoarvoinen kuin Sort. Vaatii 2 napautusta (icon → modal)."},
+                    {n: "3", t: "Sort dark circle", d: "Visuaalinen paino on epäsuhteessa käyttöön. Vie katseen pois pääotsikolta."},
+                    {n: "4", t: "Banner-pino", d: "5 ehdollista banneria voivat työntää ensimmäistä ilmoitusta alaspäin."},
+                    {n: "5", t: "FAB + nav-Plus päällekkäin", d: "Kaksi CTA:ta samaan toimintoon, alaoikealla kahden ympyrän kasauma."},
+                    {n: "6", t: "Kortin hierarkia käänteinen", d: "image-hero-otsikko 13px, text-only-otsikko 16px. Suurempi kortti → pienempi otsikko."},
+                  ].map(it => (
+                    <div key={it.n} style={{display: "flex", gap: 12, alignItems: "flex-start"}}>
+                      <div style={{
+                        width: 22, height: 22, borderRadius: 11, flexShrink: 0,
+                        background: "#1A1D1F", color: "white",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 11, fontWeight: 700,
+                      }}>{it.n}</div>
+                      <div style={{flex: 1}}>
+                        <div style={{fontSize: 13, fontWeight: 600, color: "#1A1D1F", lineHeight: 1.3}}>{it.t}</div>
+                        <div style={{fontSize: 12, color: "#535A60", marginTop: 3, lineHeight: 1.5}}>{it.d}</div>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{marginTop: "auto", paddingTop: 12, borderTop: "1px solid #E8EAEC", fontSize: 11, color: "#848B93", lineHeight: 1.5}}>
+                    Ks. <code style={{background:"#EEF0F2",padding:"1px 5px",borderRadius:4}}>app/(tabs)/index.tsx</code> ja <code style={{background:"#EEF0F2",padding:"1px 5px",borderRadius:4}}>HANDOFF.md</code>.
+                  </div>
+                </div>
+              </DCArtboard>
+
+              <DCArtboard id="feed-v2" label="V2 · ehdotus" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}>
+                  <Frame>
+                    <FeedV2 active="feed"/>
+                  </Frame>
+                </div>
+              </DCArtboard>
+
+              <DCArtboard id="feed-v2-filtered" label="V2 · suodatettu (Tarvitsen)" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}>
+                  <Frame>
+                    <FeedV2Demo filter="tarvitsen"/>
+                  </Frame>
+                </div>
+              </DCArtboard>
+
+              <DCPostIt x={20} y={40} color="yellow">
+                <strong>Header pelkistys</strong>
+                3 nappia → 1. Naapurusto-otsikko + yksi pulssirivi.
+                Search ei enää circle button vaan input.
+              </DCPostIt>
+
+              <DCPostIt x={20} y={140} color="pink">
+                <strong>Banner-prioriteetti</strong>
+                Vain yksi banneri kerrallaan.
+                Building-card omaan slottiinsa, ei pinoa headerin alla.
+              </DCPostIt>
+
+              <DCPostIt x={20} y={240} color="blue">
+                <strong>FAB poistettu</strong>
+                Floating navissa on jo Plus.
+                Kaksi CTAa samaan toimintoon = visuaalista kohinaa.
+              </DCPostIt>
+            </DCSection>
+
+
+            <DCSection id="core-screens"
+              title="Ydinruudut"
+              subtitle="9 näyttöä jotka kattavat tärkeimmät käyttötapaukset. Kaikki samalla tokeniavaimella kuin theme.ts.">
+
+              <DCArtboard id="search" label="Haku" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}><Frame><SearchV2/></Frame></div>
+              </DCArtboard>
+
+              <DCArtboard id="detail" label="Ilmoituksen yksityiskohta" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}><Frame><PostDetailV2/></Frame></div>
+              </DCArtboard>
+
+              <DCArtboard id="create" label="Uusi ilmoitus" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}><Frame><CreateV2/></Frame></div>
+              </DCArtboard>
+
+              <DCArtboard id="messages" label="Viestiketju" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}><Frame><MessagesThreadV2/></Frame></div>
+              </DCArtboard>
+
+              <DCArtboard id="profile" label="Profiili" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}><Frame><ProfileV2/></Frame></div>
+              </DCArtboard>
+
+              <DCArtboard id="notifications" label="Ilmoitukset" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}><Frame><NotificationsV2/></Frame></div>
+              </DCArtboard>
+
+              <DCArtboard id="onboarding" label="Onboarding · 1/3" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}}><Frame><OnboardingV2/></Frame></div>
+              </DCArtboard>
+            </DCSection>
+
+
+            <DCSection id="dark-mode"
+              title="Dark mode"
+              subtitle="Kaikki samat komponentit, [data-theme=&quot;dark&quot;]. Sama token-runko kuin theme.ts.">
+
+              <DCArtboard id="feed-dark" label="Feed · tumma" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}} data-theme="dark">
+                  <Frame statusDark>
+                    <FeedV2 active="feed"/>
+                  </Frame>
+                </div>
+              </DCArtboard>
+
+              <DCArtboard id="detail-dark" label="Yksityiskohta · tumma" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}} data-theme="dark">
+                  <Frame statusDark><PostDetailV2/></Frame>
+                </div>
+              </DCArtboard>
+
+              <DCArtboard id="messages-dark" label="Viestit · tumma" width={SCREEN_W + 16} height={SCREEN_H + 16}>
+                <div style={{padding: 8}} data-theme="dark">
+                  <Frame statusDark><MessagesThreadV2/></Frame>
+                </div>
+              </DCArtboard>
+            </DCSection>
+
+          </DesignCanvas>
+        </>
+      );
+    }
+
+    // Wrapper that lets us pass an initial filter to FeedV2 for the comparison artboard.
+    function FeedV2Demo({ filter = null }) {
+      // FeedV2's internal state defaults to filter=null.  We mount a thin wrapper
+      // that immediately sets the filter via a synthetic press if needed.
+      // Simpler: render FeedV2 inside a re-keyed component and rely on user-facing
+      // filter state.  Here we just inline-render with a deferred filter update via
+      // useState.  To avoid touching FeedV2 internals, we render it inside an
+      // <ForcedFilter> that triggers the active pill on mount.
+      const ref = React.useRef(null);
+      React.useEffect(() => {
+        if (!filter || !ref.current) return;
+        // find the pill by label and click it
+        const labels = { tarvitsen: "Tarvitsen", tarjoan: "Tarjoan", ilmaista: "Ilmaista", lainaa: "Lainaa", tapahtuma: "Tapahtuma" };
+        const target = labels[filter];
+        if (!target) return;
+        const pills = ref.current.querySelectorAll("div");
+        for (const el of pills) {
+          if (el.textContent === target && el.offsetHeight === 36) {
+            el.click(); break;
+          }
+        }
+      }, [filter]);
+      return (
+        <div ref={ref} style={{height: "100%"}}>
+          <FeedV2 active="feed"/>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  </script>
+</body>
+</html>
