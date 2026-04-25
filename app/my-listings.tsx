@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useCallback, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pressable } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pressable, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
@@ -254,7 +254,23 @@ function MyListingsScreenInner() {
         {/* Three-dot menu */}
         <PressableOpacity
           onPress={() => {
-            // TODO: show action sheet (edit, deactivate, delete)
+            Alert.alert(
+              item.title,
+              undefined,
+              [
+                { text: t('common.edit') ?? 'Edit', onPress: () => router.push(`/post/${item.id}`) },
+                {
+                  text: item.is_active ? (t('myListings.deactivate') ?? 'Deactivate') : (t('myListings.activate') ?? 'Activate'),
+                  onPress: async () => {
+                    const { error } = await (supabase.from('posts') as any)
+                      .update({ is_active: !item.is_active })
+                      .eq('id', item.id)
+                    if (!error) fetchPosts()
+                  },
+                },
+                { text: t('common.cancel') ?? 'Cancel', style: 'cancel' },
+              ],
+            )
           }}
           style={s.menuBtn}
           accessibilityRole="button"
@@ -265,7 +281,7 @@ function MyListingsScreenInner() {
         </PressableOpacity>
       </PressableOpacity>
     )
-  }, [colors, locale, router])
+  }, [colors, locale, router, supabase, fetchPosts, t])
 
   // ── Loading state ──
 

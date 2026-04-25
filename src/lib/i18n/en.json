@@ -459,6 +459,7 @@
     "joinFailed": "Failed to join event",
     "leaveFailed": "Failed to leave",
     "eventNotFound": "Event not found",
+    "loadFailed": "Failed to load event",
     "eventEnded": "This event has ended",
     "trending": "Trending",
     "groupChat": "Group Chat",
@@ -665,7 +666,10 @@
     "unread": "Unread",
     "archiveError": "Archiving failed",
     "longPressToPinHint": "Long press to pin",
-    "sendFirstMessage": "Send the first message to start the conversation"
+    "sendFirstMessage": "Send the first message to start the conversation",
+    "rateLimited": "Sending too fast. Please wait.",
+    "imageTooLarge": "Image is too large (max 10 MB)",
+    "imageUploadFailed": "Image upload failed"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -1188,7 +1192,8 @@
     "pushPromptTitle": "Stay in the loop",
     "pushPromptDesc": "Want to hear when something new happens in your neighborhood?",
     "enableNotifications": "Enable notifications",
-    "maybeLater": "Maybe later"
+    "maybeLater": "Maybe later",
+    "addressRequired": "Please select your address to continue"
   },
   "resetPassword": {
     "title": "Change password",
@@ -3249,7 +3254,8 @@
     "weekdayThu": "Th",
     "weekdayFri": "Fr",
     "weekdaySat": "Sa",
-    "weekdaySun": "Su"
+    "weekdaySun": "Su",
+    "imageUploadsFailed": "image(s) failed to upload"
   },
   "phoneVerification": {
     "title": "Verify phone number",

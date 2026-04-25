@@ -52,6 +52,7 @@ function EventDetailScreenInner() {
   const [userId, setUserId] = useState<string | null>(null)
   const [reportModalVisible, setReportModalVisible] = useState(false)
   const [eventImgError, setEventImgError] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
   const joiningRef = useRef(false)
 
   // Derived
@@ -90,12 +91,14 @@ function EventDetailScreenInner() {
       if (!mountedRef.current) return
       if (eventResult.error || !eventResult.data) {
         if (__DEV__) console.log('[event-detail] fetch error:', eventResult.error?.message)
+        if (eventResult.error) setFetchError(true)
         return
       }
       setEvent(eventResult.data as CommunityEvent)
       setParticipants((partsResult.data ?? []) as EventParticipant[])
     } catch (err) {
       if (__DEV__) console.log('[event-detail] error:', err)
+      setFetchError(true)
     } finally {
       if (mountedRef.current) setLoading(false)
     }
@@ -327,7 +330,17 @@ function EventDetailScreenInner() {
           </PressableOpacity>
         </View>
         <View style={s.emptyContainer}>
-          <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('events.eventNotFound')}</Text>
+          <Text style={[s.emptyText, { color: colors.mutedForeground }]}>
+            {fetchError ? t('common.error') : t('events.eventNotFound')}
+          </Text>
+          {fetchError && (
+            <PressableOpacity
+              onPress={() => { setFetchError(false); setLoading(true); fetchEvent() }}
+              style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, marginTop: 12 }}
+            >
+              <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 13 }}>{t('common.retry')}</Text>
+            </PressableOpacity>
+          )}
         </View>
       </View>
     )

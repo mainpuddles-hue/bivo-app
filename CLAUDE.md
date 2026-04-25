@@ -60,6 +60,13 @@ TackBird Mobile is the React Native (Expo) version of the TackBird neighborhood 
 3. Is it a direct service operation (Supabase SQL, Figma design)? → Use that service's MCP
 4. Last resort → Use Claude's built-in tools directly
 
+## Persistent Memory — ALWAYS USE
+
+**Always use Obsidian (obsidian-vault MCP) or claude-mem for persistent context across sessions.**
+- At session start: check claude-mem observations and Obsidian vault for relevant prior context
+- During work: save significant discoveries, decisions, and task completions immediately
+- Never rely only on conversation memory — it is lost at session boundaries
+
 ## Architecture
 
 ### Data Flow

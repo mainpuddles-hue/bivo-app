@@ -22,6 +22,7 @@ import { formatTimeAgo } from '@/lib/format'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
 import { checkRateLimit } from '@/lib/rateLimiter'
+import { useToast } from '@/components/Toast'
 
 interface EventInfo {
   id: string
@@ -38,6 +39,7 @@ function EventChatScreenInner() {
   const router = useRouter()
   const { id: conversationId } = useLocalSearchParams<{ id: string }>()
   const supabase = useSupabase()
+  const toast = useToast()
   const flatListRef = useRef<FlatList>(null)
 
   const [userId, setUserId] = useState<string | null>(null)
@@ -99,14 +101,18 @@ function EventChatScreenInner() {
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || sending) return
-    if (!(await checkRateLimit('event-chat-send'))) return
+    if (!(await checkRateLimit('event-chat-send'))) {
+      toast.show({ message: t('messages.rateLimited') ?? 'Sending too fast', type: 'info' })
+      return
+    }
 
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     const text = input
     setInput('')
     const ok = await sendMessage(text)
     if (!ok) {
-      setInput(text) // Restore on failure
+      setInput(text)
+      toast.show({ message: t('messages.sendFailed') ?? 'Message failed to send', type: 'error' })
     }
   }, [input, sending, sendMessage])
 
@@ -131,6 +137,7 @@ function EventChatScreenInner() {
       const blob = await response.blob()
       if (blob.size > 10 * 1024 * 1024) {
         if (__DEV__) console.warn('[event-chat] image too large')
+        toast.show({ message: t('messages.imageTooLarge') ?? 'Image is too large', type: 'error' })
         return
       }
       const arrayBuffer = await blob.arrayBuffer()
@@ -141,6 +148,7 @@ function EventChatScreenInner() {
 
       if (error) {
         if (__DEV__) console.warn('[event-chat] image upload error:', error.message)
+        toast.show({ message: t('messages.imageUploadFailed') ?? 'Image upload failed', type: 'error' })
         return
       }
 

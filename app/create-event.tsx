@@ -130,6 +130,7 @@ function CreateEventScreenInner() {
         setImageUri(e.image_url ?? null)
       } catch (err) {
         if (__DEV__) console.warn('[create-event] edit load failed:', err)
+        toast.show({ message: t('events.loadFailed') ?? 'Failed to load event data', type: 'error' })
       } finally {
         if (mounted) setEditLoading(false)
       }

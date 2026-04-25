@@ -421,8 +421,8 @@ export function useFeedData() {
         if (ranked.length < 5) {
           // Mix seeds with real posts when neighborhood is quiet (< 5 real posts)
           const seeds = getSeedPosts(userNeighborhoodRef.current ?? 'Helsinki') as Post[]
-          const seedIds = new Set(seeds.map(s => s.id))
-          const combined = [...ranked, ...seeds.filter(s => !seedIds.has(s.id))].slice(0, 10)
+          const realIds = new Set(ranked.map(p => p.id))
+          const combined = [...ranked, ...seeds.filter(s => !realIds.has(s.id))].slice(0, 10)
           setPosts(combined as Post[])
         } else {
           setPosts(ranked)
@@ -454,7 +454,7 @@ export function useFeedData() {
         }
       }
     }
-  }, [supabase, activeFilter, sortBy, showFollowing, followedIds, t, currentUserId, userLocation, preferredTypes])
+  }, [supabase, activeFilter, sortBy, showFollowing, followedIds, t, currentUserId, userLocation, preferredTypes, isConnected])
 
   // Ref to avoid stale closures in useFocusEffect and realtime callbacks
   const fetchPostsRef = useRef(fetchPosts)
@@ -560,6 +560,8 @@ export function useFeedData() {
   }, [])
 
   const handleNeighborhoodSelect = useCallback(async (nh: string) => {
+    // Capture previous value for rollback before changing
+    const prevNeighborhood = userNeighborhoodRef.current
     // Update ref synchronously so fetchPosts reads the fresh neighborhood
     userNeighborhoodRef.current = nh
     setUserNeighborhood(nh)
@@ -568,8 +570,8 @@ export function useFeedData() {
       const { error } = await (supabase.from('profiles') as any).update({ naapurusto: nh }).eq('id', currentUserId)
       if (error) {
         // Revert local state if DB update failed
-        userNeighborhoodRef.current = userNeighborhood
-        setUserNeighborhood(userNeighborhood)
+        userNeighborhoodRef.current = prevNeighborhood
+        setUserNeighborhood(prevNeighborhood ?? nh)
         if (__DEV__) console.warn('[feed] neighborhood update failed:', error.message)
         return
       }

@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { enableFreeze } from 'react-native-screens'
-import { Tabs, useRouter, usePathname } from 'expo-router'
+import { Tabs, useRouter } from 'expo-router'
 import { View, Text, StyleSheet, Platform, Pressable } from 'react-native'
 import * as Notifications from 'expo-notifications'
 import * as Haptics from 'expo-haptics'
 
 // Freeze inactive screens to save memory and CPU
 enableFreeze(true)
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Newspaper, Plus, MessageCircle, User, Compass } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -129,8 +128,6 @@ export default function TabLayout() {
   const { colors } = useTheme()
   const { t } = useI18n()
   const router = useRouter()
-  const pathname = usePathname()
-  const insets = useSafeAreaInsets()
   const supabase = useSupabase()
   const [userId, setUserId] = useState<string | null>(null)
   const unreadCount = useUnreadCount(userId)

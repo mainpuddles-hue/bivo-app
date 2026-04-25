@@ -433,8 +433,8 @@ function OnboardingScreenInner() {
             if (selectedAddress) {
               goToStep(2)
             } else {
-              // Nudge user to fill address — but CTA is not grayed out
               try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning) } catch {}
+              toast.show({ message: t('onboarding.addressRequired') ?? 'Please select your address', type: 'error' })
             }
           }}
           style={[s.ctaButton, { backgroundColor: colors.foreground }]}

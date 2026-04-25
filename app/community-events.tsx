@@ -65,6 +65,8 @@ function CommunityEventsScreenInner() {
 
       if (error) {
         if (__DEV__) console.log('[community-events] fetch error:', error.message)
+        setFetchError(true)
+        return
       }
       let events = (data ?? []) as CommunityEvent[]
       // Filter out events from blocked users

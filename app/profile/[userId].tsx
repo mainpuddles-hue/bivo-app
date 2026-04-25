@@ -70,6 +70,7 @@ export default function PublicProfileScreen() {
   const [ratingDistribution, setRatingDistribution] = useState<Record<number, number>>({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 })
   const [totalReviewCount, setTotalReviewCount] = useState(0)
   const [completedTransactions, setCompletedTransactions] = useState(0)
+  const [fetchError, setFetchError] = useState(false)
   const trust = useTrustLevel(userId)
   const mountedRef = useRef(true)
 
@@ -207,6 +208,7 @@ export default function PublicProfileScreen() {
 
     } catch (err) {
       if (__DEV__) console.error('[profile] loadProfile error:', err)
+      if (mountedRef.current) setFetchError(true)
     } finally {
       if (mountedRef.current) {
         setLoading(false)
@@ -420,7 +422,19 @@ export default function PublicProfileScreen() {
       <ScreenErrorBoundary screenName="PublicProfile">
       <View style={[s.container, { backgroundColor: colors.background }]}>
         {renderBar(t('profile.title'))}
-        <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('profile.notFound')}</Text>
+        <View style={{ alignItems: 'center', paddingTop: 80, gap: 12 }}>
+          <Text style={[s.notFound, { color: colors.mutedForeground }]}>
+            {fetchError ? t('common.error') : t('profile.notFound')}
+          </Text>
+          {fetchError && (
+            <Pressable
+              onPress={() => { setFetchError(false); setLoading(true); loadProfile() }}
+              style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999 }}
+            >
+              <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 13 }}>{t('common.retry')}</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
       </ScreenErrorBoundary>
     )

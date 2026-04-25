@@ -22,6 +22,7 @@ import { formatTimeAgo } from '@/lib/format'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
 import { checkRateLimit } from '@/lib/rateLimiter'
+import { useToast } from '@/components/Toast'
 
 interface OrgInfo {
   id: string
@@ -38,6 +39,7 @@ function BuildingChatScreenInner() {
   const router = useRouter()
   const { id: orgId } = useLocalSearchParams<{ id: string }>()
   const supabase = useSupabase()
+  const toast = useToast()
   const flatListRef = useRef<FlatList>(null)
 
   const [userId, setUserId] = useState<string | null>(null)
@@ -45,6 +47,7 @@ function BuildingChatScreenInner() {
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({})
+  const [initError, setInitError] = useState(false)
 
   // Get user
   useEffect(() => {
@@ -113,6 +116,7 @@ function BuildingChatScreenInner() {
         }
       } catch (err) {
         if (__DEV__) console.warn('[building-chat] loadOrg error:', err)
+        if (!cancelled) setInitError(true)
       }
     }
 
@@ -132,13 +136,19 @@ function BuildingChatScreenInner() {
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || sending) return
-    if (!(await checkRateLimit('building-chat-send'))) return
+    if (!(await checkRateLimit('building-chat-send'))) {
+      toast.show({ message: t('messages.rateLimited') ?? 'Sending too fast', type: 'info' })
+      return
+    }
 
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     const text = input
     setInput('')
     const ok = await sendMessage(text)
-    if (!ok) setInput(text)
+    if (!ok) {
+      setInput(text)
+      toast.show({ message: t('messages.sendFailed') ?? 'Message failed to send', type: 'error' })
+    }
   }, [input, sending, sendMessage])
 
   const handlePickImage = useCallback(async () => {
@@ -158,7 +168,10 @@ function BuildingChatScreenInner() {
 
       const response = await fetch(asset.uri)
       const blob = await response.blob()
-      if (blob.size > 10 * 1024 * 1024) return
+      if (blob.size > 10 * 1024 * 1024) {
+        toast.show({ message: t('messages.imageTooLarge') ?? 'Image is too large', type: 'error' })
+        return
+      }
       const arrayBuffer = await blob.arrayBuffer()
 
       const { error } = await supabase.storage
@@ -167,6 +180,7 @@ function BuildingChatScreenInner() {
 
       if (error) {
         if (__DEV__) console.warn('[building-chat] image upload error:', error.message)
+        toast.show({ message: t('messages.imageUploadFailed') ?? 'Image upload failed', type: 'error' })
         return
       }
 
@@ -308,7 +322,17 @@ function BuildingChatScreenInner() {
       )}
 
       {/* Messages */}
-      {loading || !conversationId ? (
+      {initError && !conversationId ? (
+        <View style={s.center}>
+          <Text style={[s.emptyText, { color: colors.mutedForeground }]}>{t('common.error')}</Text>
+          <Pressable
+            onPress={() => { setInitError(false) }}
+            style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, marginTop: 12 }}
+          >
+            <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 13 }}>{t('common.retry')}</Text>
+          </Pressable>
+        </View>
+      ) : loading || !conversationId ? (
         <View style={s.center}>
           <ActivityIndicator size="large" color={colors.foreground} />
         </View>

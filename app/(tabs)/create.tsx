@@ -178,6 +178,7 @@ export default function CreateScreen() {
   const [tarjoanType, setTarjoanType] = useState<'service' | 'item'>('service')
   const [itemCondition, setItemCondition] = useState<string | null>(null)
   const [expirationDays, setExpirationDays] = useState(0)
+  const expirationSetByUser = useRef(false)
   const [images, setImages] = useState<string[]>([])
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
@@ -324,7 +325,7 @@ export default function CreateScreen() {
   }, [selectedType])
 
   useEffect(() => {
-    if (selectedType && !expirationDays) {
+    if (selectedType && !expirationSetByUser.current && !expirationDays) {
       const suggested = suggestExpirationDays(selectedType, selectedTags)
       setExpirationDays(suggested)
     }
@@ -347,7 +348,7 @@ export default function CreateScreen() {
               setDailyFee(''); setServicePrice(''); setEventDate('')
               setEventStartTime(''); setEventEndTime(''); setEventMaxCapacity('')
               setSelectedTags([]); setTarjoanType('service'); setItemCondition(null)
-              setExpirationDays(0); setIsAnonymous(false); setIsUrgent(false)
+              setExpirationDays(0); expirationSetByUser.current = false; setIsAnonymous(false); setIsUrgent(false)
               setLatitude(null); setLongitude(null); setStep('category')
             },
           },
@@ -1271,7 +1272,7 @@ export default function CreateScreen() {
                       {EXPIRATION_OPTIONS.map((opt) => {
                         const sel = expirationDays === opt.days
                         return (
-                          <PressableOpacity key={opt.days} onPress={() => setExpirationDays(opt.days)}
+                          <PressableOpacity key={opt.days} onPress={() => { expirationSetByUser.current = true; setExpirationDays(opt.days) }}
                             style={[mk.tagChip, sel ? { backgroundColor: colors.foreground } : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
                             <Text style={[mk.tagText, { color: sel ? colors.background : colors.foreground }]}>
                               {opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`}

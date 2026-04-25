@@ -402,18 +402,21 @@ function NotificationsScreenInner() {
 
   // Delete notification — optimistic with rollback, guarded against fetch resurrection
   const deleteNotification = useCallback(async (notifId: string) => {
-    const prev = notifications
+    let deletedItem: PrioritizedNotification | undefined
     pendingDeletesRef.current.add(notifId)
-    setNotifications(p => p.filter(n => n.id !== notifId))
+    setNotifications(p => {
+      deletedItem = p.find(n => n.id === notifId)
+      return p.filter(n => n.id !== notifId)
+    })
     try {
       const { error } = await (supabase.from('notifications') as any).delete().eq('id', notifId)
       if (error) throw error
     } catch {
-      setNotifications(prev)
+      if (deletedItem) setNotifications(p => [...p, deletedItem!])
     } finally {
       pendingDeletesRef.current.delete(notifId)
     }
-  }, [supabase, notifications])
+  }, [supabase])
 
   const handleLongPress = useCallback((item: PrioritizedNotification) => {
     Alert.alert(

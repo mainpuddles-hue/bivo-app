@@ -359,7 +359,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
             {post.images && post.images.length > 1 && (
               <View style={styles.multiImageBadge}>
                 <ImageIcon size={12} color="#FFFFFF" />
-                <Text style={styles.multiImageText}>{post.images.length + 1}</Text>
+                <Text style={styles.multiImageText}>{post.images.length}</Text>
               </View>
             )}
             {/* Pro crown */}

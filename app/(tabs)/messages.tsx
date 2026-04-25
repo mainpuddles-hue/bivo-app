@@ -79,16 +79,16 @@ export default function MessagesScreen() {
   }, [])
 
   const handleTogglePin = useCallback(async (convId: string) => {
-    const newIds = pinnedIds.includes(convId)
-      ? pinnedIds.filter(id => id !== convId)
-      : [...pinnedIds, convId]
-    setPinnedIds(newIds)
-    try {
-      await AsyncStorage.setItem(PINNED_KEY, JSON.stringify(newIds))
-    } catch (err) {
-      if (__DEV__) console.warn('[messages] failed to persist pinned ids:', err)
-    }
-  }, [pinnedIds])
+    setPinnedIds(prev => {
+      const newIds = prev.includes(convId)
+        ? prev.filter(id => id !== convId)
+        : [...prev, convId]
+      AsyncStorage.setItem(PINNED_KEY, JSON.stringify(newIds)).catch(err => {
+        if (__DEV__) console.warn('[messages] failed to persist pinned ids:', err)
+      })
+      return newIds
+    })
+  }, [])
 
   const fetchConversations = useCallback(async () => {
     if (!mountedRef.current) return

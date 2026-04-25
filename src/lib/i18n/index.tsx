@@ -90,7 +90,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale)
-    AsyncStorage.setItem(STORAGE_KEY, newLocale)
+    AsyncStorage.setItem(STORAGE_KEY, newLocale).catch(() => {})
   }, [])
 
   const t = useCallback(

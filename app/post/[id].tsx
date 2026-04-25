@@ -54,7 +54,10 @@ function PostDetailScreenInner() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const supabase = useSupabase()
   const mountedRef = useRef(true)
-  useEffect(() => { return () => { mountedRef.current = false } }, [])
+  useEffect(() => { return () => {
+    mountedRef.current = false
+    if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current)
+  } }, [])
 
   const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
@@ -280,10 +283,9 @@ function PostDetailScreenInner() {
     if (likingRef.current) return
     likingRef.current = true
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+    const wasLiked = isLiked
+    const prevCount = likeCount
     try {
-      const wasLiked = isLiked
-      const prevCount = likeCount
-
       // Optimistic update
       setIsLiked(!wasLiked)
       setLikeCount(wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1)
@@ -316,10 +318,10 @@ function PostDetailScreenInner() {
         }
       }
     } catch (e) {
-      // Rollback to previous state if anything unexpected threw
+      // Rollback to previous state — use local snapshots, not stale closure values
       try {
-        setIsLiked(isLiked)
-        setLikeCount(likeCount)
+        setIsLiked(wasLiked)
+        setLikeCount(prevCount)
       } catch (rollbackErr) {
         if (__DEV__) console.warn('[post] like rollback failed:', rollbackErr)
       }
@@ -528,6 +530,7 @@ function PostDetailScreenInner() {
             // Hard-delete after 10 seconds if user doesn't undo
             if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current)
             undoTimeoutRef.current = setTimeout(async () => {
+              if (!mountedRef.current) return
               setUndoBarVisible(false)
               try {
                 await Promise.allSettled([
@@ -542,7 +545,7 @@ function PostDetailScreenInner() {
               } catch {
                 // Fire-and-forget — hard delete on timeout
               }
-              router.back()
+              if (mountedRef.current) router.back()
             }, 10000)
           } catch {
             toast.show({ message: t('post.deleteFailed'), type: 'error' })

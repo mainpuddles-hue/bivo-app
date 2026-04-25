@@ -250,12 +250,13 @@ function NewListingScreenInner() {
 
       // Upload images inline (same pattern as create.tsx)
       const imageUrls: string[] = []
+      let failedUploads = 0
       for (let i = 0; i < photos.length; i++) {
         const uri = photos[i]
         if (uri.startsWith('http')) { imageUrls.push(uri); continue }
         try {
           const response = await fetch(uri)
-          if (!response.ok) { if (__DEV__) console.warn(`[new-listing] image fetch failed: ${response.status}`); continue }
+          if (!response.ok) { if (__DEV__) console.warn(`[new-listing] image fetch failed: ${response.status}`); failedUploads++; continue }
           const blob = await response.blob()
           const mimeType = blob.type || 'image/jpeg'
           const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : (mimeType.split('/')[1] || 'jpg')
@@ -267,13 +268,18 @@ function NewListingScreenInner() {
             .upload(path, arrayBuffer, { contentType: mimeType, upsert: true })
           if (uploadError) {
             if (__DEV__) console.warn('[new-listing] image upload failed:', uploadError.message)
+            failedUploads++
           } else {
             const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path)
             imageUrls.push(urlData.publicUrl)
           }
         } catch (e) {
           if (__DEV__) console.warn('[new-listing] image upload error:', e)
+          failedUploads++
         }
+      }
+      if (failedUploads > 0) {
+        toast.show({ message: `${failedUploads} ${t('newListing.imageUploadsFailed') ?? 'image(s) failed to upload'}`, type: 'info' })
       }
 
       const postData: Record<string, any> = {

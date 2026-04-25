@@ -470,6 +470,7 @@
     "cancelFailed": "Avbokning misslyckades",
     "leaveFailed": "Kunde inte lämna",
     "eventNotFound": "Evenemanget hittades inte",
+    "loadFailed": "Kunde inte ladda evenemanget",
     "chatLeaveFailed": "Kunde inte lämna evenemangets chatt"
   },
   "activity": {
@@ -665,7 +666,10 @@
     "unread": "Oläst",
     "archiveError": "Arkivering misslyckades",
     "longPressToPinHint": "Tryck länge för att fästa",
-    "sendFirstMessage": "Skicka det första meddelandet för att starta konversationen"
+    "sendFirstMessage": "Skicka det första meddelandet för att starta konversationen",
+    "rateLimited": "Skickar för snabbt. Vänta lite.",
+    "imageTooLarge": "Bilden är för stor (max 10 MB)",
+    "imageUploadFailed": "Bilduppladdning misslyckades"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -1188,7 +1192,8 @@
     "pushPromptTitle": "Håll dig uppdaterad",
     "pushPromptDesc": "Vill du veta när något nytt händer i ditt grannskap?",
     "enableNotifications": "Aktivera aviseringar",
-    "maybeLater": "Kanske senare"
+    "maybeLater": "Kanske senare",
+    "addressRequired": "Välj din adress för att fortsätta"
   },
   "resetPassword": {
     "title": "Byt lösenord",
@@ -3249,7 +3254,8 @@
     "weekdayThu": "To",
     "weekdayFri": "Fr",
     "weekdaySat": "Lö",
-    "weekdaySun": "Sö"
+    "weekdaySun": "Sö",
+    "imageUploadsFailed": "bild(er) kunde inte laddas upp"
   },
   "phoneVerification": {
     "title": "Verifiera telefonnummer",

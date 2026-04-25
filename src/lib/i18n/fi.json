@@ -459,6 +459,7 @@
     "joinFailed": "Tapahtumaan liittyminen epäonnistui",
     "leaveFailed": "Poistuminen epäonnistui",
     "eventNotFound": "Tapahtumaa ei löytynyt",
+    "loadFailed": "Tapahtuman lataus epäonnistui",
     "eventEnded": "Tämä tapahtuma on päättynyt",
     "trending": "Trendaavat",
     "groupChat": "Ryhmächat",
@@ -665,7 +666,10 @@
     "unread": "Lukematon",
     "archiveError": "Arkistointi epäonnistui",
     "longPressToPinHint": "Paina pitkään kiinnittääksesi",
-    "sendFirstMessage": "Lähetä ensimmäinen viesti aloittaaksesi keskustelun"
+    "sendFirstMessage": "Lähetä ensimmäinen viesti aloittaaksesi keskustelun",
+    "rateLimited": "Liian monta viestiä. Odota hetki.",
+    "imageTooLarge": "Kuva on liian suuri (max 10 Mt)",
+    "imageUploadFailed": "Kuvan lataus epäonnistui"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -1188,7 +1192,8 @@
     "pushPromptTitle": "Pysy ajan tasalla",
     "pushPromptDesc": "Haluatko kuulla kun naapurustossasi tapahtuu jotain uutta?",
     "enableNotifications": "Ota ilmoitukset käyttöön",
-    "maybeLater": "Ehkä myöhemmin"
+    "maybeLater": "Ehkä myöhemmin",
+    "addressRequired": "Valitse osoitteesi jatkaaksesi"
   },
   "resetPassword": {
     "title": "Vaihda salasana",
@@ -3249,7 +3254,8 @@
     "weekdayThu": "To",
     "weekdayFri": "Pe",
     "weekdaySat": "La",
-    "weekdaySun": "Su"
+    "weekdaySun": "Su",
+    "imageUploadsFailed": "kuvan lataus epäonnistui"
   },
   "phoneVerification": {
     "title": "Vahvista puhelinnumero",
