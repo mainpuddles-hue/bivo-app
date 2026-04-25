@@ -23,10 +23,14 @@ export async function triggerPush(params: PushParams): Promise<void> {
     if (session?.access_token) {
       headers['Authorization'] = `Bearer ${session.access_token}`
     }
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
     await fetch(`${FUNCTIONS_URL}/send-push`, {
       method: 'POST',
       headers,
       body: JSON.stringify(params),
+      signal: controller.signal,
     })
+    clearTimeout(timeoutId)
   } catch {} // Intentional: non-critical notification — never fail the main action
 }

@@ -768,7 +768,7 @@ function ConversationScreenInner() {
     <KeyboardAvoidingView
       style={[s.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
+      keyboardVerticalOffset={insets.top}
     >
       {/* Header — Monochrome 06 */}
       <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>

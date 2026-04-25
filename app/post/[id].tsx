@@ -1064,6 +1064,10 @@ function PostDetailScreenInner() {
                 showsHorizontalScrollIndicator={false}
                 onViewableItemsChanged={onHeroViewableItemsChanged}
                 viewabilityConfig={heroViewabilityConfig}
+                getItemLayout={(_, index) => ({ length: screenWidth, offset: screenWidth * index, index })}
+                windowSize={3}
+                initialNumToRender={1}
+                maxToRenderPerBatch={2}
               />
             )
           ) : (

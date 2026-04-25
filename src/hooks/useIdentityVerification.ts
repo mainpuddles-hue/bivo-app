@@ -106,6 +106,8 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
         return
       }
       const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
       const res = await fetch(`${supabaseUrl}/functions/v1/verify-identity`, {
         method: 'POST',
         headers: {
@@ -113,7 +115,9 @@ export function useIdentityVerification(userId: string | null): UseIdentityVerif
           'Authorization': `Bearer ${authSession.access_token}`,
         },
         body: JSON.stringify({ user_id: userId }),
+        signal: controller.signal,
       })
+      clearTimeout(timeoutId)
 
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}))

@@ -101,7 +101,10 @@ function buildUrl(page_size: number, baseUrl?: string): string {
 }
 
 async function fetchPage(url: string): Promise<{ events: CityEvent[]; next: string | null }> {
-  const res = await fetch(url)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
+  const res = await fetch(url, { signal: controller.signal })
+  clearTimeout(timeoutId)
   if (!res.ok) {
     if (__DEV__) console.log(`[linkedevents] fetchPage failed: ${res.status} ${res.statusText}`, url)
     return { events: [], next: null }
@@ -226,7 +229,10 @@ export async function fetchNearbyEvents(
     const baseUrl = BASE_URL
     const url = `${baseUrl}/event/?start=${today}&sort=start_time&page_size=100&include=location&language=fi&bbox=${bbox}`
 
-    const res = await fetch(url)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
+    const res = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeoutId)
     if (!res.ok) return []
     const json: LinkedEventResponse = await res.json()
     const events = json.data
@@ -259,7 +265,10 @@ export async function loadMoreNearbyEvents(lat: number, lng: number): Promise<Ci
 
   state.loading = true
   try {
-    const res = await fetch(state.nextUrl)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
+    const res = await fetch(state.nextUrl, { signal: controller.signal })
+    clearTimeout(timeoutId)
     if (!res.ok) { state.loading = false; return null }
     const json: LinkedEventResponse = await res.json()
     const newEvents = json.data

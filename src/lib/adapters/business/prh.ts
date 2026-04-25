@@ -28,6 +28,8 @@ const prhAdapter: BusinessAdapter = {
 
     try {
       // Call the existing Edge Function
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
       const res = await fetch(`${FUNCTIONS_URL}/validate-business`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,7 +37,9 @@ const prhAdapter: BusinessAdapter = {
           ytunnus: cleaned,
           business_name: businessName?.trim() ?? '',
         }),
+        signal: controller.signal,
       })
+      clearTimeout(timeoutId)
 
       if (!res.ok) {
         if (__DEV__) console.log('[prh] Edge Function returned', res.status)
@@ -68,9 +72,13 @@ const prhAdapter: BusinessAdapter = {
 
       // Fallback: call PRH open data API directly
       try {
+        const fallbackController = new AbortController()
+        const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 15000)
         const directRes = await fetch(
-          `https://avoindata.prh.fi/bis/v1/${cleaned}`
+          `https://avoindata.prh.fi/bis/v1/${cleaned}`,
+          { signal: fallbackController.signal }
         )
+        clearTimeout(fallbackTimeoutId)
         if (!directRes.ok) return null
 
         const directData = await directRes.json()

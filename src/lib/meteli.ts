@@ -107,12 +107,16 @@ export async function fetchMetelihEvents(): Promise<CityEvent[]> {
   }
 
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
     const res = await fetch(`${PROXY_URL}?city=helsinki`, {
       headers: {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       },
+      signal: controller.signal,
     })
+    clearTimeout(timeoutId)
     if (!res.ok) {
       if (__DEV__) console.log(`[meteli] fetch failed: ${res.status}`)
       return cache?.events ?? []

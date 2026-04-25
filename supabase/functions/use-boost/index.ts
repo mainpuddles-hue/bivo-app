@@ -104,7 +104,7 @@ serve(async (req) => {
       .eq('post_id', post_id)
       .gt('boost_end', now)
       .limit(1)
-      .single()
+      .maybeSingle()
 
     if (activeBoost) {
       return new Response(JSON.stringify({

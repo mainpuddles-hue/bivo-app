@@ -319,8 +319,11 @@ function NotificationsScreenInner() {
   const mountedRef = useRef(true)
   // Track IDs being deleted so concurrent fetchNotifications() doesn't resurrect them
   const pendingDeletesRef = useRef<Set<string>>(new Set())
+  const isFetchingRef = useRef(false)
 
   const fetchNotifications = useCallback(async () => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
     setFetchError(false)
     try {
       const cachedId = await getCachedUserId()
@@ -354,6 +357,7 @@ function NotificationsScreenInner() {
       setNotifications([])
       setFetchError(true)
     } finally {
+      isFetchingRef.current = false
       if (mountedRef.current) {
         setLoading(false)
         setRefreshing(false)

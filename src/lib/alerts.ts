@@ -53,11 +53,15 @@ async function fetchHSLAlerts(): Promise<TransitAlert[]> {
     // HSL Digitransit API now requires a subscription key — skip if missing
     if (!apiKey) return []
     const headers: Record<string, string> = { 'Content-Type': 'application/json', 'digitransit-subscription-key': apiKey }
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
     const res = await fetch(HSL_GRAPHQL_URL, {
       method: 'POST',
       headers,
       body: JSON.stringify({ query: HSL_ALERTS_QUERY }),
+      signal: controller.signal,
     })
+    clearTimeout(timeoutId)
     if (!res.ok) return []
     const json = await res.json()
     const alerts = json?.data?.alerts ?? []
@@ -101,10 +105,13 @@ const FMI_WARNINGS_URL = 'https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&
 async function fetchWeatherAlerts(): Promise<WeatherAlert[]> {
   try {
     // FMI warnings API — fetch active weather warnings for Uusimaa region
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
     const res = await fetch(
       'https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::simple&place=helsinki&parameters=t2m&maxlocations=1',
-      { headers: { 'Accept': 'application/xml' } }
+      { headers: { 'Accept': 'application/xml' }, signal: controller.signal }
     )
+    clearTimeout(timeoutId)
     if (!res.ok) return []
 
     // For now, we parse a simplified approach: check if temperature is extreme

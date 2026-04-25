@@ -42,6 +42,8 @@ export function usePaymentMethods(userId: string | null) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) return
 
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
       const res = await fetch(`${FUNCTIONS_URL}/stripe-connect-onboard`, {
         method: 'POST',
         headers: {
@@ -52,7 +54,9 @@ export function usePaymentMethods(userId: string | null) {
           user_id: userId,
           return_url: 'tackbird://payment-settings',
         }),
+        signal: controller.signal,
       })
+      clearTimeout(timeoutId)
 
       if (res.ok) {
         const { url } = await res.json()

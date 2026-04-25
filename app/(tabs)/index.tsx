@@ -627,6 +627,7 @@ function FeedScreenInner() {
         renderItem={renderFeedItem}
         keyExtractor={item => item.key}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100, gap: 8 }}
+        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
         ListHeaderComponent={
           <View>
             {/* ── Top area with safe area padding ── */}

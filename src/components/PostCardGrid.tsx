@@ -259,8 +259,8 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             {/* Top row: category chip + like/urgent chip */}
             <View style={styles.imgTopRow}>
               {category && (
-                <View style={styles.catChip}>
-                  <Text style={styles.catChipText}>{t(category.label)}</Text>
+                <View style={[styles.catChip, isDark && styles.catChipDark]}>
+                  <Text style={[styles.catChipText, isDark && styles.catChipTextDark]}>{t(category.label)}</Text>
                 </View>
               )}
               {isUrgent ? (
@@ -275,8 +275,8 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             {/* Bottom row: price pill */}
             {(post.daily_fee != null || (post.service_price != null && post.service_price > 0)) && (
               <View style={styles.imgBottomRow}>
-                <View style={styles.pricePill}>
-                  <Text style={styles.pricePillText}>
+                <View style={[styles.pricePill, isDark && styles.pricePillDark]}>
+                  <Text style={[styles.pricePillText, isDark && styles.pricePillTextDark]}>
                     {post.daily_fee != null
                       ? t('rental.perDay', { price: formatPrice(post.daily_fee, locale) })
                       : formatPrice(post.service_price, locale)}
@@ -435,6 +435,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.94)',
   },
+  catChipDark: {
+    backgroundColor: 'rgba(30,30,30,0.92)',
+  },
   catChipText: {
     fontSize: 10,
     fontWeight: '700',
@@ -442,6 +445,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: '#1A1D1F',
+  },
+  catChipTextDark: {
+    color: '#E8E6E0',
   },
   urgentChip: {
     flexDirection: 'row',
@@ -490,12 +496,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.94)',
   },
+  pricePillDark: {
+    backgroundColor: 'rgba(30,30,30,0.92)',
+  },
   pricePillText: {
     fontSize: 13,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,
     color: '#1A1D1F',
+  },
+  pricePillTextDark: {
+    color: '#E8E6E0',
   },
   imgContent: {
     padding: 14,

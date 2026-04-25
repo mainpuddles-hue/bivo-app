@@ -304,7 +304,10 @@ function CreateEventScreenInner() {
         const fileName = `community-event-${currentUserId}-${Date.now()}.${fileExt}`
         const filePath = `events/${fileName}`
 
-        const response = await fetch(imageUri)
+        const imgController = new AbortController()
+        const imgTimeoutId = setTimeout(() => imgController.abort(), 30000)
+        const response = await fetch(imageUri, { signal: imgController.signal })
+        clearTimeout(imgTimeoutId)
         const blob = await response.blob()
         if (blob.size > MAX_FILE_SIZE) {
           toast.show({ message: t('create.imageTooLarge'), type: 'error' })

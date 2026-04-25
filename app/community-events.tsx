@@ -50,6 +50,7 @@ function CommunityEventsScreenInner() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all')
   const [fetchError, setFetchError] = useState(false)
   const mountedRef = useRef(true)
+  const joiningRef = useRef<Set<string>>(new Set())
 
   const fetchEvents = useCallback(async () => {
     setFetchError(false)
@@ -126,6 +127,8 @@ function CommunityEventsScreenInner() {
   }, [regularEvents, categoryFilter])
 
   const handleQuickJoin = useCallback(async (eventId: string) => {
+    if (joiningRef.current.has(eventId)) return
+    joiningRef.current.add(eventId)
     try {
       const { getCachedUserId } = await import('@/lib/authCache')
       const cachedId = await getCachedUserId()
@@ -161,6 +164,8 @@ function CommunityEventsScreenInner() {
     } catch (err) {
       if (__DEV__) console.log('[community-events] quick join error:', err)
       toast.show({ message: t('events.joinFailed'), type: 'error' })
+    } finally {
+      joiningRef.current.delete(eventId)
     }
   }, [supabase, fetchEvents, router, t, toast, events])
 

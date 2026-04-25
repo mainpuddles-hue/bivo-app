@@ -108,12 +108,16 @@ export async function fetchKideEvents(): Promise<CityEvent[]> {
   }
 
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
     const res = await fetch(`${PROXY_URL}?city=Helsinki`, {
       headers: {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       },
+      signal: controller.signal,
     })
+    clearTimeout(timeoutId)
     if (!res.ok) {
       if (__DEV__) console.log(`[kide] fetch failed: ${res.status} ${res.statusText}`)
       return cache?.events ?? []

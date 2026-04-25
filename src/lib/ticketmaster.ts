@@ -111,12 +111,16 @@ export async function fetchTicketmasterEvents(): Promise<CityEvent[]> {
         sort: 'date,asc',
       })
 
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
       const res = await fetch(`${PROXY_URL}?${params.toString()}`, {
         headers: {
           apikey: SUPABASE_ANON_KEY,
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
+        signal: controller.signal,
       })
+      clearTimeout(timeoutId)
       if (!res.ok) {
         if (__DEV__) console.log(`[ticketmaster] pagination failed: ${res.status} ${res.statusText}, page ${page}`)
         break
