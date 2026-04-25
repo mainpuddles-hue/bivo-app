@@ -476,8 +476,8 @@ function SearchScreenInner() {
   // Load search history + saved searches (prefer Supabase, fallback to AsyncStorage)
   useEffect(() => {
     AsyncStorage.getItem(HISTORY_KEY).then(stored => {
-      if (stored) try { setHistory(JSON.parse(stored)) } catch {}
-    }).catch(() => {})
+      if (stored) try { setHistory(JSON.parse(stored)) } catch (e) { if (__DEV__) console.warn('[search] history parse failed:', e) }
+    }).catch((e) => { if (__DEV__) console.warn('[search] history fetch failed:', e) })
     // Load saved searches from Supabase if logged in
     if (currentUserId) {
       Promise.resolve(
@@ -502,13 +502,13 @@ function SearchScreenInner() {
         .catch(() => {
           // Fallback to local
           AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
-            if (stored) try { setSavedSearches(JSON.parse(stored)) } catch {}
-          }).catch(() => {})
+            if (stored) try { setSavedSearches(JSON.parse(stored)) } catch (e) { if (__DEV__) console.warn('[search] saved searches parse failed:', e) }
+          }).catch((e) => { if (__DEV__) console.warn('[search] saved searches fallback fetch failed:', e) })
         })
     } else {
       AsyncStorage.getItem(SAVED_SEARCHES_KEY).then(stored => {
-        if (stored) try { setSavedSearches(JSON.parse(stored)) } catch {}
-      }).catch(() => {})
+        if (stored) try { setSavedSearches(JSON.parse(stored)) } catch (e) { if (__DEV__) console.warn('[search] saved searches parse failed:', e) }
+      }).catch((e) => { if (__DEV__) console.warn('[search] saved searches fetch failed:', e) })
     }
   }, [currentUserId, supabase])
 
@@ -575,7 +575,7 @@ function SearchScreenInner() {
     setSavedSearches(updated)
     // Delete from Supabase if it looks like a UUID (server-side search)
     if (currentUserId && id.includes('-')) {
-      await (supabase.from('saved_searches') as any).delete().eq('id', id).catch(() => {})
+      await (supabase.from('saved_searches') as any).delete().eq('id', id).catch((e: any) => { if (__DEV__) console.warn('[search] saved search delete failed:', e) })
     }
     await AsyncStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
   }, [savedSearches, currentUserId, supabase])
@@ -589,7 +589,7 @@ function SearchScreenInner() {
         (supabase.from('saved_searches') as any)
           .update({ push_enabled: newEnabled })
           .eq('id', id)
-          .catch(() => {})
+          .catch((e: any) => { if (__DEV__) console.warn('[search] push toggle sync failed:', e) })
       }
       return { ...s, push_enabled: newEnabled }
     }))
@@ -1275,6 +1275,49 @@ function SearchScreenInner() {
     )
   }, [results, similarPosts, query, colors, isDark, t, filters, renderResultRow, renderSimilarCard, loadMore, loadingMore, hasMore, executeSearch])
 
+  const renderEventItem = useCallback(({ item }: { item: typeof eventResults[number] }) => (
+    <PressableOpacity
+      onPress={() => isValidUUID(item.id) && router.push(`/event/${item.id}` as any)}
+      style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+      accessibilityRole="button"
+      accessibilityLabel={item.title}
+    >
+      <View style={[s.searchEventIcon, { backgroundColor: `${colors.foreground}15` }]}>
+        <CalendarDays size={20} color={colors.foreground} />
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>{item.title}</Text>
+        {item.event_date && (
+          <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
+            {new Date(item.event_date).toLocaleDateString(resolveLocale(locale), { weekday: 'short', day: 'numeric', month: 'short' })}
+          </Text>
+        )}
+        {item.location_name && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <MapPin size={12} color={colors.mutedForeground} />
+            <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={1}>{item.location_name}</Text>
+          </View>
+        )}
+      </View>
+      <ChevronRight size={16} color={colors.mutedForeground} />
+    </PressableOpacity>
+  ), [colors, router, locale])
+
+  const renderUserItem = useCallback(({ item }: { item: typeof userResults[number] }) => (
+    <PressableOpacity onPress={() => isValidUUID(item.id) && router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
+      <Avatar url={item.avatar_url} name={item.name} size={44} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>
+        {item.naapurusto && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <MapPin size={12} color={colors.mutedForeground} />
+            <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{item.naapurusto}</Text>
+          </View>
+        )}
+      </View>
+    </PressableOpacity>
+  ), [colors, router])
+
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Top search area — no bar header, direct search */}
@@ -1453,33 +1496,7 @@ function SearchScreenInner() {
           data={eventResults}
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
-          renderItem={({ item }) => (
-            <PressableOpacity
-              onPress={() => isValidUUID(item.id) && router.push(`/event/${item.id}` as any)}
-              style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              accessibilityRole="button"
-              accessibilityLabel={item.title}
-            >
-              <View style={[s.searchEventIcon, { backgroundColor: `${colors.foreground}15` }]}>
-                <CalendarDays size={20} color={colors.foreground} />
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>{item.title}</Text>
-                {item.event_date && (
-                  <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
-                    {new Date(item.event_date).toLocaleDateString(resolveLocale(locale), { weekday: 'short', day: 'numeric', month: 'short' })}
-                  </Text>
-                )}
-                {item.location_name && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <MapPin size={12} color={colors.mutedForeground} />
-                    <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={1}>{item.location_name}</Text>
-                  </View>
-                )}
-              </View>
-              <ChevronRight size={16} color={colors.mutedForeground} />
-            </PressableOpacity>
-          )}
+          renderItem={renderEventItem}
           ItemSeparatorComponent={ListSeparator8}
           ListEmptyComponent={
             <View style={s.empty}>
@@ -1498,20 +1515,7 @@ function SearchScreenInner() {
           data={userResults}
           keyExtractor={item => item.id}
           contentContainerStyle={s.list}
-          renderItem={({ item }) => (
-            <PressableOpacity onPress={() => isValidUUID(item.id) && router.push('/profile/' + item.id as any)} style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={`${item.name}${item.naapurusto ? `, ${item.naapurusto}` : ''}`}>
-              <Avatar url={item.avatar_url} name={item.name} size={44} />
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>{item.name}</Text>
-                {item.naapurusto && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <MapPin size={12} color={colors.mutedForeground} />
-                    <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{item.naapurusto}</Text>
-                  </View>
-                )}
-              </View>
-            </PressableOpacity>
-          )}
+          renderItem={renderUserItem}
           ItemSeparatorComponent={ListSeparator8}
           ListEmptyComponent={
             <View style={s.empty}>

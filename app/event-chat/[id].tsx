@@ -88,8 +88,8 @@ function EventChatScreenInner() {
   }, [conversationId, supabase])
 
   const {
-    messages, loading, sending, hasOlder,
-    sendMessage, loadOlder, markAsRead,
+    messages, loading, sending, hasOlder, fetchError,
+    sendMessage, loadOlder, markAsRead, refetch,
   } = useEventChat(conversationId ?? null, userId)
 
   // Mark as read on mount + focus
@@ -285,6 +285,20 @@ function EventChatScreenInner() {
       {loading ? (
         <View style={s.center}>
           <ActivityIndicator size="large" color={colors.foreground} />
+        </View>
+      ) : fetchError && messages.length === 0 ? (
+        <View style={s.center}>
+          <Text style={[s.emptyText, { color: colors.mutedForeground, fontFamily: fonts.body, marginBottom: 12 }]}>
+            {t('common.error') || 'Jotain meni pieleen'}
+          </Text>
+          <Pressable
+            onPress={() => refetch()}
+            style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999 }}
+          >
+            <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodySemi, fontSize: 13 }}>
+              {t('common.retry') || 'Yritä uudelleen'}
+            </Text>
+          </Pressable>
         </View>
       ) : messages.length === 0 ? (
         <View style={s.center}>

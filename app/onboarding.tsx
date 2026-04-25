@@ -70,7 +70,7 @@ function OnboardingScreenInner() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setOnboardingUserId(user.id)
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('Onboarding user sync failed:', e) })
   }, [supabase])
 
   // Handle address selection from LocationAutocomplete

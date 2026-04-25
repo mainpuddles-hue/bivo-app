@@ -28,6 +28,7 @@ import {
   ThumbsUp,
   Send,
   AlertCircle,
+  ImageIcon,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -159,6 +160,7 @@ function MaintenanceDetailInner() {
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [showResolutionInput, setShowResolutionInput] = useState(false)
   const [resolutionNote, setResolutionNote] = useState('')
+  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({})
 
   const upvotingRef = useRef(false)
 
@@ -476,16 +478,24 @@ function MaintenanceDetailInner() {
               contentContainerStyle={styles.imageScroll}
               style={styles.imageScrollContainer}
             >
-              {request.image_urls.map((url, index) => (
-                <Image
-                  key={`img-${index}`}
-                  source={{ uri: getImageUrl(url, 'medium')! }}
-                  style={[styles.image, { borderColor: colors.border }]}
-                  contentFit="cover"
-                  cachePolicy="memory-disk"
-                  transition={200}
-                />
-              ))}
+              {request.image_urls.map((url, index) => {
+                const key = `img-${index}`
+                return imgErrors[key] ? (
+                  <View key={key} style={[styles.image, { borderColor: colors.border, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                    <ImageIcon size={24} color={colors.mutedForeground} />
+                  </View>
+                ) : (
+                  <Image
+                    key={key}
+                    source={{ uri: getImageUrl(url, 'medium')! }}
+                    style={[styles.image, { borderColor: colors.border }]}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    transition={200}
+                    onError={() => setImgErrors(prev => ({ ...prev, [key]: true }))}
+                  />
+                )
+              })}
             </ScrollView>
           ) : null}
 

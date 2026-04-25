@@ -231,7 +231,7 @@ export default function MessagesScreen() {
     // Check if blocked list changed since last focus — if so, clear flag first so fetch uses fresh data
     AsyncStorage.getItem('tackbird_blocked_changed').then((val) => {
       if (val) AsyncStorage.removeItem('tackbird_blocked_changed')
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('Blocked list check failed:', e) })
     fetchConversations()
   }, [fetchConversations]))
 

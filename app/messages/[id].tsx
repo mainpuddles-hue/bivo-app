@@ -327,7 +327,7 @@ function ConversationScreenInner() {
       channelRef.current.send({
         type: 'broadcast', event: 'typing',
         payload: { userId },
-      }).catch(() => {})
+      }).catch((e: any) => { if (__DEV__) console.warn('[conversation] typing broadcast failed:', e) })
     }
     typingDebounceRef.current = setTimeout(() => { typingDebounceRef.current = null }, 2000)
   }, [id, userId])
@@ -445,7 +445,7 @@ function ConversationScreenInner() {
       })
       if (msgError) {
         // Clean up orphaned image from storage
-        supabase.storage.from('message-images').remove([path]).catch(() => {})
+        supabase.storage.from('message-images').remove([path]).catch((e: any) => { if (__DEV__) console.warn('[conversation] orphaned image cleanup failed:', e) })
         throw msgError
       }
       await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
@@ -672,7 +672,7 @@ function ConversationScreenInner() {
               if (!url) return null
               return (
                 <PressableOpacity
-                  onPress={() => { try { const u = new URL(url); if (['http:', 'https:'].includes(u.protocol)) Linking.openURL(url).catch(() => {}) } catch {} }}
+                  onPress={() => { try { const u = new URL(url); if (['http:', 'https:'].includes(u.protocol)) Linking.openURL(url).catch((e: any) => { if (__DEV__) console.warn('[conversation] open URL failed:', e) }) } catch (e) { if (__DEV__) console.warn('[conversation] invalid URL:', e) } }}
                   style={[s.linkPreview, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
                 >
                   <ExternalLink size={14} color={colors.foreground} />

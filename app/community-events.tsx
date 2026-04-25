@@ -131,7 +131,7 @@ function CommunityEventsScreenInner() {
         router.replace('/(auth)/login')
         return
       }
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch (e) { if (__DEV__) console.warn('[community-events] haptics failed:', e) }
 
       // Optimistic update — mark event as joined before the network call
       setEvents(prev => prev.map(e =>
@@ -214,7 +214,7 @@ function CommunityEventsScreenInner() {
           {/* Create table card */}
           <Pressable
             onPress={() => {
-              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch (e) { if (__DEV__) console.warn('[community-events] haptics failed:', e) }
               router.push('/create-event' as any)
             }}
             style={({ pressed }) => [
@@ -287,7 +287,7 @@ function CommunityEventsScreenInner() {
             <PressableOpacity
               key={key}
               onPress={() => {
-                try { Haptics.selectionAsync() } catch {}
+                try { Haptics.selectionAsync() } catch (e) { if (__DEV__) console.warn('[community-events] haptics failed:', e) }
                 router.push(`/create-event?template=${key}` as any)
               }}
               style={[s.templateChip, { backgroundColor: colors.card, borderColor: colors.border }]}

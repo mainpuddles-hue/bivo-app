@@ -7,7 +7,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
-import { ArrowLeft, Check, CreditCard, Smartphone, Plus } from 'lucide-react-native'
+import { ArrowLeft, Check, CreditCard, Smartphone, Plus, ImageIcon } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -53,6 +53,7 @@ function PaymentCheckoutScreenInner() {
 
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('card')
   const [paying, setPaying] = useState(false)
+  const [imgError, setImgError] = useState(false)
 
   const methods: MethodOption[] = [
     {
@@ -137,14 +138,17 @@ function PaymentCheckoutScreenInner() {
       >
         {/* Item summary */}
         <View style={[s.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {params.itemImage ? (
+          {params.itemImage && !imgError ? (
             <Image
               source={{ uri: getImageUrl(params.itemImage, 'thumbnail') || undefined }}
               style={s.summaryImage}
               contentFit="cover"
+              onError={() => setImgError(true)}
             />
           ) : (
-            <View style={[s.summaryImagePlaceholder, { backgroundColor: colors.muted }]} />
+            <View style={[s.summaryImagePlaceholder, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+              <ImageIcon size={24} color={colors.mutedForeground} />
+            </View>
           )}
           <View style={s.summaryInfo}>
             <Text style={[s.summaryTitle, { color: colors.foreground }]} numberOfLines={1}>

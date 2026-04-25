@@ -143,14 +143,14 @@ export default function TabLayout() {
   useEffect(() => {
     if (lastBadgeRef.current === totalUnread) return
     lastBadgeRef.current = totalUnread
-    Notifications.setBadgeCountAsync(totalUnread).catch(() => {})
+    Notifications.setBadgeCountAsync(totalUnread).catch((e) => { if (__DEV__) console.warn('Notification badge update failed:', e) })
   }, [totalUnread])
 
   useEffect(() => {
     let mounted = true
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (mounted && user) setUserId(user.id)
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('Session sync failed:', e) })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return

@@ -26,6 +26,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [hasOlder, setHasOlder] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
   const messagesRef = useRef<EventChatMessage[]>([])
   const mountedRef = useRef(true)
@@ -38,6 +39,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return
     setLoading(true)
+    setFetchError(false)
     try {
       const { data, error } = await supabase
         .from('messages')
@@ -48,6 +50,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
 
       if (error) {
         if (__DEV__) console.warn('[useEventChat] fetch error:', error.message)
+        setFetchError(true)
       }
       const msgs = (data ?? []) as EventChatMessage[]
       // Prime sender cache from the initial fetch so realtime handlers can
@@ -59,6 +62,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
       setHasOlder(msgs.length >= EVENT_CHAT_PAGE_SIZE)
     } catch (err) {
       if (__DEV__) console.warn('[useEventChat] error:', err)
+      setFetchError(true)
     } finally {
       setLoading(false)
     }
@@ -194,6 +198,7 @@ export function useEventChat(conversationId: string | null, userId: string | nul
     loading,
     sending,
     hasOlder,
+    fetchError,
     sendMessage,
     loadOlder,
     markAsRead,

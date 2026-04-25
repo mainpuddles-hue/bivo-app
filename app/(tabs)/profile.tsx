@@ -413,6 +413,13 @@ export default function ProfileScreen() {
     )
   }
 
+  const renderFollowItem = useCallback(({ item }: { item: typeof followList[number] }) => (
+    <PressableOpacity style={s.followItem} onPress={() => { setFollowModal(null); router.push(`/profile/${item.id}` as any) }}>
+      <Avatar url={item.avatar_url} name={item.name} size={40} />
+      <Text style={[s.followName, { color: colors.foreground }]} numberOfLines={1}>{item.name}</Text>
+    </PressableOpacity>
+  ), [colors, router])
+
   if (profileLoading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -843,12 +850,7 @@ export default function ProfileScreen() {
             data={followList}
             keyExtractor={item => item.id}
             contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
-            renderItem={({ item }) => (
-              <PressableOpacity style={s.followItem} onPress={() => { setFollowModal(null); router.push(`/profile/${item.id}` as any) }}>
-                <Avatar url={item.avatar_url} name={item.name} size={40} />
-                <Text style={[s.followName, { color: colors.foreground }]} numberOfLines={1}>{item.name}</Text>
-              </PressableOpacity>
-            )}
+            renderItem={renderFollowItem}
             ListEmptyComponent={
               <Text style={[s.emptyText, { color: colors.mutedForeground, textAlign: 'center', marginTop: 40 }]}>
                 {followModal === 'followers' ? t('profile.noFollowers') : t('profile.noFollowing')}

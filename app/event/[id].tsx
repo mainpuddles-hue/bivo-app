@@ -51,6 +51,7 @@ function EventDetailScreenInner() {
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [reportModalVisible, setReportModalVisible] = useState(false)
+  const [eventImgError, setEventImgError] = useState(false)
   const joiningRef = useRef(false)
 
   // Derived
@@ -174,7 +175,7 @@ function EventDetailScreenInner() {
               link_type: 'event',
               link_id: event.id,
             })
-          } catch {}
+          } catch (e) { if (__DEV__) console.warn('[event] creator notification failed:', e) }
         }
         await fetchEvent()
       }
@@ -420,12 +421,13 @@ function EventDetailScreenInner() {
         showsVerticalScrollIndicator={false}
       >
         {/* Full-bleed hero image */}
-        {event.image_url ? (
+        {event.image_url && !eventImgError ? (
           <Image
             source={{ uri: event.image_url }}
             style={s.heroImage}
             contentFit="cover"
             accessibilityLabel={event.title}
+            onError={() => setEventImgError(true)}
           />
         ) : (
           <View style={[s.heroImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>

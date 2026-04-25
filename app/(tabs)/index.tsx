@@ -63,7 +63,7 @@ function FeedScreenInner() {
       AsyncStorage.getItem('onboarding_complete'),
     ]).then(([overlayFlag, layoutFlag]) => {
       if (!overlayFlag && !layoutFlag) setShowOnboarding(true)
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('Onboarding flag check failed:', e) })
   }, [])
 
   // Weekly active neighbors count for activity meter
@@ -336,8 +336,8 @@ function FeedScreenInner() {
           : (t('feed.welcomeToastGeneric') || 'Tervetuloa TackBirdiin!'),
         type: 'success',
       })
-      AsyncStorage.setItem('welcome_toast_shown', 'true').catch(() => {})
-    }).catch(() => {})
+      AsyncStorage.setItem('welcome_toast_shown', 'true').catch((e) => { if (__DEV__) console.warn('Welcome toast flag save failed:', e) })
+    }).catch((e) => { if (__DEV__) console.warn('Welcome toast flag read failed:', e) })
   }, [feed.loading, feed.posts.length, feed.userNeighborhood, toast, t])
 
   // Open neighborhood picker when navigated from settings with param
@@ -375,7 +375,7 @@ function FeedScreenInner() {
       if (val) {
         try { setHiddenIds(new Set(JSON.parse(val))) } catch {} // Intentional: corrupted cache
       }
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('Hidden posts read failed:', e) })
   }, [])
   const hiddenIdsRef = useRef<Set<string>>(hiddenIds)
   hiddenIdsRef.current = hiddenIds
@@ -384,7 +384,7 @@ function FeedScreenInner() {
     const next = new Set(hiddenIdsRef.current)
     next.add(postId)
     setHiddenIds(next)
-    AsyncStorage.setItem('tackbird_hidden_posts', JSON.stringify([...next])).catch(() => {})
+    AsyncStorage.setItem('tackbird_hidden_posts', JSON.stringify([...next])).catch((e) => { if (__DEV__) console.warn('Hidden posts save failed:', e) })
   }, [])
 
   // ── "Seen" / new indicator ──
@@ -395,9 +395,9 @@ function FeedScreenInner() {
   useEffect(() => {
     AsyncStorage.getItem('tackbird_last_feed_visit').then(val => {
       if (val) setLastFeedVisit(val)
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('Last feed visit read failed:', e) })
     return () => {
-      AsyncStorage.setItem('tackbird_last_feed_visit', new Date().toISOString()).catch(() => {})
+      AsyncStorage.setItem('tackbird_last_feed_visit', new Date().toISOString()).catch((e) => { if (__DEV__) console.warn('Last feed visit save failed:', e) })
     }
   }, [])
 

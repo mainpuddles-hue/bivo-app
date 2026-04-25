@@ -44,6 +44,7 @@ function BuildingChatScreenInner() {
   const [orgInfo, setOrgInfo] = useState<OrgInfo | null>(null)
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [input, setInput] = useState('')
+  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({})
 
   // Get user
   useEffect(() => {
@@ -222,7 +223,13 @@ function BuildingChatScreenInner() {
               </Text>
             )}
             {item.image_url && (
-              <Image source={{ uri: item.image_url }} style={s.msgImage} contentFit="cover" />
+              imgErrors[item.id] ? (
+                <View style={[s.msgImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                  <ImageIcon size={24} color={colors.mutedForeground} />
+                </View>
+              ) : (
+                <Image source={{ uri: item.image_url }} style={s.msgImage} contentFit="cover" onError={() => setImgErrors(prev => ({ ...prev, [item.id]: true }))} />
+              )
             )}
             {item.content ? (
               <Text style={[s.msgText, { color: isOwn ? colors.primaryForeground : colors.foreground }]}>
@@ -236,7 +243,7 @@ function BuildingChatScreenInner() {
         </View>
       </View>
     )
-  }, [userId, colors, t, locale, messages, renderDaySeparator])
+  }, [userId, colors, t, locale, messages, renderDaySeparator, imgErrors])
 
   const keyExtractor = useCallback((item: any) => item.id, [])
 

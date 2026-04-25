@@ -212,7 +212,7 @@ export default function CreateScreen() {
   }, [])
 
   const shakeButton = useCallback(() => {
-    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch (e) { if (__DEV__) console.warn('[create] haptics failed:', e) }
     RNAnimated.sequence([
       RNAnimated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
       RNAnimated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
@@ -244,8 +244,8 @@ export default function CreateScreen() {
         setHasDraft(true)
         setDraftToastVisible(true)
         setTimeout(() => setDraftToastVisible(false), 3000)
-      } catch {}
-    }).catch(() => {})
+      } catch (e) { if (__DEV__) console.warn('Draft restore parse failed:', e) }
+    }).catch((e) => { if (__DEV__) console.warn('Draft restore failed:', e) })
   }, [])
 
   // Debounce-save draft on any field change
@@ -255,7 +255,7 @@ export default function CreateScreen() {
       const draft = { title, description, type: selectedType, location, tags: selectedTags, daily_fee: dailyFee, service_price: servicePrice, event_date: eventDate }
       const hasContent = title || description || selectedType
       if (hasContent) {
-        AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(draft)).catch(() => {})
+        AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(draft)).catch((e) => { if (__DEV__) console.warn('Draft save failed:', e) })
         setHasDraft(true)
       }
     }, 1000)
@@ -263,7 +263,7 @@ export default function CreateScreen() {
   }, [title, description, selectedType, location, selectedTags, dailyFee, servicePrice, eventDate])
 
   const clearDraft = useCallback(() => {
-    AsyncStorage.removeItem(DRAFT_KEY).catch(() => {})
+    AsyncStorage.removeItem(DRAFT_KEY).catch((e) => { if (__DEV__) console.warn('Draft clear failed:', e) })
     setHasDraft(false)
     setTitle(''); setDescription(''); setLocation('')
     setDailyFee(''); setServicePrice(''); setEventDate('')
@@ -304,7 +304,7 @@ export default function CreateScreen() {
       if (!id) { router.replace('/(auth)/login'); return }
       supabase.from('profiles').select('naapurusto, is_pro').eq('id', id).maybeSingle()
         .then(({ data }: any) => { if (!mounted) return; if (data?.naapurusto) setUserNeighborhood(data.naapurusto as string); if (data?.is_pro) setUserIsPro(true) }, (err: any) => { if (__DEV__) console.warn('[create] profile fetch failed:', err) })
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('User ID fetch failed:', e) })
     return () => { mounted = false }
   }, [supabase, router])
 
@@ -787,7 +787,7 @@ export default function CreateScreen() {
       }
       trackEvent('post_created', { type: selectedType, has_price: !!servicePrice })
       const createdPostId = post.id
-      AsyncStorage.removeItem(DRAFT_KEY).catch(() => {})
+      AsyncStorage.removeItem(DRAFT_KEY).catch((e) => { if (__DEV__) console.warn('Post-submit draft cleanup failed:', e) })
       if (!mountedRef.current) return
       setHasDraft(false)
       setTitle(''); setDescription(''); setImages([]); setLocation('')
@@ -796,9 +796,9 @@ export default function CreateScreen() {
       setSelectedTags([]); setTarjoanType('service'); setItemCondition(null)
       setExpirationDays(0); setIsAnonymous(false); setIsUrgent(false)
       setLatitude(null); setLongitude(null); setStep('category')
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch (e) { if (__DEV__) console.warn('Haptics failed:', e) }
       setSuccessPostId(createdPostId); setSuccessNeighborhood(userNeighborhood); setShowSuccess(true)
-      maybeRequestReview('post_created').catch(() => {})
+      maybeRequestReview('post_created').catch((e) => { if (__DEV__) console.warn('Review request failed:', e) })
       successTimeoutRef.current = setTimeout(() => {
         if (!mountedRef.current) return
         successTimeoutRef.current = null; setShowSuccess(false); router.replace(`/post/${createdPostId}`)
@@ -806,7 +806,7 @@ export default function CreateScreen() {
     } catch (err: any) {
       if (__DEV__) console.log('[create] error:', JSON.stringify(err))
       if (createdPostIdForCleanup) {
-        try { await (supabase.from('posts') as any).delete().eq('id', createdPostIdForCleanup) } catch {}
+        try { await (supabase.from('posts') as any).delete().eq('id', createdPostIdForCleanup) } catch (e) { if (__DEV__) console.warn('Post cleanup after error failed:', e) }
       }
       if (mountedRef.current) toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
     } finally {
@@ -1376,7 +1376,7 @@ export default function CreateScreen() {
               <PressableOpacity onPress={async () => {
                 if (successTimeoutRef.current) { clearTimeout(successTimeoutRef.current); successTimeoutRef.current = null }
                 if (successPostId) {
-                  try { await Share.share({ message: `${t('create.published')} https://tackbird.com/post/${successPostId}` }) } catch (_) {}
+                  try { await Share.share({ message: `${t('create.published')} https://tackbird.com/post/${successPostId}` }) } catch (e) { if (__DEV__) console.warn('Share failed:', e) }
                   setShowSuccess(false); router.replace(`/post/${successPostId}`)
                 }
               }} style={[mk.shareBtn, { backgroundColor: colors.foreground }]}>

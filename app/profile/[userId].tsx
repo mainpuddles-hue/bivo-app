@@ -699,7 +699,7 @@ export default function PublicProfileScreen() {
                 style={[bs.mapButton, { backgroundColor: colors.foreground }]}
                 onPress={() => {
                   const url = `https://www.google.com/maps/search/?api=1&query=${profile.business_lat},${profile.business_lng}`
-                  Linking.openURL(url).catch(() => {})
+                  Linking.openURL(url).catch((e: any) => { if (__DEV__) console.warn('[profile] open maps URL failed:', e) })
                 }}
               >
                 <MapPin size={16} color={colors.primaryForeground} />
@@ -720,7 +720,7 @@ export default function PublicProfileScreen() {
               {profile.business_phone && (
                 <PressableOpacity
                   style={bs.contactRow}
-                  onPress={() => Linking.openURL(`tel:${profile.business_phone}`).catch(() => {})}
+                  onPress={() => Linking.openURL(`tel:${profile.business_phone}`).catch((e: any) => { if (__DEV__) console.warn('[profile] open phone URL failed:', e) })}
                 >
                   <View style={[bs.contactIconWrap, { backgroundColor: colors.muted }]}>
                     <Phone size={16} color={colors.mutedForeground} />
@@ -740,7 +740,7 @@ export default function PublicProfileScreen() {
                   onPress={() => {
                     const raw = profile.business_website!
                     const url = raw.startsWith('https://') || raw.startsWith('http://') ? raw : `https://${raw}`
-                    try { const u = new URL(url); if (['http:', 'https:'].includes(u.protocol)) Linking.openURL(url).catch(() => {}) } catch {}
+                    try { const u = new URL(url); if (['http:', 'https:'].includes(u.protocol)) Linking.openURL(url).catch((e: any) => { if (__DEV__) console.warn('[profile] open website URL failed:', e) }) } catch (e) { if (__DEV__) console.warn('[profile] invalid website URL:', e) }
                   }}
                 >
                   <View style={[bs.contactIconWrap, { backgroundColor: colors.muted }]}>

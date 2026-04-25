@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useCallback, useMemo } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
@@ -91,25 +91,31 @@ function MyListingsScreenInner() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('active')
+  const [fetchError, setFetchError] = useState(false)
 
   // ── Fetch posts ──
 
   const fetchPosts = useCallback(async () => {
+    setFetchError(false)
     try {
       const userId = await getCachedUserId()
       if (!userId) return
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('posts')
         .select('id, title, image_url, type, is_active, created_at, like_count, comment_count, images:post_images(image_url, sort_order)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
 
-      if (data) {
+      if (error) {
+        if (__DEV__) console.warn('MyListings fetch error:', error.message)
+        setFetchError(true)
+      } else if (data) {
         setPosts(data as unknown as MyPost[])
       }
     } catch (err) {
       if (__DEV__) console.warn('MyListings fetch error:', err)
+      setFetchError(true)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -269,6 +275,30 @@ function MyListingsScreenInner() {
         <Header colors={colors} router={router} />
         <View style={s.loadingWrap}>
           <ActivityIndicator size="small" color={colors.mutedForeground} />
+        </View>
+      </View>
+    )
+  }
+
+  // ── Error state ──
+
+  if (fetchError && posts.length === 0) {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+        <Header colors={colors} router={router} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Package size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
+          <Text style={{ color: colors.mutedForeground, fontFamily: fonts.bodySemi, fontSize: 16, marginTop: 12 }}>
+            {t('common.error') || 'Jotain meni pieleen'}
+          </Text>
+          <Pressable
+            onPress={() => { setFetchError(false); setLoading(true); fetchPosts() }}
+            style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, marginTop: 12 }}
+          >
+            <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodySemi, fontSize: 13 }}>
+              {t('common.retry') || 'Yritä uudelleen'}
+            </Text>
+          </Pressable>
         </View>
       </View>
     )

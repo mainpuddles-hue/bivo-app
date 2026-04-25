@@ -261,7 +261,7 @@ function useCurrentUserId() {
     let mounted = true
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (mounted) setUserId(user?.id ?? null)
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('Session update failed:', e) })
     return () => { mounted = false }
   }, [supabase])
 
@@ -345,7 +345,7 @@ function useAuthStateListener() {
               if (!mounted) return
               if ((banProfile as any)?.is_banned) {
                 setTimeout(() => {
-                  supabase.auth.signOut().catch(() => {})
+                  supabase.auth.signOut().catch((e) => { if (__DEV__) console.warn('Sign out failed:', e) })
                   Alert.alert(tRef.current('auth.accountBanned'), tRef.current('auth.accountBannedDesc'))
                 }, 0)
                 return
@@ -353,7 +353,7 @@ function useAuthStateListener() {
               if ((banProfile as any)?.naapurusto) {
                 await AsyncStorage.setItem('onboarding_complete', 'true')
               }
-            } catch {}
+            } catch (e) { if (__DEV__) console.warn('[layout] post-login profile check failed:', e) }
           }, 100)
           timers.push(timer)
           return
@@ -376,7 +376,7 @@ function useAuthStateListener() {
               // inside onAuthStateChange (even via setTimeout wrapper) can
               // cause re-entrant auth state events that stack up.
               setTimeout(() => {
-                supabase.auth.signOut().catch(() => {})
+                supabase.auth.signOut().catch((e) => { if (__DEV__) console.warn('Sign out failed:', e) })
                 Alert.alert(tRef.current('auth.accountBanned'), tRef.current('auth.accountBannedDesc'))
               }, 0)
               return
@@ -411,9 +411,9 @@ function useAuthStateListener() {
             await AsyncStorage.removeItem('onboarding_complete')
             // Reset app icon badge to 0 on logout — otherwise the previous
             // user's unread count persists on the home screen icon.
-            Notifications.setBadgeCountAsync(0).catch(() => {})
-          } catch {
-            // Non-critical — ignore
+            Notifications.setBadgeCountAsync(0).catch((e: any) => { if (__DEV__) console.warn('[layout] badge clear failed:', e) })
+          } catch (e) {
+            if (__DEV__) console.warn('[layout] logout cleanup failed:', e)
           }
 
           if (!mounted) return
@@ -578,7 +578,7 @@ function RootLayoutInner() {
 
   function handleDismissUnsupported() {
     setUnsupportedDismissed(true)
-    AsyncStorage.setItem(UNSUPPORTED_DISMISSED_KEY, 'true').catch(() => {})
+    AsyncStorage.setItem(UNSUPPORTED_DISMISSED_KEY, 'true').catch((e: any) => { if (__DEV__) console.warn('[layout] unsupported dismiss flag save failed:', e) })
   }
 
   // Show unsupported area overlay if:

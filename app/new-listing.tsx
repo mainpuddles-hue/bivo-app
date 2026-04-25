@@ -114,6 +114,8 @@ function NewListingScreenInner() {
 
   // ── Step 2: Photos & description ──
   const [photos, setPhotos] = useState<string[]>([])
+  const [photoErrors, setPhotoErrors] = useState<Set<number>>(new Set())
+  const [previewImgError, setPreviewImgError] = useState(false)
   const [description, setDescription] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState('')
@@ -173,11 +175,19 @@ function NewListingScreenInner() {
     })
     if (!result.canceled) {
       setPhotos(prev => [...prev, ...result.assets.map(a => a.uri)].slice(0, 6))
+      setPhotoErrors(new Set())
+      setPreviewImgError(false)
     }
   }, [photos.length])
 
   const removePhoto = useCallback((index: number) => {
     setPhotos(prev => prev.filter((_, i) => i !== index))
+    setPhotoErrors(prev => {
+      const next = new Set<number>()
+      prev.forEach(errIdx => { if (errIdx < index) next.add(errIdx); else if (errIdx > index) next.add(errIdx - 1) })
+      return next
+    })
+    if (index === 0) setPreviewImgError(false)
   }, [])
 
   // ── Add tag ──
@@ -507,7 +517,13 @@ function NewListingScreenInner() {
           <View style={s.photoGrid}>
             {photos.map((uri, i) => (
               <View key={i} style={s.photoCell}>
-                <Image source={{ uri }} style={s.photoImage} contentFit="cover" />
+                {photoErrors.has(i) ? (
+                  <View style={[s.photoImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                    <AlertTriangle size={20} color={colors.mutedForeground} strokeWidth={1.5} />
+                  </View>
+                ) : (
+                  <Image source={{ uri }} style={s.photoImage} contentFit="cover" onError={() => setPhotoErrors(prev => { const next = new Set(prev); next.add(i); return next })} />
+                )}
                 {i === 0 && (
                   <View style={[s.photoBadge, { backgroundColor: colors.foreground }]}>
                     <Text style={[s.photoBadgeText, { color: colors.background }]}>{t('newListing.photoBadgeMain')}</Text>
@@ -1063,8 +1079,8 @@ function NewListingScreenInner() {
         <View style={s.section}>
           <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('newListing.previewLabel')}</Text>
           <View style={[s.previewCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {photos[0] ? (
-              <Image source={{ uri: photos[0] }} style={s.previewImage} contentFit="cover" />
+            {photos[0] && !previewImgError ? (
+              <Image source={{ uri: photos[0] }} style={s.previewImage} contentFit="cover" onError={() => setPreviewImgError(true)} />
             ) : (
               <View style={[s.previewImagePlaceholder, { backgroundColor: colors.muted }]}>
                 <ImagePlus size={24} color={colors.tertiaryForeground} />

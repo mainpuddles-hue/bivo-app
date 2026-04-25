@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { ArrowLeft, Receipt, ChevronRight, CreditCard } from 'lucide-react-native'
@@ -72,6 +72,7 @@ function PaymentHistoryScreenInner() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [fetchError, setFetchError] = useState(false)
 
   // Feature flag gate — redirect if Payments are disabled
   useEffect(() => {
@@ -92,6 +93,7 @@ function PaymentHistoryScreenInner() {
   }, [supabase, router])
 
   const fetchPayments = useCallback(async () => {
+    setFetchError(false)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
@@ -107,12 +109,14 @@ function PaymentHistoryScreenInner() {
 
       if (error) {
         if (__DEV__) console.log('[payments] error:', error.message)
+        setFetchError(true)
         setPayments([])
       } else {
         setPayments((data ?? []) as unknown as PaymentRecord[])
       }
     } catch {
       if (__DEV__) console.log('[payments] fetch failed')
+      setFetchError(true)
       setPayments([])
     }
 
@@ -125,7 +129,7 @@ function PaymentHistoryScreenInner() {
   const localeStr = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
   const grouped = groupByMonth(payments, localeStr)
 
-  const renderPayment = (item: PaymentRecord) => {
+  const renderPayment = useCallback((item: PaymentRecord) => {
     const statusColor = getStatusColor(item.status, colors)
     const isExpanded = expandedId === item.id
     const dateStr = new Date(item.created_at).toLocaleDateString(localeStr, {
@@ -203,7 +207,18 @@ function PaymentHistoryScreenInner() {
         )}
       </PressableOpacity>
     )
-  }
+  }, [colors, expandedId, localeStr, locale, t, router])
+
+  const renderGroupItem = useCallback(({ item: group }: { item: { month: string; items: PaymentRecord[] } }) => (
+    <View>
+      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+        {group.month.toUpperCase()}
+      </Text>
+      <View style={styles.sectionCards}>
+        {group.items.map(p => renderPayment(p))}
+      </View>
+    </View>
+  ), [colors, renderPayment])
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -224,6 +239,21 @@ function PaymentHistoryScreenInner() {
 
       {loading ? (
         <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
+      ) : fetchError ? (
+        <View style={styles.empty}>
+          <CreditCard size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
+          <Text style={[styles.emptyTitle, { color: colors.mutedForeground }]}>
+            {t('common.error') || 'Jotain meni pieleen'}
+          </Text>
+          <Pressable
+            onPress={() => { setFetchError(false); setLoading(true); fetchPayments() }}
+            style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, marginTop: 4 }}
+          >
+            <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodySemi, fontSize: 13 }}>
+              {t('common.retry') || 'Yritä uudelleen'}
+            </Text>
+          </Pressable>
+        </View>
       ) : payments.length === 0 ? (
         <View style={styles.empty}>
           <CreditCard size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
@@ -234,16 +264,7 @@ function PaymentHistoryScreenInner() {
         <FlatList
           data={grouped}
           keyExtractor={g => g.month}
-          renderItem={({ item: group }) => (
-            <View>
-              <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-                {group.month.toUpperCase()}
-              </Text>
-              <View style={styles.sectionCards}>
-                {group.items.map(p => renderPayment(p))}
-              </View>
-            </View>
-          )}
+          renderItem={renderGroupItem}
           contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 40 }]}
           refreshControl={
             <RefreshControl

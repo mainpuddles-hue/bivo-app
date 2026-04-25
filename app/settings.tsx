@@ -79,7 +79,7 @@ export default function SettingsScreen() {
     // Verify via auth state — only enable if there's actually a recovery session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.recovery_sent_at) setIsPasswordRecovery(true)
-    }).catch(() => {})
+    }).catch((e) => { if (__DEV__) console.warn('Recovery session check failed:', e) })
   }, [recovery, supabase])
 
   // Delete account
@@ -207,7 +207,7 @@ export default function SettingsScreen() {
     ).then(({ data }) => {
         if (data) setSavedSearches(data as any)
       })
-      .catch(() => {})
+      .catch((e) => { if (__DEV__) console.warn('Settings sync failed:', e) })
       .finally(() => setLoadingSearches(false))
   }, [profile?.id, supabase])
 
@@ -941,7 +941,7 @@ export default function SettingsScreen() {
           <Row
             icon={<Mail size={16} color={colors.foreground} strokeWidth={1.8} />}
             label={t('settings.feedback') ?? 'Contact us'}
-            onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch(() => {})}
+            onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch((e) => { if (__DEV__) console.warn('Mailto link failed:', e) })}
             colors={colors}
             isDark={isDark}
           />

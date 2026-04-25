@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useRef } from 'react'
-import { View, Text, TextInput, ScrollView, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TextInput, ScrollView, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -88,7 +88,10 @@ function LoginScreenInner() {
         const ts = parseInt(val, 10)
         if (ts > Date.now()) setLockedUntil(ts)
       }
-    }).catch(() => {})
+    }).catch((e) => {
+      if (__DEV__) console.warn('Session storage failed:', e)
+      Alert.alert('Session Error', 'Failed to read login lockout state. You may need to log in again if the app restarts.')
+    })
   }, [])
 
   // Countdown timer for lockout display
@@ -249,7 +252,7 @@ function LoginScreenInner() {
           const lockTs = Date.now() + 15 * 60 * 1000
           setLockedUntil(lockTs)
           setLoginAttempts(0)
-          AsyncStorage.setItem('tackbird_login_lockout', String(lockTs)).catch(() => {})
+          AsyncStorage.setItem('tackbird_login_lockout', String(lockTs)).catch((e) => { if (__DEV__) console.warn('Login lockout persistence failed:', e) })
         }
       }
       setErrorMsg(translateError(err.message))

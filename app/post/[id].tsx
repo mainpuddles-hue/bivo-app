@@ -214,12 +214,12 @@ function PostDetailScreenInner() {
     // Fetch view count (distinct viewers in last 7 days)
     ;(supabase.rpc as any)('get_post_view_count', { p_post_id: post.id }).then(({ data }: { data: number | null }) => {
       if (mounted && typeof data === 'number') setViewCount(data)
-    }).catch(() => {})
+    }).catch((e: any) => { if (__DEV__) console.warn('[post] view count fetch failed:', e) })
     // Record view (fire-and-forget)
     if (userId) {
       ;(supabase.from('post_views') as any)
         .upsert({ post_id: post.id, user_id: userId }, { onConflict: 'post_id,user_id' })
-        .then(() => {}, () => {})
+        .then(() => {}, (e: any) => { if (__DEV__) console.warn('[post] view tracking failed:', e) })
     }
     return () => { mounted = false }
   }, [post?.id, userId, supabase])
@@ -315,6 +315,14 @@ function PostDetailScreenInner() {
           }).then(() => {}).catch((e: any) => { if (__DEV__) console.warn('[post] like notification failed:', e?.message) })
         }
       }
+    } catch (e) {
+      // Rollback to previous state if anything unexpected threw
+      try {
+        setIsLiked(isLiked)
+        setLikeCount(likeCount)
+      } catch (rollbackErr) {
+        if (__DEV__) console.warn('[post] like rollback failed:', rollbackErr)
+      }
     } finally { likingRef.current = false }
   }, [userId, isLiked, likeCount, id, supabase, router, post, t])
 
@@ -374,7 +382,7 @@ function PostDetailScreenInner() {
       }
       // Speed badge check for urgent posts
       if (post.is_urgent && userId && post.user_id) {
-        checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch(() => {})
+        checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch((e: any) => { if (__DEV__) console.warn('[post] speed badge check failed:', e) })
       }
       // Push notification to post author
       if (post.user_id !== userId) {
@@ -456,11 +464,11 @@ function PostDetailScreenInner() {
             link_type: 'post',
             link_id: id,
           })
-        } catch {}
+        } catch (e) { if (__DEV__) console.warn('[post] reply notification failed:', e) }
       }
       // Speed badge check for urgent posts
       if (post?.is_urgent && userId && post.user_id) {
-        checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch(() => {})
+        checkAndAwardSpeedBadge(userId, post.created_at, post.user_id).catch((e: any) => { if (__DEV__) console.warn('[post] speed badge check failed:', e) })
       }
     } catch (err) {
       if (mountedRef.current) {
@@ -902,7 +910,14 @@ function PostDetailScreenInner() {
     } catch {
       // Roll back the service booking if Stripe session creation threw
       if (createdBookingId) {
-        await (supabase.from('service_bookings') as any).delete().eq('id', createdBookingId).catch(() => {})
+        const { error: rollbackErr } = await (supabase.from('service_bookings') as any).delete().eq('id', createdBookingId)
+        if (rollbackErr) {
+          if (__DEV__) console.warn('[post] service booking rollback failed:', rollbackErr.message)
+          Alert.alert(
+            t('service.bookingFailed'),
+            t('service.rollbackFailed') ?? 'Booking cleanup failed. Please contact support if you see a duplicate booking.',
+          )
+        }
       }
       toast.show({ message: t('service.bookingFailed'), type: 'error' })
     } finally {
@@ -988,6 +1003,19 @@ function PostDetailScreenInner() {
 
   const isItemExchange = post?.type === 'ilmaista' || post?.type === 'lainaa' || (post?.type === 'tarjoan' && post?.tags?.includes('tarjoan_item'))
 
+  const renderHeroImageItem = useCallback(({ item, index }: { item: string; index: number }) => (
+    <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
+      <Image source={{ uri: getImageUrl(item, 'medium')! }} style={[styles.heroImage, { width: screenWidth }]} contentFit="cover" cachePolicy="memory-disk" onError={() => setHeroImageError(true)} />
+    </PressableOpacity>
+  ), [openGallery, t, screenWidth])
+
+  const renderLikerItem = useCallback(({ item }: { item: { id: string; name: string; avatar_url: string | null } }) => (
+    <PressableOpacity onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
+      <Avatar url={item.avatar_url} name={item.name} size={40} />
+      <Text style={{ fontSize: 14, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1, lineHeight: 20 }}>{item.name}</Text>
+    </PressableOpacity>
+  ), [router, colors.foreground])
+
   return (
     <FadeIn style={{ flex: 1 }}>
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -1024,11 +1052,7 @@ function PostDetailScreenInner() {
               <FlatList
                 horizontal pagingEnabled data={allImages}
                 keyExtractor={(item, i) => `${item}-${i}`}
-                renderItem={({ item, index }) => (
-                  <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
-                    <Image source={{ uri: getImageUrl(item, 'medium')! }} style={[styles.heroImage, { width: screenWidth }]} contentFit="cover" cachePolicy="memory-disk" />
-                  </PressableOpacity>
-                )}
+                renderItem={renderHeroImageItem}
                 showsHorizontalScrollIndicator={false}
               />
             )
@@ -1722,12 +1746,7 @@ function PostDetailScreenInner() {
               <FlatList
                 data={likers}
                 keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                  <PressableOpacity onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
-                    <Avatar url={item.avatar_url} name={item.name} size={40} />
-                    <Text style={{ fontSize: 14, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1, lineHeight: 20 }}>{item.name}</Text>
-                  </PressableOpacity>
-                )}
+                renderItem={renderLikerItem}
                 ListEmptyComponent={<Text style={{ textAlign: 'center', color: colors.mutedForeground, paddingVertical: 20, fontFamily: fonts.body }}>{t('post.noLikes')}</Text>}
               />
             )}

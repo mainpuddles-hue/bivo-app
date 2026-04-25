@@ -208,7 +208,7 @@ function ExploreScreenInner() {
   // Event personalization
   const { interests: eventInterests } = useEventInterests()
   const [clickHistory, setClickHistory] = useState<{ category: string; timestamp: number }[]>([])
-  useEffect(() => { let m = true; getClickHistory().then(h => { if (m) setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))) }).catch(() => {}); return () => { m = false } }, [])
+  useEffect(() => { let m = true; getClickHistory().then(h => { if (m) setClickHistory(h.map(x => ({ category: x.category, timestamp: x.timestamp }))) }).catch((e) => { if (__DEV__) console.warn('[explore] click history fetch failed:', e) }); return () => { m = false } }, [])
 
   // Sort/filter state for Events sub-tab
   const [eventSort, setEventSort] = useState<'recommended' | 'today' | 'week' | 'all'>('recommended')
@@ -534,7 +534,7 @@ function ExploreScreenInner() {
   // ── Open Google Maps for a place ──
   const openPlaceInMaps = useCallback((place: LocalPlace) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`
-    Linking.openURL(url).catch(() => {})
+    Linking.openURL(url).catch((e) => { if (__DEV__) console.warn('[explore] open maps URL failed:', e) })
   }, [])
 
   // ── Safe URL opener — validates protocol to prevent javascript: / file: schemes
@@ -544,9 +544,9 @@ function ExploreScreenInner() {
     try {
       const u = new URL(url)
       if (u.protocol !== 'http:' && u.protocol !== 'https:') return
-      Linking.openURL(url).catch(() => {})
-    } catch {
-      // Invalid URL — ignore
+      Linking.openURL(url).catch((e) => { if (__DEV__) console.warn('[explore] open external URL failed:', e) })
+    } catch (e) {
+      if (__DEV__) console.warn('[explore] invalid external URL:', e)
     }
   }, [])
 
