@@ -557,6 +557,7 @@ export default function MessagesScreen() {
         <View style={styles.headerActions}>
           <PressableOpacity
             onPress={() => setSearchExpanded(!searchExpanded)}
+            hitSlop={6}
             style={[styles.iconCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
             accessibilityLabel={t('common.search')}
             accessibilityRole="button"
@@ -565,6 +566,7 @@ export default function MessagesScreen() {
           </PressableOpacity>
           <PressableOpacity
             onPress={() => setShowArchived(!showArchived)}
+            hitSlop={6}
             style={[
               styles.iconCircle,
               showArchived
@@ -789,8 +791,8 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   searchCloseBtn: {
-    width: 32,
-    height: 32,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

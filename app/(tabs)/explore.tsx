@@ -1098,6 +1098,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   filterChipText: {
     fontSize: 13,

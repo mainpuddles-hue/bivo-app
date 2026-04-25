@@ -93,6 +93,11 @@ function PostDetailScreenInner() {
   const [galleryVisible, setGalleryVisible] = useState(false)
   const [galleryInitialIndex, setGalleryInitialIndex] = useState(0)
   const [heroImageError, setHeroImageError] = useState(false)
+  const [heroPage, setHeroPage] = useState(0)
+  const onHeroViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) setHeroPage(viewableItems[0].index ?? 0)
+  }).current
+  const heroViewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current
 
   // Description expand/collapse
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
@@ -1057,6 +1062,8 @@ function PostDetailScreenInner() {
                 keyExtractor={(item, i) => `${item}-${i}`}
                 renderItem={renderHeroImageItem}
                 showsHorizontalScrollIndicator={false}
+                onViewableItemsChanged={onHeroViewableItemsChanged}
+                viewabilityConfig={heroViewabilityConfig}
               />
             )
           ) : (
@@ -1076,7 +1083,7 @@ function PostDetailScreenInner() {
           {allImages.length > 1 && (
             <View style={styles.pageDots}>
               {allImages.map((_, i) => (
-                <View key={i} style={[styles.dot, i === 0 && styles.dotActive]} />
+                <View key={i} style={[styles.dot, i === heroPage && styles.dotActive]} />
               ))}
             </View>
           )}

@@ -331,6 +331,16 @@ export default function CreateScreen() {
     }
   }, [selectedType, selectedTags])
 
+  const resetForm = useCallback(() => {
+    setTitle(''); setDescription(''); setImages([]); setLocation('')
+    setDailyFee(''); setServicePrice(''); setEventDate('')
+    setEventStartTime(''); setEventEndTime(''); setEventMaxCapacity('')
+    setSelectedTags([]); setTarjoanType('service'); setItemCondition(null)
+    setExpirationDays(0); expirationSetByUser.current = false
+    setIsAnonymous(false); setIsUrgent(false)
+    setLatitude(null); setLongitude(null)
+  }, [])
+
   const hasUnsavedContent = title.trim().length > 0 || description.trim().length > 0 || images.length > 0
 
   const handleBackToCategory = useCallback(() => {
@@ -344,12 +354,7 @@ export default function CreateScreen() {
             text: t('create.discard'),
             style: 'destructive',
             onPress: () => {
-              setTitle(''); setDescription(''); setImages([]); setLocation('')
-              setDailyFee(''); setServicePrice(''); setEventDate('')
-              setEventStartTime(''); setEventEndTime(''); setEventMaxCapacity('')
-              setSelectedTags([]); setTarjoanType('service'); setItemCondition(null)
-              setExpirationDays(0); expirationSetByUser.current = false; setIsAnonymous(false); setIsUrgent(false)
-              setLatitude(null); setLongitude(null); setStep('category')
+              resetForm(); setStep('category')
             },
           },
         ],
@@ -357,7 +362,7 @@ export default function CreateScreen() {
     } else {
       setStep('category')
     }
-  }, [hasUnsavedContent, t])
+  }, [hasUnsavedContent, t, resetForm])
 
   const handleClose = useCallback(() => {
     if (hasUnsavedContent) {
@@ -370,12 +375,7 @@ export default function CreateScreen() {
             text: t('create.discard'),
             style: 'destructive',
             onPress: () => {
-              setTitle(''); setDescription(''); setImages([]); setLocation('')
-              setDailyFee(''); setServicePrice(''); setEventDate('')
-              setEventStartTime(''); setEventEndTime(''); setEventMaxCapacity('')
-              setSelectedTags([]); setTarjoanType('service'); setItemCondition(null)
-              setExpirationDays(0); setIsAnonymous(false); setIsUrgent(false)
-              setLatitude(null); setLongitude(null); setSelectedType(null)
+              resetForm(); setSelectedType(null)
               setStep('category'); router.back()
             },
           },
@@ -384,7 +384,7 @@ export default function CreateScreen() {
     } else {
       router.back()
     }
-  }, [hasUnsavedContent, t, router])
+  }, [hasUnsavedContent, t, router, resetForm])
 
   const handleCategorySelect = (type: PostType) => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
@@ -526,7 +526,7 @@ export default function CreateScreen() {
     })
   }, [supabase])
 
-  const uploadImages = async (userId: string, postId: string): Promise<string | null> => {
+  const uploadImages = useCallback(async (userId: string, postId: string): Promise<string | null> => {
     if (images.length === 0) return null
     const uploadedUrls: string[] = []
     let failedCount = 0
@@ -571,7 +571,7 @@ export default function CreateScreen() {
       toast.show({ message: t('create.imageUploadPartialFail', { count: failedCount }), type: 'error' })
     }
     return uploadedUrls[0] ?? null
-  }
+  }, [images, supabase, t, toast, uploadSingleImageWithProgress])
 
   const quickContentCheck = useCallback((checkTitle: string, checkDescription: string): string | null => {
     const text = `${checkTitle} ${checkDescription}`.toLowerCase()
@@ -784,12 +784,7 @@ export default function CreateScreen() {
       AsyncStorage.removeItem(DRAFT_KEY).catch((e) => { if (__DEV__) console.warn('Post-submit draft cleanup failed:', e) })
       if (!mountedRef.current) return
       setHasDraft(false)
-      setTitle(''); setDescription(''); setImages([]); setLocation('')
-      setDailyFee(''); setServicePrice(''); setEventDate('')
-      setEventStartTime(''); setEventEndTime(''); setEventMaxCapacity('')
-      setSelectedTags([]); setTarjoanType('service'); setItemCondition(null)
-      setExpirationDays(0); setIsAnonymous(false); setIsUrgent(false)
-      setLatitude(null); setLongitude(null); setStep('category')
+      resetForm(); setStep('category')
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch (e) { if (__DEV__) console.warn('Haptics failed:', e) }
       setSuccessPostId(createdPostId); setSuccessNeighborhood(userNeighborhood); setShowSuccess(true)
       maybeRequestReview('post_created').catch((e) => { if (__DEV__) console.warn('Review request failed:', e) })
@@ -807,7 +802,7 @@ export default function CreateScreen() {
       submittingRef.current = false
       if (mountedRef.current) { setSubmitting(false); setUploadStatus(''); setUploadProgress({}); setUploadComplete({}) }
     }
-  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages, toast])
+  }, [submitting, selectedType, title, description, location, latitude, longitude, dailyFee, servicePrice, eventDate, eventStartTime, eventEndTime, eventMaxCapacity, selectedTags, tarjoanType, itemCondition, expirationDays, isUrgent, urgencyHours, isAnonymous, images, supabase, router, t, quickContentCheck, trust, userNeighborhood, uploadImages, toast, resetForm])
 
   const cat = selectedType ? CATEGORIES[selectedType] : null
   const availableTags = selectedType === 'tarjoan'

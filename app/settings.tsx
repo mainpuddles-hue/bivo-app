@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing, Home } from 'lucide-react-native'
@@ -708,11 +708,12 @@ export default function SettingsScreen() {
 
   return (
     <ScreenErrorBoundary screenName="Settings">
-    <View style={[s.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView style={[s.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {/* ── Header Bar (mockup 22) ── */}
       <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <PressableOpacity
           onPress={() => router.back()}
+          hitSlop={6}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
           style={[s.headerBackCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -1356,7 +1357,7 @@ export default function SettingsScreen() {
           </Pressable>
         </Pressable>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
     </ScreenErrorBoundary>
   )
 }

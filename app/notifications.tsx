@@ -594,7 +594,7 @@ function NotificationsScreenInner() {
           keyExtractor={item => item.id}
           stickySectionHeadersEnabled={false}
           removeClippedSubviews
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 80 }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -797,7 +797,9 @@ const styles = StyleSheet.create({
   actionPrimary: {
     borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 12,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   actionPrimaryText: {
     fontSize: 12,
@@ -808,8 +810,10 @@ const styles = StyleSheet.create({
   actionSecondary: {
     borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 12,
     borderWidth: 1,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   actionSecondaryText: {
     fontSize: 12,
@@ -840,7 +844,7 @@ const styles = StyleSheet.create({
 
   // --- List ---
   listContent: {
-    paddingBottom: 100,
+    paddingBottom: 80,
   },
 
   // --- Expanded group ---
