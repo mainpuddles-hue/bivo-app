@@ -990,14 +990,6 @@ export default function CreateScreen() {
                 </ScrollView>
               </View>
 
-              {/* Pro upsell */}
-              {FEATURES.PRO_SUBSCRIPTION && !userIsPro && (
-                <Pressable onPress={() => router.push('/pro')} style={({ pressed }) => [mk.proBanner, { backgroundColor: `${colors.foreground}12` }, pressed && { opacity: 0.7 }]}>
-                  <Crown size={16} color={colors.foreground} />
-                  <Text style={[mk.proBannerText, { color: colors.foreground }]}>{t('pro.createBanner')}</Text>
-                  <ChevronRight size={14} color={colors.foreground} />
-                </Pressable>
-              )}
 
               {/* Photo uploader — dashed area or thumbnails */}
               <View style={mk.photoWrap}>

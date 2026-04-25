@@ -212,7 +212,7 @@ function CommunityEventsScreenInner() {
           <Pressable
             onPress={() => {
               try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
-              router.push('/create-table' as any)
+              router.push('/create-event' as any)
             }}
             style={({ pressed }) => [
               s.createTableCard,

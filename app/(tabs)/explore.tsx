@@ -13,14 +13,13 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import {
   Map, CalendarDays, MapPin, ChevronRight, Globe,
   Store, Coffee, BookOpen, Dumbbell, Heart, UtensilsCrossed,
-  Users, MessageCircle, Plus, Search, SlidersHorizontal,
+  Users, Plus, Search, SlidersHorizontal,
 } from 'lucide-react-native'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { getNetworkAwareErrorSync } from '@/lib/errorUtils'
-import { FEATURES } from '@/lib/featureFlags'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { fetchHelsinkiEvents } from '@/lib/linkedevents'
@@ -128,8 +127,6 @@ function ExploreScreenInner() {
   const userLocationRef = useRef<{ latitude: number; longitude: number } | null>(null)
 
   // Community preview state
-  const [groups, setGroups] = useState<Array<{ id: string; name: string; category: string; member_count: number }>>([])
-  const [forumPosts, setForumPosts] = useState<Array<{ id: string; title: string; category: string; comment_count: number; created_at: string }>>([])
   const [communityEventPreviews, setCommunityEventPreviews] = useState<CommunityEventPreview[]>([])
 
   // ── Fetch location ──
@@ -198,22 +195,12 @@ function ExploreScreenInner() {
       setCommunityEvents(communityRes)
       setPlaces(placesResult)
 
-      // Fetch community previews in parallel (graceful if tables don't exist)
-      const [groupsRes, forumRes, communityEvtsRes] = await Promise.all([
-        (supabase.from('groups').select('id, name, category, member_count') as any)
-          .order('member_count', { ascending: false }).limit(3)
-          .then((r: any) => r).catch(() => ({ data: null, error: true })),
-        (supabase.from('forum_posts').select('id, title, category, comment_count, created_at') as any)
-          .order('created_at', { ascending: false }).limit(3)
-          .then((r: any) => r).catch(() => ({ data: null, error: true })),
-        (supabase.from('community_events').select('id, title, image_url, event_date, location_name, category, participant_count, max_participants') as any)
-          .eq('is_active', true)
-          .gte('event_date', now)
-          .order('event_date', { ascending: true }).limit(4)
-          .then((r: any) => r).catch(() => ({ data: null, error: true })),
-      ])
-      if (!groupsRes.error && groupsRes.data) setGroups(groupsRes.data)
-      if (!forumRes.error && forumRes.data) setForumPosts(forumRes.data)
+      // Fetch community event previews
+      const communityEvtsRes = await (supabase.from('community_events').select('id, title, image_url, event_date, location_name, category, participant_count, max_participants') as any)
+        .eq('is_active', true)
+        .gte('event_date', now)
+        .order('event_date', { ascending: true }).limit(4)
+        .then((r: any) => r).catch(() => ({ data: null, error: true }))
       if (!communityEvtsRes.error && communityEvtsRes.data) setCommunityEventPreviews(communityEvtsRes.data)
     } catch (err) {
       if (__DEV__) console.log('[explore] fetch error:', err)
@@ -588,25 +575,6 @@ function ExploreScreenInner() {
         {/* ── Map sub-tab ── */}
         {activeTab === 'map' && (
           <>
-            {/* Map teaser card */}
-            <PressableOpacity
-              onPress={() => router.push('/map')}
-              accessibilityRole="button"
-              accessibilityLabel={t('explore.openMap')}
-              style={[s.mapTeaser, { backgroundColor: colors.card, borderColor: colors.border }]}
-            >
-              <View style={s.mapTeaserContent}>
-                <Map size={28} color={colors.foreground} strokeWidth={1.6} />
-                <Text style={[s.mapTeaserTitle, { color: colors.foreground }]}>
-                  {t('explore.openMap')}
-                </Text>
-                <Text style={[s.mapTeaserHint, { color: colors.mutedForeground }]}>
-                  {t('explore.mapHint')}
-                </Text>
-              </View>
-              <ChevronRight size={20} color={colors.mutedForeground} strokeWidth={1.6} />
-            </PressableOpacity>
-
             {/* Summary stats */}
             {!loading && (
               <View style={s.summaryRow}>
@@ -716,113 +684,6 @@ function ExploreScreenInner() {
               )}
             </View>
 
-            {/* Community: Groups */}
-            {FEATURES.GROUPS && <View style={s.sectionWrap}>
-              <View style={s.sectionHeaderRow}>
-                <Text style={[s.sectionHeading, { color: colors.mutedForeground }]}>{t('groups.title')}</Text>
-                <PressableOpacity
-                  onPress={() => router.push('/groups' as any)}
-                  accessibilityRole="link"
-                  accessibilityLabel={`${t('groups.title')} — ${t('feed.showAll')}`}
-                  style={s.seeAllLink}
-                  hitSlop={8}
-                >
-                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll') ?? 'Show all'}</Text>
-                </PressableOpacity>
-              </View>
-              <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {groups.length > 0 ? (
-                  groups.map((g, idx) => (
-                    <PressableOpacity
-                      key={g.id}
-                      onPress={() => router.push(`/groups/${g.id}` as any)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${g.name}, ${g.member_count} ${t('groups.members')}`}
-                      style={[
-                        s.listRow,
-                        idx < groups.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-                      ]}
-                    >
-                      <View style={[s.groupDot, { backgroundColor: isDark ? colors.muted : `${colors.border}44` }]}>
-                        <Text style={[s.groupDotText, { color: colors.foreground }]}>{(g.name || '?').charAt(0)}</Text>
-                      </View>
-                      <View style={s.cardFlex}>
-                        <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{g.name}</Text>
-                        <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{g.member_count} {t('groups.members')}</Text>
-                      </View>
-                      <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                    </PressableOpacity>
-                  ))
-                ) : (
-                  <PressableOpacity
-                    onPress={() => router.push('/groups' as any)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${t('groups.title')} — ${t('groups.joinOrCreate')}`}
-                    style={s.listRow}
-                  >
-                    <Users size={20} color={colors.mutedForeground} strokeWidth={1.6} />
-                    <View style={s.cardFlex}>
-                      <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('groups.title')}</Text>
-                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('groups.joinOrCreate')}</Text>
-                    </View>
-                    <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
-                  </PressableOpacity>
-                )}
-              </View>
-            </View>}
-
-            {/* Community: Forum */}
-            {FEATURES.FORUM && <View style={s.sectionWrap}>
-              <View style={s.sectionHeaderRow}>
-                <Text style={[s.sectionHeading, { color: colors.mutedForeground }]}>{t('forum.title')}</Text>
-                <PressableOpacity
-                  onPress={() => router.push('/forum' as any)}
-                  accessibilityRole="link"
-                  accessibilityLabel={`${t('forum.title')} — ${t('feed.showAll')}`}
-                  style={s.seeAllLink}
-                  hitSlop={8}
-                >
-                  <Text style={[s.seeAllText, { color: colors.mutedForeground }]}>{t('feed.showAll') ?? 'Show all'}</Text>
-                </PressableOpacity>
-              </View>
-              <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {forumPosts.length > 0 ? (
-                  forumPosts.map((p, idx) => (
-                    <PressableOpacity
-                      key={p.id}
-                      onPress={() => router.push(`/forum?thread=${p.id}` as any)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${p.title}, ${p.comment_count} ${t('forum.replies')}`}
-                      style={[
-                        s.listRow,
-                        idx < forumPosts.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-                      ]}
-                    >
-                      <MessageCircle size={18} color={colors.mutedForeground} strokeWidth={1.6} />
-                      <View style={s.cardFlex}>
-                        <Text style={[s.communityCardTitle, { color: colors.foreground }]} numberOfLines={1}>{p.title}</Text>
-                        <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{p.comment_count} {t('forum.replies')}</Text>
-                      </View>
-                      <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={1.6} />
-                    </PressableOpacity>
-                  ))
-                ) : (
-                  <PressableOpacity
-                    onPress={() => router.push('/forum' as any)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${t('forum.title')} — ${t('forum.startDiscussion')}`}
-                    style={s.listRow}
-                  >
-                    <MessageCircle size={20} color={colors.mutedForeground} strokeWidth={1.6} />
-                    <View style={s.cardFlex}>
-                      <Text style={[s.communityCardTitle, { color: colors.foreground }]}>{t('forum.title')}</Text>
-                      <Text style={[s.communityCardHint, { color: colors.mutedForeground }]}>{t('forum.startDiscussion')}</Text>
-                    </View>
-                    <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={1.6} />
-                  </PressableOpacity>
-                )}
-              </View>
-            </View>}
 
             {loading && <SectionSkeleton count={2} />}
 

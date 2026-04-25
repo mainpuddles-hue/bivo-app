@@ -39,10 +39,6 @@ describe('Feature flag expected values', () => {
     expect(FEATURES.PAYMENTS).toBe(false)
   })
 
-  test('PRO_SUBSCRIPTION is false (Pro tier disabled)', () => {
-    expect(FEATURES.PRO_SUBSCRIPTION).toBe(false)
-  })
-
   test('BUSINESS_ACCOUNT is false (business tier disabled)', () => {
     expect(FEATURES.BUSINESS_ACCOUNT).toBe(false)
   })
@@ -57,22 +53,6 @@ describe('Feature flag expected values', () => {
 
   test('EVENTS_TAPAHTUMA_TYPE is true (tapahtuma post type enabled)', () => {
     expect(FEATURES.EVENTS_TAPAHTUMA_TYPE).toBe(true)
-  })
-
-  test('BOOSTS is false (no paid visibility)', () => {
-    expect(FEATURES.BOOSTS).toBe(false)
-  })
-
-  test('FORUM is false (disabled for pivot)', () => {
-    expect(FEATURES.FORUM).toBe(false)
-  })
-
-  test('GROUPS is false (disabled for pivot)', () => {
-    expect(FEATURES.GROUPS).toBe(false)
-  })
-
-  test('LEADERBOARD is false (no gamification)', () => {
-    expect(FEATURES.LEADERBOARD).toBe(false)
   })
 
   test('POLLS is true (community polls enabled)', () => {
@@ -124,7 +104,7 @@ describe('Feature flag immutability', () => {
       ;(FEATURES as any).NEW_FLAG = true
     }).toThrow('Use fetchRemoteFlags() to update flags')
 
-    expect(originalKeys.length).toBeGreaterThanOrEqual(13)
+    expect(originalKeys.length).toBeGreaterThanOrEqual(8)
     expect(Object.keys(FEATURES)).toEqual(originalKeys)
   })
 })
@@ -138,15 +118,10 @@ describe('Feature flag inventory', () => {
     'LENDING',
     'LENDING_PAYMENTS',
     'PAYMENTS',
-    'PRO_SUBSCRIPTION',
-    'BUSINESS_ACCOUNT',
     'AD_CAMPAIGNS',
+    'BUSINESS_ACCOUNT',
     'IDENTITY_VERIFICATION',
     'EVENTS_TAPAHTUMA_TYPE',
-    'BOOSTS',
-    'FORUM',
-    'GROUPS',
-    'LEADERBOARD',
     'POLLS',
   ]
 
@@ -167,13 +142,13 @@ describe('Feature flag inventory', () => {
     }
   })
 
-  test('Disabled features count matches pivot plan (9 disabled)', () => {
+  test('Disabled features count matches post-cleanup (5 disabled)', () => {
     const disabled = Object.values(FEATURES).filter(v => v === false)
-    expect(disabled).toHaveLength(9)
+    expect(disabled).toHaveLength(5)
   })
 
-  test('Enabled features count matches pivot plan (4 enabled)', () => {
+  test('Enabled features count matches post-cleanup (3 enabled)', () => {
     const enabled = Object.values(FEATURES).filter(v => v === true)
-    expect(enabled).toHaveLength(4)
+    expect(enabled).toHaveLength(3)
   })
 })

@@ -622,37 +622,27 @@ function RootLayoutInner() {
         <Stack.Screen name="post/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="messages/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="auth/callback" options={{ animation: 'fade' }} />
-        <Stack.Screen name="map" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="bookings" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="booking/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="payment/success" options={{ animation: 'fade' }} />
         <Stack.Screen name="payment/cancel" options={{ animation: 'fade' }} />
         <Stack.Screen name="payment-settings" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="payment-history" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="pro" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="create-ad" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="organization" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="upgrade-business" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="privacy" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="terms" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="blocked" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="help" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="about" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="forum" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="groups" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="groups/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="verification/success" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="verification/error" options={{ animation: 'fade' }} />
         <Stack.Screen name="saved" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="activities" options={{ headerShown: false, animation: 'slide_from_right' }} />
-        <Stack.Screen name="leaderboard" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="profile/[userId]" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="admin" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="event/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="create-event" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="community-events" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="verify-otp" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="boosts" options={{ headerShown: false, animation: 'slide_from_right' }} />
       </Stack>
     </View>
   )

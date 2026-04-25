@@ -6,16 +6,11 @@ const DEFAULTS = {
   LENDING: true,
   LENDING_PAYMENTS: false,    // Lending deposit/fees — hidden for pivot
   PAYMENTS: false,
-  PRO_SUBSCRIPTION: false,
-  BUSINESS_ACCOUNT: false,
   AD_CAMPAIGNS: false,
+  BUSINESS_ACCOUNT: false,
   IDENTITY_VERIFICATION: false,
   EVENTS_TAPAHTUMA_TYPE: true,
-  BOOSTS: false,              // Disabled for pivot — no paid visibility
-  FORUM: false,               // Disabled for pivot — focus on core
-  GROUPS: false,              // Disabled for pivot — focus on core
-  LEADERBOARD: false,         // Disabled for pivot — no gamification
-  POLLS: true,                // New: community polls
+  POLLS: true,
 } as const
 
 type FeatureKey = keyof typeof DEFAULTS

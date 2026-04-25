@@ -583,15 +583,6 @@ export default function ProfileScreen() {
               <ChevronRight size={10} color={colors.mutedForeground} strokeWidth={2.5} />
             </View>
           </PressableOpacity>
-          {FEATURES.PRO_SUBSCRIPTION && !profile.is_pro && (
-            <PressableOpacity onPress={() => router.push('/pro')} style={[s.menuRow, { backgroundColor: `${colors.foreground}08`, borderColor: `${colors.foreground}30` }]} accessibilityRole="button">
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Crown size={14} color={colors.foreground} />
-                <Text style={[s.menuRowLabel, { color: colors.foreground }]}>{t('pro.upgradeToPro')}</Text>
-              </View>
-              <ChevronRight size={10} color={colors.foreground} strokeWidth={2.5} />
-            </PressableOpacity>
-          )}
         </View>
 
         {/* Tabs */}

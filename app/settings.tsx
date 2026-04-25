@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, memo, type ReactNode } from 'react'
 import { View, Text, ScrollView, Pressable, Switch, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Globe, Bell, Crown, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Building2, Check, Banknote, Search, BellOff, BellRing, Megaphone } from 'lucide-react-native'
+import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
@@ -818,15 +818,6 @@ export default function SettingsScreen() {
               isDark={isDark}
             />
           )}
-          {FEATURES.AD_CAMPAIGNS && profile?.is_business && (
-            <Row
-              icon={<Megaphone size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={t('ads.yourAds') ?? 'Your ads'}
-              onPress={() => router.push('/create-ad' as any)}
-              colors={colors}
-              isDark={isDark}
-            />
-          )}
           {FEATURES.LENDING_PAYMENTS && (
             <Row
               icon={<Banknote size={16} color={colors.foreground} strokeWidth={1.8} />}
@@ -929,47 +920,6 @@ export default function SettingsScreen() {
           />
         </Group>
 
-        {/* ── Pro subscription ── */}
-        {FEATURES.PRO_SUBSCRIPTION && (
-          <Group colors={colors}>
-            <Row
-              icon={<Crown size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label="TackBird Pro"
-              onPress={() => router.push('/pro')}
-              colors={colors}
-              isDark={isDark}
-            >
-              {profile?.is_pro ? (
-                <Text style={[s.proBadgeText, { color: colors.foreground }]}>{t('profile.proActive')}</Text>
-              ) : (
-                <View style={[s.proUpgradeChip, { backgroundColor: colors.foreground }]}>
-                  <Text style={[s.proUpgradeText, { color: colors.foreground }]}>
-                    4,99 {'\u20AC'}{t('pro.perMonth')}
-                  </Text>
-                </View>
-              )}
-            </Row>
-          </Group>
-        )}
-
-        {/* ── Business account ── */}
-        {FEATURES.BUSINESS_ACCOUNT && (
-          <Group colors={colors}>
-            <Row
-              icon={<Building2 size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={profile?.is_business ? (t('business.dashboard') ?? 'Business account') : (t('business.upgradeCTA') ?? 'Business account')}
-              onPress={() => router.push(profile?.is_business ? '/organization' : '/upgrade-business')}
-              colors={colors}
-              isDark={isDark}
-            >
-              {profile?.is_business ? (
-                <Text style={[s.proBadgeText, { color: colors.success }]}>{t('business.active')}</Text>
-              ) : (
-                <Text style={[s.rowValue, { color: colors.mutedForeground }]}>{t('business.monthlyPrice')}</Text>
-              )}
-            </Row>
-          </Group>
-        )}
 
         {/* ── Saved items ── */}
         <Group colors={colors}>

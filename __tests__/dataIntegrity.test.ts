@@ -186,9 +186,9 @@ describe('Feature flags are all booleans', () => {
     })
   }
 
-  test('BOOSTS feature flag exists and is disabled (pivot)', () => {
-    expect(FEATURES).toHaveProperty('BOOSTS')
-    expect(FEATURES.BOOSTS).toBe(false)
+  test('LENDING feature flag exists and is enabled', () => {
+    expect(FEATURES).toHaveProperty('LENDING')
+    expect(FEATURES.LENDING).toBe(true)
   })
 
   test('LENDING feature flag exists', () => {

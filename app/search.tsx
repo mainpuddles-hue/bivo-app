@@ -398,10 +398,9 @@ function SearchScreenInner() {
   const [searchError, setSearchError] = useState<string | null>(null)
   const [history, setHistory] = useState<string[]>([])
   const [activeFilter, setActiveFilter] = useState<PostType | null>(null)
-  const [activeTab, setActiveTab] = useState<'posts' | 'users' | 'events' | 'groups'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'users' | 'events'>('posts')
   const [userResults, setUserResults] = useState<{ id: string; name: string; avatar_url: string | null; naapurusto: string }[]>([])
   const [eventResults, setEventResults] = useState<{ id: string; title: string; description: string | null; event_date: string | null; location_name: string | null }[]>([])
-  const [groupResults, setGroupResults] = useState<{ id: string; name: string; description: string | null; member_count: number | null }[]>([])
   const [trendingPosts, setTrendingPosts] = useState<{ id: string; title: string; type: string; like_count: number }[]>([])
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   // Filter state
@@ -873,8 +872,8 @@ function SearchScreenInner() {
       setDbResultCount((posts ?? []).length)
       setHasMore((posts ?? []).length >= 20)
 
-      // Search users, events, and groups in parallel
-      const [usersSettled, eventsSettled, groupsSettled] = await Promise.allSettled([
+      // Search users and events in parallel
+      const [usersSettled, eventsSettled] = await Promise.allSettled([
         supabase
           .from('profiles')
           .select('id, name, avatar_url, naapurusto')
@@ -894,31 +893,17 @@ function SearchScreenInner() {
             }
             return res
           }),
-        supabase
-          .from('groups')
-          .select('id, name, description, member_count')
-          .ilike('name', `%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
-          .limit(10)
-          .then(res => {
-            if (res.error) {
-              if (__DEV__) console.log('[search] groups error:', res.error.message)
-              return { ...res, data: [] }
-            }
-            return res
-          }),
       ])
       if (controller.signal.aborted) return
 
       const usersRes = usersSettled.status === 'fulfilled' ? usersSettled.value : { data: null }
       const eventsRes = eventsSettled.status === 'fulfilled' ? eventsSettled.value : { data: [] }
-      const groupsRes = groupsSettled.status === 'fulfilled' ? groupsSettled.value : { data: [] }
       let userResultsData = (usersRes.data ?? []) as any[]
       if (blockedIds.size > 0) {
         userResultsData = userResultsData.filter((u: any) => !blockedIds.has(u.id))
       }
       setUserResults(userResultsData)
       setEventResults((eventsRes.data ?? []) as any[])
-      setGroupResults((groupsRes.data ?? []) as any[])
     } catch (err: any) {
       // Only set error if not aborted and still mounted
       if (!controller.signal.aborted && mountedRef.current) {
@@ -1412,11 +1397,6 @@ function SearchScreenInner() {
               {t('search.tabEvents')} ({eventResults.length})
             </Text>
           </PressableOpacity>
-          {FEATURES.GROUPS && <PressableOpacity onPress={() => setActiveTab('groups')} style={[s.tab, activeTab === 'groups' && [s.tabActive, { borderBottomColor: colors.foreground }]]} accessibilityRole="tab" accessibilityLabel={t('search.tabGroups')} accessibilityState={{ selected: activeTab === 'groups' }}>
-            <Text style={[s.tabText, { color: activeTab === 'groups' ? colors.foreground : colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
-              {t('search.tabGroups')} ({groupResults.length})
-            </Text>
-          </PressableOpacity>}
         </View>
       )}
 
@@ -1486,49 +1466,6 @@ function SearchScreenInner() {
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                     <MapPin size={12} color={colors.mutedForeground} />
                     <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={1}>{item.location_name}</Text>
-                  </View>
-                )}
-              </View>
-              <ChevronRight size={16} color={colors.mutedForeground} />
-            </PressableOpacity>
-          )}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          ListEmptyComponent={
-            <View style={s.empty}>
-              <BoardIllustration size={80} />
-              <Text style={[s.emptyTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]}>{query.trim() ? t('search.noResultsQuery', { query: query.trim() }) : t('search.noResults')}</Text>
-              <Text style={[s.emptyHint, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{t('search.noResultsHint')}</Text>
-            </View>
-          }
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews={true}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-        />
-      ) : activeTab === 'groups' ? (
-        <FlatList
-          data={groupResults}
-          keyExtractor={item => item.id}
-          contentContainerStyle={s.list}
-          renderItem={({ item }) => (
-            <PressableOpacity
-              onPress={() => router.push(`/groups/${item.id}` as any)}
-              style={[s.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              accessibilityRole="button"
-              accessibilityLabel={item.name}
-            >
-              <View style={[s.searchEventIcon, { backgroundColor: `${colors.foreground}15` }]}>
-                <Users size={20} color={colors.foreground} />
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[s.userName, { color: colors.foreground, fontFamily: fonts.bodySemi }]} numberOfLines={2}>{item.name}</Text>
-                {item.description && (
-                  <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]} numberOfLines={2}>{item.description}</Text>
-                )}
-                {item.member_count != null && item.member_count > 0 && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Users size={12} color={colors.mutedForeground} />
-                    <Text style={[s.userNh, { color: colors.mutedForeground, fontFamily: fonts.body }]}>{item.member_count}</Text>
                   </View>
                 )}
               </View>

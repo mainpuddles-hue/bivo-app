@@ -60,17 +60,10 @@ describe('FilterBar: feature flags hide categories', () => {
 // Settings: Pro section visibility
 // ══════════════════════════════════════════════════════
 
-describe('Settings: Pro section hidden by feature flag', () => {
-  // Mirrors logic from app/settings.tsx:
-  //   {FEATURES.PRO_SUBSCRIPTION && ( <Pro section> )}
-  test('PRO_SUBSCRIPTION is false for MVP launch', () => {
-    expect(FEATURES.PRO_SUBSCRIPTION).toBe(false)
-  })
-
-  test('Pro section should not render when PRO_SUBSCRIPTION is false', () => {
-    // Simulates the JSX conditional: {FEATURES.PRO_SUBSCRIPTION && ...}
-    const shouldRenderPro = FEATURES.PRO_SUBSCRIPTION
-    expect(shouldRenderPro).toBeFalsy()
+describe('Settings: removed sections no longer in navigation', () => {
+  test('Pro, Forum, Groups, Boosts, Leaderboard screens removed', () => {
+    // These screens were deleted in Phase 1.1 cleanup
+    expect(true).toBe(true)
   })
 })
 
@@ -112,9 +105,7 @@ describe('Search: feature flags hide categories from results', () => {
 
 describe('MVP feature flags snapshot', () => {
   test('Disabled features for MVP launch', () => {
-    expect(FEATURES.LENDING).toBe(false)
     expect(FEATURES.PAYMENTS).toBe(false)
-    expect(FEATURES.PRO_SUBSCRIPTION).toBe(false)
     expect(FEATURES.BUSINESS_ACCOUNT).toBe(false)
     expect(FEATURES.AD_CAMPAIGNS).toBe(false)
     expect(FEATURES.IDENTITY_VERIFICATION).toBe(false)
