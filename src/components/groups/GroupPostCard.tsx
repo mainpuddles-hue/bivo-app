@@ -97,7 +97,7 @@ function GroupPostCardInner({
           <Pressable
             onPress={() => { if (post.user?.id && onUserPress) onUserPress(post.user.id) }}
             disabled={!onUserPress || !post.user?.id}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
+            style={({ pressed }) => [{ flexDirection: 'row' as const, alignItems: 'center' as const, gap: 12, flex: 1 }, pressed && !(!onUserPress || !post.user?.id) && { opacity: 0.7 }]}
           >
             <Avatar url={post.user?.avatar_url} name={post.user?.name} size={36} />
             <View style={styles.postUserInfo}>
@@ -115,14 +115,14 @@ function GroupPostCardInner({
                 <Pressable
                   onPress={() => onEdit(post.id, post.content)}
                   hitSlop={8}
-                  style={{ padding: 4 }}
+                  style={({ pressed }) => [{ padding: 4 }, pressed && { opacity: 0.5 }]}
                 >
                   <Pencil size={16} color={colors.foreground} strokeWidth={1.8} />
                 </Pressable>
                 <Pressable
                   onPress={() => onDelete(post.id)}
                   hitSlop={8}
-                  style={{ padding: 4 }}
+                  style={({ pressed }) => [{ padding: 4 }, pressed && { opacity: 0.5 }]}
                 >
                   <Trash2 size={16} color={colors.destructive} strokeWidth={1.8} />
                 </Pressable>
@@ -132,7 +132,7 @@ function GroupPostCardInner({
               <Pressable
                 onPress={() => onReport(post.id)}
                 hitSlop={8}
-                style={{ padding: 4 }}
+                style={({ pressed }) => [{ padding: 4 }, pressed && { opacity: 0.5 }]}
                 accessibilityLabel={t('report.title')}
               >
                 <Flag size={16} color={colors.mutedForeground} strokeWidth={1.8} />
@@ -158,7 +158,7 @@ function GroupPostCardInner({
               <Pressable
                 onPress={onSaveEdit}
                 disabled={savingPostEdit || !editPostContent.trim()}
-                style={[styles.saveBtn, { backgroundColor: colors.foreground, flex: 1, opacity: (savingPostEdit || !editPostContent.trim()) ? 0.6 : 1, paddingVertical: 8 }]}
+                style={({ pressed }) => [styles.saveBtn, { backgroundColor: colors.foreground, flex: 1, opacity: (savingPostEdit || !editPostContent.trim()) ? 0.6 : pressed ? 0.8 : 1, paddingVertical: 8 }]}
               >
                 {savingPostEdit ? (
                   <ActivityIndicator size="small" color={colors.primaryForeground} />
@@ -170,7 +170,7 @@ function GroupPostCardInner({
               </Pressable>
               <Pressable
                 onPress={onCancelEdit}
-                style={[styles.saveBtn, { backgroundColor: colors.muted, flex: 1, paddingVertical: 8 }]}
+                style={({ pressed }) => [styles.saveBtn, { backgroundColor: colors.muted, flex: 1, paddingVertical: 8 }, pressed && { opacity: 0.7 }]}
               >
                 <Text style={{ color: colors.foreground, fontSize: 13, fontFamily: fonts.bodySemi, textAlign: 'center' }}>
                   {t('groups.cancelEdit')}

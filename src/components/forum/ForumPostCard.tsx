@@ -86,7 +86,7 @@ function ForumPostCardInner({
   return (
     <Pressable
       onPress={() => onSelect(post)}
-      style={[styles.card, { backgroundColor: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }]}
+      style={({ pressed }) => [styles.card, { backgroundColor: colors.card, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border }, pressed && { opacity: 0.92 }]}
       accessibilityRole="button"
       accessibilityLabel={[getCategoryLabel(post.category), post.title, post.content?.slice(0, 120), `${post.comment_count} ${t('forum.replies')}`].filter(Boolean).join(', ')}
     >
@@ -97,7 +97,7 @@ function ForumPostCardInner({
           <Pressable
             onPress={(e) => { e.stopPropagation?.(); if (user?.id && onUserPress) onUserPress(user.id) }}
             disabled={!onUserPress || !user?.id}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}
+            style={({ pressed }) => [{ flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8, flex: 1 }, pressed && !(!onUserPress || !user?.id) && { opacity: 0.7 }]}
           >
             <Avatar url={user?.avatar_url} name={user?.name} size={32} />
             <View style={styles.cardUserInfo}>
@@ -141,7 +141,7 @@ function ForumPostCardInner({
         <View style={styles.cardActions}>
           <Pressable
             onPress={(e) => { e.stopPropagation?.(); onUpvote(post) }}
-            style={[styles.actionBtn, isVoted && { backgroundColor: `${colors.foreground}14` }]}
+            style={({ pressed }) => [styles.actionBtn, isVoted && { backgroundColor: `${colors.foreground}14` }, pressed && { opacity: 0.6 }]}
             hitSlop={8}
           >
             <ChevronUp
@@ -159,7 +159,7 @@ function ForumPostCardInner({
               </Text>
             )}
           </Pressable>
-          <Pressable onPress={(e) => { e.stopPropagation?.(); onSelect(post) }} style={styles.actionBtn} hitSlop={8} accessibilityLabel={`${post.comment_count} ${t('forum.replies')}`}>
+          <Pressable onPress={(e) => { e.stopPropagation?.(); onSelect(post) }} style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.6 }]} hitSlop={8} accessibilityLabel={`${post.comment_count} ${t('forum.replies')}`}>
             <MessageCircle size={14} color={colors.mutedForeground} strokeWidth={1.8} />
             <Text style={[styles.actionText, { color: colors.mutedForeground }]}>
               {post.comment_count > 0 ? `${post.comment_count} ${t('forum.replies')}` : t('forum.beFirstReply')}
@@ -169,14 +169,14 @@ function ForumPostCardInner({
             <>
               <Pressable
                 onPress={(e) => { e.stopPropagation?.(); onEdit(post) }}
-                style={styles.actionBtn}
+                style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.6 }]}
                 hitSlop={8}
               >
                 <Pencil size={14} color={colors.foreground} strokeWidth={1.8} />
               </Pressable>
               <Pressable
                 onPress={(e) => { e.stopPropagation?.(); onDelete(post.id) }}
-                style={styles.actionBtn}
+                style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.6 }]}
                 hitSlop={8}
               >
                 <Trash2 size={14} color={colors.destructive} strokeWidth={1.8} />
@@ -186,7 +186,7 @@ function ForumPostCardInner({
           {post.user_id !== currentUserId && currentUserId && onReport && (
             <Pressable
               onPress={(e) => { e.stopPropagation?.(); onReport(post.id) }}
-              style={styles.actionBtn}
+              style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.6 }]}
               hitSlop={8}
               accessibilityLabel={t('report.title')}
             >

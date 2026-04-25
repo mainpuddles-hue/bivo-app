@@ -99,12 +99,13 @@ export function NeighborhoodPicker({ visible, onClose, selectedNeighborhood, onS
                 accessibilityRole="radio"
                 accessibilityState={{ checked: isSelected }}
                 accessibilityLabel={nh}
-                style={[
+                style={({ pressed }) => [
                   styles.item,
                   {
                     backgroundColor: isSelected ? colors.foreground : 'transparent',
                     borderBottomColor: colors.border,
                   },
+                  pressed && !isSelected && { backgroundColor: colors.muted },
                 ]}
               >
                 <MapPin size={14} color={isSelected ? colors.background : colors.mutedForeground} />

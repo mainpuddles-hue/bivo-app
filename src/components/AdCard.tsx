@@ -78,9 +78,10 @@ export const AdCard = memo(function AdCard({ ad }: AdCardProps) {
   return (
     <Pressable
       onPress={handlePress}
-      style={[
+      style={({ pressed }) => [
         styles.card,
         { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+        pressed && { opacity: 0.7 },
       ]}
       accessibilityRole="button"
       accessibilityLabel={[t('ads.sponsored'), ad.title, ad.description].filter(Boolean).join(', ')}
