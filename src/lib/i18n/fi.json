@@ -138,6 +138,7 @@
     "postsThisWeek": "tällä viikolla",
     "eventsThisWeek": "tapahtumaa",
     "activeThisWeek": "aktiivista",
+    "neighborsActiveThisWeek": "{count} naapuria aktiivisena tällä viikolla",
     "boosted": "Nostettu",
     "moreOptions": "Lisää vaihtoehtoja",
     "switchToGrid": "Ruutunäkymä",

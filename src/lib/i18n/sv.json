@@ -138,6 +138,7 @@
     "postsThisWeek": "denna vecka",
     "eventsThisWeek": "evenemang",
     "activeThisWeek": "aktiva",
+    "neighborsActiveThisWeek": "{count} grannar aktiva denna vecka",
     "boosted": "Framhävt",
     "moreOptions": "Fler alternativ",
     "switchToGrid": "Rutnätsvy",

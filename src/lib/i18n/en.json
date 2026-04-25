@@ -138,6 +138,7 @@
     "postsThisWeek": "this week",
     "eventsThisWeek": "events",
     "activeThisWeek": "active",
+    "neighborsActiveThisWeek": "{count} neighbors active this week",
     "boosted": "Boosted",
     "moreOptions": "More options",
     "switchToGrid": "Grid view",

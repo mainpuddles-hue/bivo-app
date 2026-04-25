@@ -62,6 +62,29 @@ function FeedScreenInner() {
     }).catch(() => {})
   }, [])
 
+  // Weekly active neighbors count for activity meter
+  const [weeklyActiveCount, setWeeklyActiveCount] = useState(0)
+  useEffect(() => {
+    if (!feed.userNeighborhood) return
+    let mounted = true
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+    Promise.resolve(
+      supabase
+        .from('posts')
+        .select('user_id')
+        .eq('is_active', true)
+        .gte('created_at', weekAgo)
+        .limit(200)
+    ).then(({ data, error }: any) => {
+      if (!mounted) return
+      if (error) { if (__DEV__) console.warn('[feed] weekly active count failed:', error.message); return }
+      if (!data) return
+      const uniqueUsers = new Set((data as any[]).map((r: any) => r.user_id))
+      setWeeklyActiveCount(uniqueUsers.size)
+    }).catch((err: any) => { if (__DEV__) console.warn('[feed] weekly active error:', err) })
+    return () => { mounted = false }
+  }, [feed.userNeighborhood, supabase])
+
   // Batch view counts for feed cards
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({})
   useEffect(() => {
@@ -571,6 +594,11 @@ function FeedScreenInner() {
                   <Text style={[styles.headerTitle, { color: colors.foreground }]}>
                     {t('feed.nearbyNow') ?? 'Nearby now'}
                   </Text>
+                  {weeklyActiveCount > 0 && (
+                    <Text style={[styles.headerActivity, { color: colors.mutedForeground }]}>
+                      {t('feed.neighborsActiveThisWeek', { count: weeklyActiveCount }) ?? `${weeklyActiveCount} naapuria aktiivisena tällä viikolla`}
+                    </Text>
+                  )}
                 </PressableOpacity>
                 <View style={styles.headerRight}>
                   <PressableOpacity
@@ -880,6 +908,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     letterSpacing: -0.8,
     lineHeight: 32,
+  },
+  headerActivity: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+    marginTop: 2,
   },
   headerRight: {
     flexDirection: 'row',
