@@ -1,6 +1,8 @@
 /**
- * OnboardingOverlay — 3-step first-time user tutorial
- * Shown once on first launch after login. Stored in AsyncStorage.
+ * OnboardingOverlay — 3-step first-time user onboarding
+ * Step 1: Pick your neighborhood (mandatory)
+ * Step 2: Pick your interests (optional)
+ * Step 3: Push notification permission request
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -8,30 +10,29 @@ import {
   Animated,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { MapPin, PlusSquare, MessageCircle } from 'lucide-react-native'
+import { MapPin, Bell, Heart, Package, Calendar, Handshake, Gift } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { NEIGHBORHOODS } from '@/lib/constants'
+import { useSupabase } from '@/hooks/useSupabase'
+import { getCachedUserId } from '@/lib/authCache'
 
 const STORAGE_KEY = 'tackbird_onboarding_completed'
-const TOTAL_STEPS = 3
 
-interface Step {
-  iconKey: 'browse' | 'share' | 'message'
-  titleKey: string
-  descKey: string
-}
-
-const STEPS: Step[] = [
-  { iconKey: 'browse', titleKey: 'onboarding.step1Title', descKey: 'onboarding.step1Desc' },
-  { iconKey: 'share',  titleKey: 'onboarding.step2Title', descKey: 'onboarding.step2Desc' },
-  { iconKey: 'message', titleKey: 'onboarding.step3Title', descKey: 'onboarding.step3Desc' },
-]
+const INTEREST_OPTIONS = [
+  { key: 'tarvitsen', icon: Heart, labelKey: 'onboarding.purposeTarvitsen' },
+  { key: 'tarjoan', icon: Handshake, labelKey: 'onboarding.purposeTarjoan' },
+  { key: 'ilmaista', icon: Gift, labelKey: 'onboarding.purposeIlmaista' },
+  { key: 'lainaa', icon: Package, labelKey: 'onboarding.purposeLainaa' },
+  { key: 'tapahtuma', icon: Calendar, labelKey: 'onboarding.purposeTapahtuma' },
+] as const
 
 interface Props {
   visible: boolean
@@ -41,130 +42,227 @@ interface Props {
 export function OnboardingOverlay({ visible, onDone }: Props) {
   const { colors } = useTheme()
   const { t } = useI18n()
+  const supabase = useSupabase()
 
   const [step, setStep] = useState(0)
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
+  const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set())
   const fadeAnim = useRef(new Animated.Value(1)).current
 
-  // Reset to step 0 each time the overlay becomes visible
   useEffect(() => {
     if (visible) {
       setStep(0)
+      setSelectedNeighborhood(null)
+      setSelectedInterests(new Set())
       fadeAnim.setValue(1)
     }
   }, [visible, fadeAnim])
 
-  const goToStep = useCallback(
-    (next: number) => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }).start(() => {
-        setStep(next)
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 220,
-          useNativeDriver: true,
-        }).start()
-      })
-    },
-    [fadeAnim],
-  )
+  const animateTransition = useCallback((next: number) => {
+    Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }).start(() => {
+      setStep(next)
+      Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start()
+    })
+  }, [fadeAnim])
 
-  const handleNext = useCallback(() => {
-    if (step < TOTAL_STEPS - 1) {
-      goToStep(step + 1)
-    } else {
-      handleDone()
-    }
-  }, [step, goToStep])
+  const saveNeighborhood = useCallback(async (nh: string) => {
+    try {
+      const userId = await getCachedUserId()
+      if (userId) {
+        await (supabase.from('profiles') as any).update({ naapurusto: nh }).eq('id', userId)
+      }
+      await AsyncStorage.setItem('tackbird_user_neighborhood', nh)
+    } catch {}
+  }, [supabase])
 
-  const handleDone = useCallback(() => {
+  const finishOnboarding = useCallback(() => {
     AsyncStorage.setItem(STORAGE_KEY, 'true').catch(() => {})
     onDone()
   }, [onDone])
 
-  const currentStep = STEPS[step]
-  const isLastStep = step === TOTAL_STEPS - 1
+  const handleNeighborhoodNext = useCallback(() => {
+    if (!selectedNeighborhood) return
+    saveNeighborhood(selectedNeighborhood)
+    animateTransition(1)
+  }, [selectedNeighborhood, saveNeighborhood, animateTransition])
 
-  function StepIcon({ iconKey }: { iconKey: Step['iconKey'] }) {
-    const iconColor = colors.foreground
-    if (iconKey === 'browse') return <MapPin size={48} color={iconColor} strokeWidth={1.5} />
-    if (iconKey === 'share')  return <PlusSquare size={48} color={iconColor} strokeWidth={1.5} />
-    return <MessageCircle size={48} color={iconColor} strokeWidth={1.5} />
-  }
+  const handleInterestsNext = useCallback(() => {
+    // Save interests to AsyncStorage for feed personalization
+    if (selectedInterests.size > 0) {
+      AsyncStorage.setItem('tackbird_interests', JSON.stringify([...selectedInterests])).catch(() => {})
+    }
+    animateTransition(2)
+  }, [selectedInterests, animateTransition])
+
+  const toggleInterest = useCallback((key: string) => {
+    setSelectedInterests(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }, [])
+
+  // Step dots
+  const Dots = () => (
+    <View style={styles.dots}>
+      {[0, 1, 2].map(i => (
+        <View
+          key={i}
+          style={[styles.dot, {
+            backgroundColor: i === step ? colors.foreground : `${colors.foreground}30`,
+            width: i === step ? 20 : 8,
+          }]}
+        />
+      ))}
+    </View>
+  )
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={handleDone}
-    >
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={finishOnboarding}>
       <View style={styles.backdrop}>
-        {/* Skip link */}
-        <Pressable
-          onPress={handleDone}
-          style={styles.skipBtn}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel={t('onboarding.skip')}
-        >
-          <Text style={[styles.skipText, { color: colors.primaryForeground }]}>
-            {t('onboarding.skip')}
-          </Text>
+        {/* Skip */}
+        <Pressable onPress={finishOnboarding} style={styles.skipBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('onboarding.skip')}>
+          <Text style={[styles.skipText, { color: colors.primaryForeground }]}>{t('onboarding.skip')}</Text>
         </Pressable>
 
-        {/* Card */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Animated.View style={[styles.cardContent, { opacity: fadeAnim }]}>
-            {/* Icon */}
-            <View style={[styles.iconWrap, { backgroundColor: `${colors.foreground}0F` }]}>
-              <StepIcon iconKey={currentStep.iconKey} />
-            </View>
+            {/* ── Step 1: Neighborhood ── */}
+            {step === 0 && (
+              <>
+                <View style={[styles.iconWrap, { backgroundColor: `${colors.foreground}0F` }]}>
+                  <MapPin size={48} color={colors.foreground} strokeWidth={1.5} />
+                </View>
+                <Text style={[styles.title, { color: colors.foreground }]}>
+                  {t('onboarding.pickNeighborhood')}
+                </Text>
+                <Text style={[styles.desc, { color: colors.mutedForeground }]}>
+                  {t('onboarding.pickNeighborhoodHint')}
+                </Text>
+                <ScrollView style={styles.neighborhoodList} contentContainerStyle={styles.neighborhoodListContent} showsVerticalScrollIndicator={false}>
+                  {NEIGHBORHOODS.map(nh => (
+                    <Pressable
+                      key={nh}
+                      onPress={() => setSelectedNeighborhood(nh)}
+                      style={[
+                        styles.neighborhoodItem,
+                        {
+                          backgroundColor: selectedNeighborhood === nh ? colors.foreground : `${colors.foreground}08`,
+                          borderColor: selectedNeighborhood === nh ? colors.foreground : colors.border,
+                        },
+                      ]}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: selectedNeighborhood === nh }}
+                    >
+                      <Text style={[
+                        styles.neighborhoodText,
+                        { color: selectedNeighborhood === nh ? colors.primaryForeground : colors.foreground },
+                      ]}>
+                        {nh}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+                <Dots />
+                <Pressable
+                  onPress={handleNeighborhoodNext}
+                  disabled={!selectedNeighborhood}
+                  style={[styles.btn, { backgroundColor: selectedNeighborhood ? colors.foreground : `${colors.foreground}30` }]}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.btnText, { color: colors.primaryForeground }]}>
+                    {t('onboarding.continue') ?? 'Jatka'}
+                  </Text>
+                </Pressable>
+              </>
+            )}
 
-            {/* Title */}
-            <Text style={[styles.title, { color: colors.foreground }]}>
-              {t(currentStep.titleKey)}
-            </Text>
+            {/* ── Step 2: Interests ── */}
+            {step === 1 && (
+              <>
+                <View style={[styles.iconWrap, { backgroundColor: `${colors.foreground}0F` }]}>
+                  <Heart size={48} color={colors.foreground} strokeWidth={1.5} />
+                </View>
+                <Text style={[styles.title, { color: colors.foreground }]}>
+                  {t('onboarding.interests')}
+                </Text>
+                <Text style={[styles.desc, { color: colors.mutedForeground }]}>
+                  {t('onboarding.purposeSubtitle')}
+                </Text>
+                <View style={styles.interestsGrid}>
+                  {INTEREST_OPTIONS.map(opt => {
+                    const isSelected = selectedInterests.has(opt.key)
+                    const Icon = opt.icon
+                    return (
+                      <Pressable
+                        key={opt.key}
+                        onPress={() => toggleInterest(opt.key)}
+                        style={[
+                          styles.interestChip,
+                          {
+                            backgroundColor: isSelected ? colors.foreground : `${colors.foreground}08`,
+                            borderColor: isSelected ? colors.foreground : colors.border,
+                          },
+                        ]}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: isSelected }}
+                      >
+                        <Icon size={16} color={isSelected ? colors.primaryForeground : colors.foreground} strokeWidth={2} />
+                        <Text style={[styles.interestText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
+                          {t(opt.labelKey)}
+                        </Text>
+                      </Pressable>
+                    )
+                  })}
+                </View>
+                <Dots />
+                <Pressable
+                  onPress={handleInterestsNext}
+                  style={[styles.btn, { backgroundColor: colors.foreground }]}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.btnText, { color: colors.primaryForeground }]}>
+                    {selectedInterests.size > 0 ? (t('onboarding.continue') ?? 'Jatka') : (t('onboarding.skip') ?? 'Ohita')}
+                  </Text>
+                </Pressable>
+              </>
+            )}
 
-            {/* Description */}
-            <Text style={[styles.desc, { color: colors.mutedForeground }]}>
-              {t(currentStep.descKey)}
-            </Text>
+            {/* ── Step 3: Push notifications ── */}
+            {step === 2 && (
+              <>
+                <View style={[styles.iconWrap, { backgroundColor: `${colors.foreground}0F` }]}>
+                  <Bell size={48} color={colors.foreground} strokeWidth={1.5} />
+                </View>
+                <Text style={[styles.title, { color: colors.foreground }]}>
+                  {t('onboarding.pushPromptTitle')}
+                </Text>
+                <Text style={[styles.desc, { color: colors.mutedForeground }]}>
+                  {t('onboarding.pushPromptDesc')}
+                </Text>
+                <Dots />
+                <Pressable
+                  onPress={finishOnboarding}
+                  style={[styles.btn, { backgroundColor: colors.foreground }]}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.btnText, { color: colors.primaryForeground }]}>
+                    {t('onboarding.enableNotifications')}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={finishOnboarding}
+                  style={styles.secondaryBtn}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.secondaryBtnText, { color: colors.mutedForeground }]}>
+                    {t('onboarding.maybeLater')}
+                  </Text>
+                </Pressable>
+              </>
+            )}
           </Animated.View>
-
-          {/* Step dots */}
-          <View style={styles.dots}>
-            {STEPS.map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.dot,
-                  {
-                    backgroundColor:
-                      i === step ? colors.foreground : `${colors.foreground}30`,
-                    width: i === step ? 20 : 8,
-                  },
-                ]}
-              />
-            ))}
-          </View>
-
-          {/* CTA button */}
-          <Pressable
-            onPress={handleNext}
-            style={[styles.btn, { backgroundColor: colors.foreground }]}
-            accessibilityRole="button"
-            accessibilityLabel={
-              isLastStep ? t('onboarding.letsGo') : t('onboarding.next')
-            }
-          >
-            <Text style={[styles.btnText, { color: colors.primaryForeground }]}>
-              {isLastStep ? t('onboarding.letsGo') : t('onboarding.next')}
-            </Text>
-          </Pressable>
         </View>
       </View>
     </Modal>
@@ -189,7 +287,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: 14,
-    fontFamily: 'InstrumentSans_500Medium',
+    fontFamily: fonts.bodyMedium,
     opacity: 0.85,
   },
   card: {
@@ -199,7 +297,7 @@ const styles = StyleSheet.create({
     paddingTop: 36,
     paddingBottom: 28,
     alignItems: 'center',
-    gap: 0,
+    maxHeight: '80%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
@@ -225,20 +323,20 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
     textAlign: 'center',
     lineHeight: 28,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   desc: {
     fontSize: 15,
     fontFamily: fonts.body,
     lineHeight: 22,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 20,
   },
   dots: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   dot: {
     height: 8,
@@ -257,5 +355,62 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     lineHeight: 22,
+  },
+  secondaryBtn: {
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  secondaryBtnText: {
+    fontSize: 14,
+    fontFamily: fonts.body,
+    lineHeight: 20,
+  },
+
+  // ── Neighborhood list ──
+  neighborhoodList: {
+    maxHeight: 200,
+    width: '100%',
+    marginBottom: 16,
+  },
+  neighborhoodListContent: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  neighborhoodItem: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  neighborhoodText: {
+    fontSize: 14,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 18,
+  },
+
+  // ── Interest chips ──
+  interestsGrid: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 20,
+  },
+  interestChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  interestText: {
+    fontSize: 14,
+    fontFamily: fonts.bodyMedium,
+    lineHeight: 18,
   },
 })

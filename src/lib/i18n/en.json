@@ -1169,7 +1169,11 @@
     "step2Title": "Share and find",
     "step2Desc": "Create a post in seconds. Lend, give, or sell — neighbors will find you easily.",
     "step3Title": "Message neighbors",
-    "step3Desc": "Connect with neighbors directly. Build trust and make the community thrive."
+    "step3Desc": "Connect with neighbors directly. Build trust and make the community thrive.",
+    "pushPromptTitle": "Stay in the loop",
+    "pushPromptDesc": "Want to hear when something new happens in your neighborhood?",
+    "enableNotifications": "Enable notifications",
+    "maybeLater": "Maybe later"
   },
   "resetPassword": {
     "title": "Change password",

@@ -1169,7 +1169,11 @@
     "step2Title": "Jaa ja löydä",
     "step2Desc": "Luo ilmoitus sekunneissa. Lainaa, lahjoita tai myy — naapurit löytävät sinut helposti.",
     "step3Title": "Viesti naapureille",
-    "step3Desc": "Ota yhteyttä naapureihin suoraan. Rakenna luottamusta ja tee yhteisöstä eläväinen."
+    "step3Desc": "Ota yhteyttä naapureihin suoraan. Rakenna luottamusta ja tee yhteisöstä eläväinen.",
+    "pushPromptTitle": "Pysy ajan tasalla",
+    "pushPromptDesc": "Haluatko kuulla kun naapurustossasi tapahtuu jotain uutta?",
+    "enableNotifications": "Ota ilmoitukset käyttöön",
+    "maybeLater": "Ehkä myöhemmin"
   },
   "resetPassword": {
     "title": "Vaihda salasana",

@@ -305,6 +305,9 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
               {post.title}
             </Text>
+            {post.is_seed && (
+              <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
+            )}
             {(post.daily_fee != null || (post.service_price != null && post.service_price > 0)) && (
               <Text style={[styles.price, { color: colors.foreground }]}>
                 {post.daily_fee != null
@@ -404,6 +407,9 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           <Text style={[styles.textTitle, { color: colors.foreground }]} numberOfLines={3}>
             {post.title}
           </Text>
+          {post.is_seed && (
+            <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
+          )}
           {/* Meta footer */}
           {MetaFooter(colors.mutedForeground)}
         </View>
@@ -528,6 +534,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     letterSpacing: -0.1,
     lineHeight: 16,
+  },
+  seedLabel: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+    fontStyle: 'italic',
+    lineHeight: 14,
+    marginTop: 2,
   },
   price: {
     fontSize: 12,

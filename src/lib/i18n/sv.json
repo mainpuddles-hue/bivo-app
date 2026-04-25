@@ -1169,7 +1169,11 @@
     "step2Title": "Dela och hitta",
     "step2Desc": "Skapa en annons på sekunder. Låna ut, ge bort eller sälj — grannar hittar dig enkelt.",
     "step3Title": "Meddelanden till grannar",
-    "step3Desc": "Ta kontakt med grannar direkt. Bygg förtroende och gör gemenskapen livligare."
+    "step3Desc": "Ta kontakt med grannar direkt. Bygg förtroende och gör gemenskapen livligare.",
+    "pushPromptTitle": "Håll dig uppdaterad",
+    "pushPromptDesc": "Vill du veta när något nytt händer i ditt grannskap?",
+    "enableNotifications": "Aktivera aviseringar",
+    "maybeLater": "Kanske senare"
   },
   "resetPassword": {
     "title": "Byt lösenord",

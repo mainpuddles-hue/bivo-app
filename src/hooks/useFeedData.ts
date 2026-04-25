@@ -410,10 +410,12 @@ export function useFeedData() {
       if (controller.signal.aborted) return
 
       if (reset) {
-        if (ranked.length === 0) {
-          // Show seed content for empty neighborhoods
+        if (ranked.length < 5) {
+          // Mix seeds with real posts when neighborhood is quiet (< 5 real posts)
           const seeds = getSeedPosts(userNeighborhoodRef.current ?? 'Helsinki') as Post[]
-          setPosts(seeds)
+          const seedIds = new Set(seeds.map(s => s.id))
+          const combined = [...ranked, ...seeds.filter(s => !seedIds.has(s.id))].slice(0, 10)
+          setPosts(combined as Post[])
         } else {
           setPosts(ranked)
           // Cache the first 20 posts for offline/instant display on next launch
