@@ -791,7 +791,6 @@ function FeedScreenInner() {
                 style={[styles.bldCard, { backgroundColor: colors.foreground }]}
                 accessibilityLabel={`${userBuilding.street_address} — ${userBuilding.member_count - 1} ${t('feed.neighbors') ?? 'naapuria'}`}
               >
-                <View style={styles.bldDecor} />
                 <View style={styles.bldIconWrap}>
                   <Home size={20} color={colors.background} strokeWidth={1.8} />
                 </View>

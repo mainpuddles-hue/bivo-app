@@ -104,7 +104,16 @@ export function useFeedData() {
     let mounted = true
     AsyncStorage.getItem(FEED_CACHE_KEY).then(cached => {
       if (mounted && cached && posts.length === 0) {
-        try { setPosts(JSON.parse(cached)) } catch {} // Intentional: corrupted cache
+        try {
+          const parsed = JSON.parse(cached) as Post[]
+          const now = new Date().toISOString()
+          // Filter out expired or inactive posts from cache
+          const fresh = parsed.filter(p =>
+            p.is_active !== false &&
+            (!p.expires_at || p.expires_at >= now)
+          )
+          setPosts(fresh)
+        } catch {} // Intentional: corrupted cache
       }
     }).catch(() => {})
     return () => { mounted = false }
@@ -472,7 +481,7 @@ export function useFeedData() {
     return () => { abortRef.current?.abort() }
   }, [activeFilter, sortBy, showFollowing]) // Only re-fetch when user explicitly changes filters
 
-  // ── Realtime with 5s debounce — INSERT only, filtered to active posts ──
+  // ── Realtime — INSERT (new posts), UPDATE/DELETE (remove expired/deactivated) ──
   useEffect(() => {
     // Remove any stale channel with same name before creating a new one
     const existing = supabase.getChannels().find(ch => ch.topic === 'realtime:feed-new-posts')
@@ -492,6 +501,27 @@ export function useFeedData() {
           setHasNewPosts(true)
           setNewPostCount(newPostAccumRef.current)
         }, 5000)
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'posts',
+      }, (payload: any) => {
+        // Remove deactivated posts from feed in real time
+        const updated = payload.new
+        if (updated && updated.is_active === false) {
+          setPosts(prev => prev.filter(p => p.id !== updated.id))
+        }
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'posts',
+      }, (payload: any) => {
+        const deleted = payload.old
+        if (deleted?.id) {
+          setPosts(prev => prev.filter(p => p.id !== deleted.id))
+        }
       })
       .subscribe()
     return () => {
