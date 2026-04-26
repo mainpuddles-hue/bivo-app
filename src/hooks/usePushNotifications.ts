@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@/lib/supabase/client'
 
 const PROJECT_ID = '504a9107-9e8e-4e5d-90fe-ea7564166e33'
+const PUSH_PREF_KEY = 'tackbird-push-enabled'
 
 const isWeb = Platform.OS === 'web'
 
@@ -58,14 +59,23 @@ export function usePushNotifications(userId: string | null) {
 
     const supported = !isExpoGo()
     setIsSupported(supported)
-    if (!userId || !supported) {
-      if (__DEV__ && isExpoGo()) console.warn('[push] Push notifications not available in Expo Go — build with EAS to test')
-      return
-    }
+
+    if (!userId) return
 
     let mounted = true
 
     async function checkExistingToken() {
+      // Always load saved preference so the toggle starts in the right position
+      const savedPref = await AsyncStorage.getItem(PUSH_PREF_KEY)
+      if (savedPref === 'true' && mounted) {
+        setIsSubscribed(true)
+      }
+
+      if (!supported) {
+        if (__DEV__) console.warn('[push] Push notifications not available in Expo Go — build with EAS to test')
+        return
+      }
+
       try {
         await setupAndroidChannel()
         const { status } = await Notifications.getPermissionsAsync()
@@ -77,6 +87,7 @@ export function usePushNotifications(userId: string | null) {
         if (!mounted) return
         setToken(pushToken)
         setIsSubscribed(true)
+        await AsyncStorage.setItem(PUSH_PREF_KEY, 'true')
         // Save token to backend (may not be saved yet on first install)
         if (userId) await saveTokenToBackend(userId, pushToken)
         await AsyncStorage.setItem('push_token', pushToken)
@@ -127,11 +138,14 @@ export function usePushNotifications(userId: string | null) {
   const subscribe = useCallback(async () => {
     if (isWeb || !userId) return
 
+    // Always save the user's preference so the toggle persists
+    setIsSubscribed(true)
+    await AsyncStorage.setItem(PUSH_PREF_KEY, 'true')
+
     if (isExpoGo()) {
-      Alert.alert(
-        'Push Notifications',
-        'Push notifications require a native build (EAS Build). They are not available in Expo Go.'
-      )
+      // In Expo Go, push tokens can't be registered but we save the preference
+      // so it works immediately when switching to a native build
+      if (__DEV__) console.log('[push] Preference saved — push tokens require EAS Build')
       return
     }
 
@@ -143,10 +157,6 @@ export function usePushNotifications(userId: string | null) {
       let finalStatus = existing
 
       if (existing !== 'granted') {
-        // Apple HIG: provisional notifications let users see notifications
-        // delivered quietly to Notification Center without an upfront prompt.
-        // The user can promote them to active or disable in Settings.
-        // Falls back to standard alert+sound+badge prompt on Android.
         const { status } = await Notifications.requestPermissionsAsync({
           ios: {
             allowAlert: true,
@@ -169,17 +179,13 @@ export function usePushNotifications(userId: string | null) {
       try {
         pushToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data
       } catch {
-        Alert.alert(
-          'Push Notifications',
-          'Failed to create push token. Make sure you are using a native build (EAS Build).'
-        )
+        // Token registration failed but preference is already saved
         setIsLoading(false)
         return
       }
 
       await saveTokenToBackend(userId, pushToken)
       setToken(pushToken)
-      setIsSubscribed(true)
     } catch (err) {
       if (__DEV__) console.error('[push] subscribe failed:', err)
     } finally {
@@ -189,11 +195,16 @@ export function usePushNotifications(userId: string | null) {
 
   const unsubscribe = useCallback(async () => {
     if (isWeb || !userId) return
+
+    setIsSubscribed(false)
+    await AsyncStorage.setItem(PUSH_PREF_KEY, 'false')
+
+    if (isExpoGo()) return
+
     setIsLoading(true)
     try {
       await saveTokenToBackend(userId, null)
       setToken(null)
-      setIsSubscribed(false)
     } catch (err) {
       if (__DEV__) console.error('[push] unsubscribe failed:', err)
     } finally {
