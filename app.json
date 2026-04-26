@@ -17,7 +17,6 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.tackbird.mobile",
       "buildNumber": "1",
-      "usesNonExemptEncryption": false,
       "usesAppleSignIn": true,
       "config": {
         "usesNonExemptEncryption": false
@@ -52,7 +51,6 @@
         "android.permission.VIBRATE",
         "android.permission.POST_NOTIFICATIONS"
       ],
-      "_googleServicesFile_TODO": "./google-services.json",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -141,8 +139,7 @@
           "cameraPermission": "TackBird needs camera access to take photos for posts."
         }
       ],
-      "expo-web-browser",
-      "@sentry/react-native"
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {

@@ -1,0 +1,25 @@
+node_modules/
+.expo/
+dist/
+.env
+*.local
+.DS_Store
+.claude/
+.claude-flow/
+.swarm/
+.playwright-mcp/
+supabase/.temp/
+*.swp
+.gitnexus
+# Generated packed-repo output (run `npx repomix` to regenerate)
+repomix-output.xml
+# Local UX screenshots
+ux-audit/
+.dmux/
+# EAS-specific ignores
+screenshots/
+*.webm
+.agents/
+skills-lock.json
+docs/
+sentry.properties
