@@ -995,7 +995,15 @@
     "removeBuildingConfirm": "Haluatko poistaa taloyhtiön profiilista?",
     "addAddress": "Lisää osoitteesi",
     "addAddressHint": "Näe naapurisi ja taloyhtiösi ilmoitukset",
-    "addAddressDesc": "Kirjoita kotiosoitteesi niin näet taloyhtiösi muut naapurit ja ilmoitukset."
+    "addAddressDesc": "Kirjoita kotiosoitteesi niin näet taloyhtiösi muut naapurit ja ilmoitukset.",
+    "enterInviteCode": "Syötä kutsukoodi",
+    "enterInviteCodeHint": "Liity taloyhtiöön kutsukoodilla",
+    "codeApplied": "Liityttiin taloyhtiöön!",
+    "codeInvalid": "Virheellinen kutsukoodi",
+    "codeExpired": "Kutsukoodi on vanhentunut",
+    "codeExhausted": "Kutsukoodi on käytetty loppuun",
+    "applyCode": "Käytä koodi",
+    "cityAdmin": "Kaupungin hallinta"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -3075,6 +3083,29 @@
     "accessDenied": "Pääsy evätty",
     "accessDeniedDesc": "Vain ylläpitäjillä on pääsy tähän näkymään."
   },
+  "cityAdmin": {
+    "title": "Kaupungin hallinta",
+    "accessDenied": "Ei käyttöoikeutta",
+    "accessDeniedDesc": "Vain kaupungin viranomaiset voivat käyttää tätä.",
+    "neighborhoods": "Naapurustot",
+    "announcements": "Tiedotteet",
+    "events": "Tapahtumat",
+    "residents": "{count} asukasta",
+    "createAnnouncement": "Luo tiedote",
+    "announcementTitle": "Otsikko",
+    "announcementBody": "Viesti",
+    "announcementCreated": "Tiedote julkaistu",
+    "createEvent": "Luo tapahtuma",
+    "eventTitle": "Tapahtuman nimi",
+    "eventDescription": "Kuvaus",
+    "eventDate": "Päivämäärä",
+    "eventLocation": "Paikka",
+    "eventCreated": "Tapahtuma luotu",
+    "noNeighborhoods": "Ei naapurustodataa",
+    "noAnnouncements": "Ei tiedotteita",
+    "noEvents": "Ei tapahtumia",
+    "cityOfficial": "Kaupungin viranomainen"
+  },
   "unsupported": {
     "title": "TackBird ei ole vielä saatavilla alueellasi",
     "yourLocation": "Olet: {city}, {country}",
@@ -3497,6 +3528,17 @@
     "codeCopied": "Koodi kopioitu leikepöydälle",
     "noInviteCodes": "Ei aktiivisia kutsukoodeja",
     "noInviteCodesHint": "Luo kutsukoodi, jotta asukkaat voivat liittyä.",
-    "expiredCodes": "Vanhat koodit"
+    "expiredCodes": "Vanhat koodit",
+    "editRulesTitle": "Muokkaa sääntöjä",
+    "rulesPlaceholder": "Kirjoita taloyhtiön järjestyssäännöt...",
+    "saveRules": "Tallenna säännöt",
+    "rulesSaved": "Säännöt tallennettu",
+    "memberManagement": "Asukashallinta",
+    "changeRole": "Vaihda rooli",
+    "removeMember": "Poista asukas",
+    "memberRemoved": "Asukas poistettu",
+    "roleChanged": "Rooli vaihdettu",
+    "confirmRemoveMember": "Haluatko varmasti poistaa tämän asukkaan?",
+    "cannotEditSelf": "Et voi muuttaa omaa rooliasi"
   }
 }

@@ -995,7 +995,15 @@
     "removeBuildingConfirm": "Remove your building association?",
     "addAddress": "Add your address",
     "addAddressHint": "See your neighbors and building posts",
-    "addAddressDesc": "Enter your home address to see neighbors and building posts."
+    "addAddressDesc": "Enter your home address to see neighbors and building posts.",
+    "enterInviteCode": "Enter invite code",
+    "enterInviteCodeHint": "Join a building with an invite code",
+    "codeApplied": "Joined building!",
+    "codeInvalid": "Invalid invite code",
+    "codeExpired": "Invite code has expired",
+    "codeExhausted": "Invite code is fully used",
+    "applyCode": "Apply code",
+    "cityAdmin": "City administration"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -3075,6 +3083,29 @@
     "accessDenied": "Access Denied",
     "accessDeniedDesc": "Only admins can access this view."
   },
+  "cityAdmin": {
+    "title": "City administration",
+    "accessDenied": "Access denied",
+    "accessDeniedDesc": "Only city officials can access this.",
+    "neighborhoods": "Neighborhoods",
+    "announcements": "Announcements",
+    "events": "Events",
+    "residents": "{count} residents",
+    "createAnnouncement": "Create announcement",
+    "announcementTitle": "Title",
+    "announcementBody": "Message",
+    "announcementCreated": "Announcement published",
+    "createEvent": "Create event",
+    "eventTitle": "Event name",
+    "eventDescription": "Description",
+    "eventDate": "Date",
+    "eventLocation": "Location",
+    "eventCreated": "Event created",
+    "noNeighborhoods": "No neighborhood data",
+    "noAnnouncements": "No announcements",
+    "noEvents": "No events",
+    "cityOfficial": "City official"
+  },
   "unsupported": {
     "title": "TackBird is not yet available in your area",
     "yourLocation": "You're in: {city}, {country}",
@@ -3497,6 +3528,17 @@
     "codeCopied": "Code copied to clipboard",
     "noInviteCodes": "No active invite codes",
     "noInviteCodesHint": "Generate an invite code so residents can join.",
-    "expiredCodes": "Expired codes"
+    "expiredCodes": "Expired codes",
+    "editRulesTitle": "Edit rules",
+    "rulesPlaceholder": "Write building house rules...",
+    "saveRules": "Save rules",
+    "rulesSaved": "Rules saved",
+    "memberManagement": "Resident management",
+    "changeRole": "Change role",
+    "removeMember": "Remove resident",
+    "memberRemoved": "Resident removed",
+    "roleChanged": "Role changed",
+    "confirmRemoveMember": "Are you sure you want to remove this resident?",
+    "cannotEditSelf": "You cannot change your own role"
   }
 }

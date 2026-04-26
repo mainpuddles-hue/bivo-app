@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing, Home } from 'lucide-react-native'
+import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing, Home, Key, Landmark } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
@@ -27,6 +27,7 @@ import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity } from '@/components/ui'
 import { SettingsRow as Row, SettingsGroup as Group, SettingsSectionLabel as SectionLabel } from '@/components/SettingsUI'
 import { useReferral, type ApplyResult } from '@/hooks/useReferral'
+import { useCooperativeInvite, type CoopInviteResult } from '@/hooks/useCooperativeInvite'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -111,6 +112,13 @@ export default function SettingsScreen() {
   const [buildingAddress, setBuildingAddress] = useState('')
   const [selectedBuildingLocation, setSelectedBuildingLocation] = useState<import('@/components/LocationAutocomplete').LocationResult | null>(null)
   const [savingBuilding, setSavingBuilding] = useState(false)
+
+  // Cooperative invite code
+  const coopInvite = useCooperativeInvite()
+  const [coopCode, setCoopCode] = useState('')
+  const [coopStatus, setCoopStatus] = useState<'idle' | 'checking' | 'applying' | 'applied' | 'invalid' | 'expired' | 'exhausted'>('idle')
+  const [coopOrgName, setCoopOrgName] = useState<string | null>(null)
+  const [showCoopCodeInput, setShowCoopCodeInput] = useState(false)
 
   // Referral code
   const referral = useReferral(profile?.id ?? null)
@@ -307,6 +315,60 @@ export default function SettingsScreen() {
       ],
     )
   }, [profile, userBuilding, supabase, toast, t, locale])
+
+  // Apply cooperative invite code
+  const handleApplyCoopCode = useCallback(async () => {
+    if (!coopCode.trim() || !profile) return
+    try {
+      setCoopStatus('checking')
+      setCoopOrgName(null)
+      const info = await coopInvite.validateCode(coopCode)
+      if (!info) {
+        setCoopStatus('invalid')
+        toast.show({ message: t('settings.codeInvalid'), type: 'error' })
+        return
+      }
+      setCoopOrgName(info.org_name)
+      setCoopStatus('applying')
+      const result = await coopInvite.applyCode(coopCode, profile.id)
+      if (result === 'success' || result === 'already_member') {
+        setCoopStatus('applied')
+        toast.show({ message: t('settings.codeApplied'), type: 'success' })
+        // Refetch building data
+        try {
+          const { data: ubData } = await supabase
+            .from('user_buildings')
+            .select('building:buildings(id, street_address, member_count)')
+            .eq('user_id', profile.id)
+            .single()
+          if ((ubData as any)?.building) {
+            const bld = (ubData as any).building
+            const { data: orgData } = await (supabase.from('organizations') as any)
+              .select('id')
+              .eq('building_id', bld.id)
+              .eq('type', 'building')
+              .single()
+            setUserBuilding({ ...bld, org_id: (orgData as any)?.id ?? null })
+          }
+        } catch {} // Building may not be linked via user_buildings
+        setCoopCode('')
+        setShowCoopCodeInput(false)
+      } else if (result === 'expired') {
+        setCoopStatus('expired')
+        toast.show({ message: t('settings.codeExpired'), type: 'error' })
+      } else if (result === 'exhausted') {
+        setCoopStatus('exhausted')
+        toast.show({ message: t('settings.codeExhausted'), type: 'error' })
+      } else {
+        setCoopStatus('invalid')
+        toast.show({ message: t('settings.codeInvalid'), type: 'error' })
+      }
+    } catch (err) {
+      setCoopStatus('invalid')
+      toast.show({ message: t('settings.codeInvalid'), type: 'error' })
+      if (__DEV__) console.warn('[settings] apply coop code error:', err)
+    }
+  }, [coopCode, profile, coopInvite, supabase, toast, t])
 
   // Detect if user arrived via password recovery flow
   useEffect(() => {
@@ -895,14 +957,78 @@ export default function SettingsScreen() {
               />
             </>
           ) : (
-            <Row
-              icon={<Home size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={t('settings.addAddress')}
-              meta={t('settings.addAddressHint')}
-              onPress={() => setShowBuildingModal(true)}
-              colors={colors}
-              isDark={isDark}
-            />
+            <>
+              <Row
+                icon={<Home size={16} color={colors.foreground} strokeWidth={1.8} />}
+                label={t('settings.addAddress')}
+                meta={t('settings.addAddressHint')}
+                onPress={() => setShowBuildingModal(true)}
+                colors={colors}
+                isDark={isDark}
+              />
+              <Row
+                icon={<Key size={16} color={colors.foreground} strokeWidth={1.8} />}
+                label={t('settings.enterInviteCode')}
+                meta={t('settings.enterInviteCodeHint')}
+                onPress={() => setShowCoopCodeInput(!showCoopCodeInput)}
+                colors={colors}
+                isDark={isDark}
+              />
+              {showCoopCodeInput && (
+                <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                    <TextInput
+                      value={coopCode}
+                      onChangeText={(v) => setCoopCode(v.toUpperCase())}
+                      placeholder="ABCD1234"
+                      placeholderTextColor={colors.tertiaryForeground}
+                      style={{
+                        flex: 1,
+                        height: 40,
+                        borderWidth: 1,
+                        borderColor: (coopStatus === 'invalid' || coopStatus === 'expired' || coopStatus === 'exhausted') ? colors.destructive : colors.border,
+                        borderRadius: 8,
+                        paddingHorizontal: 12,
+                        fontFamily: fonts.heading,
+                        fontSize: 15,
+                        letterSpacing: 2,
+                        color: colors.foreground,
+                        backgroundColor: colors.muted,
+                      }}
+                      maxLength={12}
+                      autoCapitalize="characters"
+                      autoCorrect={false}
+                    />
+                    <PressableOpacity
+                      onPress={handleApplyCoopCode}
+                      disabled={!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying'}
+                      style={{
+                        height: 40,
+                        paddingHorizontal: 14,
+                        borderRadius: 8,
+                        backgroundColor: (!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying') ? colors.muted : colors.primary,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {coopStatus === 'checking' || coopStatus === 'applying' ? (
+                        <ActivityIndicator size="small" color={colors.foreground} />
+                      ) : (
+                        <Text style={{ fontFamily: fonts.bodyMedium, fontSize: 14, color: (!coopCode.trim()) ? colors.tertiaryForeground : '#FFFFFF' }}>
+                          {t('settings.applyCode')}
+                        </Text>
+                      )}
+                    </PressableOpacity>
+                  </View>
+                  {coopOrgName && coopStatus === 'applied' ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                      <CheckCircle size={14} color={colors.accent ?? colors.primary} strokeWidth={1.8} />
+                      <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.accent ?? colors.primary }}>{coopOrgName}</Text>
+                    </View>
+                  ) : null}
+                </View>
+              )}
+            </>
           )}
         </Group>
 
@@ -1034,6 +1160,19 @@ export default function SettingsScreen() {
               icon={<Shield size={16} color={colors.destructive} strokeWidth={1.8} />}
               label={t('admin.title') ?? 'Admin'}
               onPress={() => router.push('/admin' as any)}
+              colors={colors}
+              isDark={isDark}
+            />
+          </Group>
+        )}
+
+        {/* ── City official panel ── */}
+        {(profile as any)?.is_city_official && (
+          <Group colors={colors}>
+            <Row
+              icon={<Landmark size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={t('settings.cityAdmin') ?? 'City administration'}
+              onPress={() => router.push('/city-admin' as any)}
               colors={colors}
               isDark={isDark}
             />

@@ -995,7 +995,15 @@
     "removeBuildingConfirm": "Vill du ta bort din husbolagsanslutning?",
     "addAddress": "Lägg till din adress",
     "addAddressHint": "Se dina grannar och husbolagsinlägg",
-    "addAddressDesc": "Ange din hemadress för att se grannar och husbolagsinlägg."
+    "addAddressDesc": "Ange din hemadress för att se grannar och husbolagsinlägg.",
+    "enterInviteCode": "Ange inbjudningskod",
+    "enterInviteCodeHint": "Gå med i husbolag med inbjudningskod",
+    "codeApplied": "Gick med i husbolaget!",
+    "codeInvalid": "Ogiltig inbjudningskod",
+    "codeExpired": "Inbjudningskoden har utgått",
+    "codeExhausted": "Inbjudningskoden är förbrukad",
+    "applyCode": "Använd kod",
+    "cityAdmin": "Stadsförvaltning"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -3075,6 +3083,29 @@
     "accessDenied": "Åtkomst nekad",
     "accessDeniedDesc": "Bara administratörer har åtkomst till denna vy."
   },
+  "cityAdmin": {
+    "title": "Stadsförvaltning",
+    "accessDenied": "Åtkomst nekad",
+    "accessDeniedDesc": "Endast stadstjänstemän har tillgång.",
+    "neighborhoods": "Grannskap",
+    "announcements": "Meddelanden",
+    "events": "Evenemang",
+    "residents": "{count} invånare",
+    "createAnnouncement": "Skapa meddelande",
+    "announcementTitle": "Rubrik",
+    "announcementBody": "Meddelande",
+    "announcementCreated": "Meddelande publicerat",
+    "createEvent": "Skapa evenemang",
+    "eventTitle": "Evenemangsnamn",
+    "eventDescription": "Beskrivning",
+    "eventDate": "Datum",
+    "eventLocation": "Plats",
+    "eventCreated": "Evenemang skapat",
+    "noNeighborhoods": "Ingen grannskapsdata",
+    "noAnnouncements": "Inga meddelanden",
+    "noEvents": "Inga evenemang",
+    "cityOfficial": "Stadstjänsteman"
+  },
   "unsupported": {
     "title": "TackBird finns inte tillgängligt i ditt område ännu",
     "yourLocation": "Du är i: {city}, {country}",
@@ -3497,6 +3528,17 @@
     "codeCopied": "Kod kopierad till urklipp",
     "noInviteCodes": "Inga aktiva inbjudningskoder",
     "noInviteCodesHint": "Skapa en inbjudningskod så att invånare kan gå med.",
-    "expiredCodes": "Utgångna koder"
+    "expiredCodes": "Utgångna koder",
+    "editRulesTitle": "Redigera regler",
+    "rulesPlaceholder": "Skriv husbolagets ordningsregler...",
+    "saveRules": "Spara regler",
+    "rulesSaved": "Regler sparade",
+    "memberManagement": "Invånarhantering",
+    "changeRole": "Ändra roll",
+    "removeMember": "Ta bort invånare",
+    "memberRemoved": "Invånare borttagen",
+    "roleChanged": "Roll ändrad",
+    "confirmRemoveMember": "Är du säker på att du vill ta bort denna invånare?",
+    "cannotEditSelf": "Du kan inte ändra din egen roll"
   }
 }
