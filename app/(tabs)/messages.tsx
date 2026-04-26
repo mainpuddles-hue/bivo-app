@@ -242,8 +242,12 @@ export default function MessagesScreen() {
   // storm whenever any user in the system sends a message.
   useEffect(() => {
     if (!userId) return
+    const msgListChanName = `messages-list-${userId}`
+    const msgListExisting = supabase.getChannels().find(ch => ch.topic === `realtime:${msgListChanName}`)
+    if (msgListExisting) supabase.removeChannel(msgListExisting)
+
     const channel = supabase
-      .channel(`messages-list-${userId}`)
+      .channel(msgListChanName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',

@@ -142,8 +142,12 @@ export function useEventChat(conversationId: string | null, userId: string | nul
 
     fetchMessagesRef.current()
 
+    const ecChanName = `event-chat-${conversationId}`
+    const ecExist = supabase.getChannels().find(ch => ch.topic === `realtime:${ecChanName}`)
+    if (ecExist) supabase.removeChannel(ecExist)
+
     const channel = supabase
-      .channel(`event-chat-${conversationId}`)
+      .channel(ecChanName)
       .on(
         'postgres_changes',
         {

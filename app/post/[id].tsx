@@ -250,8 +250,12 @@ function PostDetailScreenInner() {
   useEffect(() => {
     if (!id || !isValidUUID(id)) return
     let mounted = true
+    const cmtChanName = `comments-${id}`
+    const cmtExisting = supabase.getChannels().find(ch => ch.topic === `realtime:${cmtChanName}`)
+    if (cmtExisting) supabase.removeChannel(cmtExisting)
+
     const channel = supabase
-      .channel(`comments-${id}`)
+      .channel(cmtChanName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_comments', filter: `post_id=eq.${id}` }, async (payload) => {
         if (!mounted) return
         const raw = payload.new as any

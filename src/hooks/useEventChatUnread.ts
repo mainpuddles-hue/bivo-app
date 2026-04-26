@@ -55,8 +55,12 @@ export function useEventChatUnread(userId: string | null) {
       }, 500)
     }
 
+    const ecChannelName = `event-chat-unread-${userId}`
+    const ecExisting = supabase.getChannels().find(ch => ch.topic === `realtime:${ecChannelName}`)
+    if (ecExisting) supabase.removeChannel(ecExisting)
+
     const channel = supabase
-      .channel(`event-chat-unread-${userId}`)
+      .channel(ecChannelName)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },

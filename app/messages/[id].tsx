@@ -205,8 +205,12 @@ function ConversationScreenInner() {
   // Realtime messages
   useEffect(() => {
     if (!id || !isValidUUID(id)) return
+    const convChanName = `conv-${id}`
+    const convExisting = supabase.getChannels().find(ch => ch.topic === `realtime:${convChanName}`)
+    if (convExisting) supabase.removeChannel(convExisting)
+
     const channel = supabase
-      .channel(`conv-${id}`)
+      .channel(convChanName)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'messages',
         filter: `conversation_id=eq.${id}`,

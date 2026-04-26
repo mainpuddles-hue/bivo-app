@@ -378,8 +378,12 @@ function NotificationsScreenInner() {
   // Realtime subscription for new notifications
   useEffect(() => {
     if (!isLoggedIn || !userId) return
+    const notifChanName = `notifications-${userId}`
+    const notifExisting = supabase.getChannels().find(ch => ch.topic === `realtime:${notifChanName}`)
+    if (notifExisting) supabase.removeChannel(notifExisting)
+
     const channel = supabase
-      .channel(`notifications-${userId}`)
+      .channel(notifChanName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',

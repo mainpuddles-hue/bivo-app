@@ -60,12 +60,17 @@ export function useUnreadCount(userId: string | null) {
       }, 500) // Wait 500ms to batch rapid message events
     }
 
+    // Remove any stale channel with same name before creating a new one
+    const channelName = `unread-badge-${userId}`
+    const existing = supabase.getChannels().find(ch => ch.topic === `realtime:${channelName}`)
+    if (existing) supabase.removeChannel(existing)
+
     // Subscribe to messages — filter out own messages on INSERT.
     // Supabase realtime only supports a single eq() filter, so we use
     // is_read=false for UPDATEs (mark-as-read) and check conversation
     // membership client-side via convIdsRef to skip irrelevant events.
     const channel = supabase
-      .channel(`unread-badge-${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },

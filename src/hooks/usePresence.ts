@@ -56,6 +56,9 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
     let mounted = true
 
     const channelName = `presence:${neighborhood.toLowerCase().replace(/\s/g, '_')}`
+    const presExisting = supabase.getChannels().find(ch => ch.topic === `realtime:${channelName}`)
+    if (presExisting) supabase.removeChannel(presExisting)
+
     const channel = supabase.channel(channelName, {
       config: { presence: { key: userId } },
     })
