@@ -113,20 +113,13 @@ serve(async (req) => {
     const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
     const resendApiKey = getEnvOrThrow('RESEND_API_KEY')
 
-    // Verify JWT from Authorization header — prevents unauthenticated OTP spam
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Authorization required' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-    const jwt = authHeader.replace('Bearer ', '')
-    const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
-      global: { headers: { Authorization: `Bearer ${jwt}` } },
-    })
-    const { data: { user: authUser }, error: authErr } = await userClient.auth.getUser()
-    if (authErr || !authUser) {
-      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+    // Signup OTP runs before the user has a session, so we can't require a JWT.
+    // Authenticate the call with the project's anon key (apikey header) and lean
+    // on the per-email rate limit + MX validation below to prevent abuse.
+    const apiKey = req.headers.get('apikey')
+    const expectedKey = Deno.env.get('SUPABASE_ANON_KEY')
+    if (!apiKey || apiKey !== expectedKey) {
+      return new Response(JSON.stringify({ error: 'Invalid API key' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }

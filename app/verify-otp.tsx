@@ -135,9 +135,21 @@ export default function VerifyOtpScreen() {
         trackEvent('auth_login_success')
         router.replace('/settings?recovery=true')
       } else {
+        // signup: exchange the magiclink token_hash from the Edge Function for a real session
+        if (verifyData.token_hash) {
+          const { error: sessionError } = await supabase.auth.verifyOtp({
+            token_hash: verifyData.token_hash,
+            type: 'magiclink',
+          })
+          if (sessionError) {
+            if (__DEV__) console.warn('[verify-otp] Failed to establish signup session:', sessionError.message)
+            setError(t('auth.otpExpired'))
+            setLoading(false)
+            return
+          }
+        }
         try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
         trackEvent('auth_register_success')
-        // User is already logged in (autoconfirm=true), navigate to onboarding or feed
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           const { data: profile } = await supabase

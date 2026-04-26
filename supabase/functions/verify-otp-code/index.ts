@@ -158,6 +158,33 @@ serve(async (req) => {
       await supabase.from('profiles')
         .update({ onboarding_completed: false }) // trigger onboarding
         .eq('email', cleanEmail)
+
+      // Confirm the auth user (admin) so login is possible without the magic-link
+      // email, then generate a magiclink token the client can exchange for a session.
+      const { data: userList, error: listError } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 })
+      if (listError) console.error('[verify-otp-code] listUsers error:', listError.message)
+      const authUser = userList?.users?.find((u: any) => (u.email ?? '').toLowerCase() === cleanEmail)
+      if (authUser && !authUser.email_confirmed_at) {
+        const { error: confirmError } = await supabase.auth.admin.updateUserById(authUser.id, { email_confirm: true })
+        if (confirmError) console.error('[verify-otp-code] email_confirm error:', confirmError.message)
+      }
+
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: cleanEmail,
+      })
+      if (linkError || !linkData?.properties?.hashed_token) {
+        console.error('[verify-otp-code] generateLink error:', linkError?.message)
+        return new Response(JSON.stringify({ verified: true }), {
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      return new Response(JSON.stringify({
+        verified: true,
+        token_hash: linkData.properties.hashed_token,
+      }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // For recovery: generate a recovery link so the client can establish a session
