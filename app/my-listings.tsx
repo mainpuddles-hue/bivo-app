@@ -534,7 +534,7 @@ const s = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   statNumber: {
-    fontSize: 22,
+    fontSize: 24,
     fontFamily: fonts.heading,
     letterSpacing: -0.5,
   },

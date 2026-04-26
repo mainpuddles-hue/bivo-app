@@ -636,7 +636,7 @@ function BookingDetailScreenInner() {
                 <Avatar url={booking.other_user.avatar_url} name={booking.other_user.name} size={72} />
               </View>
             )}
-            <Text style={[s.heroHeadline, { color: colors.foreground, fontSize: 22 }]} accessibilityRole="header">
+            <Text style={[s.heroHeadline, { color: colors.foreground, fontSize: 24 }]} accessibilityRole="header">
               {t('booking.howDidItGo', { name: otherName })}
             </Text>
             <Text style={[s.heroSubtext, { color: colors.mutedForeground }]}>
@@ -1231,7 +1231,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   itemTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,
@@ -1259,7 +1259,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.body,
   },
   dateValueBold: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     marginTop: 2,
@@ -1457,7 +1457,7 @@ const s = StyleSheet.create({
     elevation: 8,
   },
   stickyCtaText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,

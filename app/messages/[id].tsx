@@ -1089,7 +1089,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },
-  headerName: { fontSize: 15, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.displayMedium },
+  headerName: { fontSize: 16, fontWeight: '600', lineHeight: 20, letterSpacing: -0.15, fontFamily: fonts.displayMedium },
   headerSub: { fontSize: 12, lineHeight: 16, fontFamily: fonts.body },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   onlineDot: { width: 6, height: 6, borderRadius: 999 },
@@ -1105,7 +1105,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   dayPillText: {
-    fontSize: 11, fontWeight: '600', letterSpacing: 0.6,
+    fontSize: 12, fontWeight: '600', letterSpacing: 0.6,
     fontFamily: fonts.bodySemi, textTransform: 'uppercase',
   },
   msgRow: { flexDirection: 'row', gap: 8, marginVertical: 4 },
@@ -1189,7 +1189,7 @@ const s = StyleSheet.create({
     flexShrink: 0,
   },
   emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingTop: 48, gap: 8 },
-  emptyText: { textAlign: 'center', fontSize: 15, lineHeight: 22, fontFamily: fonts.bodySemi, fontWeight: '600' as const },
+  emptyText: { textAlign: 'center', fontSize: 14, lineHeight: 22, fontFamily: fonts.bodySemi, fontWeight: '600' as const },
   emptyHint: { textAlign: 'center', fontSize: 13, lineHeight: 18, fontFamily: fonts.body, maxWidth: 220 },
   // ── Quick replies — Monochrome pills (borderRadius 999, surface bg, 1px border) ──
   quickRepliesRow: {

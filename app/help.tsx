@@ -212,7 +212,7 @@ const s = StyleSheet.create({
   faqQuestion: { fontSize: 14, lineHeight: 20, fontFamily: fonts.bodyMedium, flex: 1 },
   faqAnswer: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 0 },
   answerText: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20 },
-  contactTitle: { fontSize: 15, lineHeight: 22, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
+  contactTitle: { fontSize: 16, lineHeight: 22, fontFamily: fonts.bodySemi, padding: 16, paddingBottom: 4 },
   contactDesc: { fontSize: 14, fontFamily: fonts.body, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
   contactBtn: {
     flexDirection: 'row',

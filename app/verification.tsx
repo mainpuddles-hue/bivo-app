@@ -419,7 +419,7 @@ const s = StyleSheet.create({
     marginBottom: 16,
   },
   heroTitle: {
-    fontSize: 19,
+    fontSize: 20,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     letterSpacing: -0.3,

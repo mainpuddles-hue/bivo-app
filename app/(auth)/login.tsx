@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontFamily: fonts.heading,
-    fontSize: 26,
+    fontSize: 28,
     fontStyle: 'italic',
     lineHeight: 30,
     marginTop: -2,
@@ -753,7 +753,7 @@ const styles = StyleSheet.create({
   },
   inputText: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 15,
+    fontSize: 16,
     letterSpacing: 0,
     flex: 1,
     paddingVertical: 14,
@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: {
     fontFamily: fonts.bodySemi,
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 20,
     letterSpacing: 0,
   },
@@ -916,7 +916,7 @@ const styles = StyleSheet.create({
   },
   socialBtnText: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 20,
   },
 

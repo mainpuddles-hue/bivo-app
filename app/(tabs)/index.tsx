@@ -1045,7 +1045,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   searchPlaceholder: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,

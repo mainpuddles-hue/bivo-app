@@ -882,7 +882,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12,
   },
-  headerTitle: { fontSize: 15, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
+  headerTitle: { fontSize: 14, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
   headerIcons: { flexDirection: 'row', gap: 8 },
   headerCircle: {
     width: 36, height: 36, borderRadius: 999,
@@ -912,7 +912,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   compactName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.heading,
     lineHeight: 20,
@@ -936,7 +936,7 @@ const s = StyleSheet.create({
   },
   statCol: { flex: 1, alignItems: 'center', gap: 2 },
   statDivider: { width: 1, height: 32, alignSelf: 'center' },
-  statNum: { fontSize: 22, fontWeight: '700', fontFamily: fonts.display, letterSpacing: -0.4, lineHeight: 28 },
+  statNum: { fontSize: 24, fontWeight: '700', fontFamily: fonts.display, letterSpacing: -0.4, lineHeight: 28 },
   statLabel: { fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 16, letterSpacing: 0.6, textTransform: 'uppercase' },
 
   // Segmented control v3
@@ -975,7 +975,7 @@ const s = StyleSheet.create({
   flatRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4, paddingVertical: 14, minHeight: 44, borderBottomWidth: StyleSheet.hairlineWidth },
   flatRowLast: { borderBottomWidth: 0 },
   flatRowText: { flex: 1, fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 20 },
-  sectionTitle: { fontSize: 17, fontWeight: '600', marginTop: 8, fontFamily: fonts.display, lineHeight: 22, letterSpacing: -0.3 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', marginTop: 8, fontFamily: fonts.display, lineHeight: 22, letterSpacing: -0.3 },
   reviewCard: { borderRadius: 20, padding: 16, gap: 8 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodyMedium, lineHeight: 18 },

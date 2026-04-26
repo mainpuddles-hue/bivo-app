@@ -1497,7 +1497,7 @@ const mk = StyleSheet.create({
   sectionLabel: { fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: '700', fontFamily: fonts.bodySemi, marginBottom: 12 },
 
   // Scroll
-  scrollPad: { paddingBottom: 32 },
+  scrollPad: { paddingBottom: 120 },
 
   // Pills
   pillSection: { paddingHorizontal: 20, paddingTop: 14 },

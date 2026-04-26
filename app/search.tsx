@@ -1654,7 +1654,7 @@ const s = StyleSheet.create({
     paddingVertical: 10,
   },
   resultsCount: {
-    fontSize: 11,
+    fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 1.4,
     fontWeight: '600',
@@ -1733,7 +1733,7 @@ const s = StyleSheet.create({
     gap: 10,
   },
   similarSectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 1.4,
     fontWeight: '600',
@@ -1780,7 +1780,7 @@ const s = StyleSheet.create({
   // ── Discovery sections ──
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 11, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 1.4, flex: 1 },
+  sectionTitle: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 1.4, flex: 1 },
   clearHistoryLink: { fontSize: 12, lineHeight: 16 },
   recentChipsRow: { flexDirection: 'row', gap: 8 },
   recentChip: {

@@ -1514,7 +1514,7 @@ function AdminTab({
             >
               <Text style={[s.roleBadgeText, {
                 color: isSelf ? colors.mutedForeground : colors.foreground,
-                fontSize: 11,
+                fontSize: 12,
                 lineHeight: 15,
               }]}>
                 {roleLabel}

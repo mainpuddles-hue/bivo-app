@@ -769,7 +769,7 @@ const s = StyleSheet.create({
     minHeight: 52,
   },
   ctaText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,

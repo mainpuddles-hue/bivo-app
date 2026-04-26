@@ -985,7 +985,7 @@ export default function SettingsScreen() {
                   borderRadius: 8,
                   paddingHorizontal: 12,
                   fontFamily: fonts.bodySemi,
-                  fontSize: 15,
+                  fontSize: 16,
                   letterSpacing: 2,
                   color: colors.foreground,
                   backgroundColor: colors.muted,
@@ -1540,7 +1540,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: fonts.display,
     letterSpacing: -0.15,
@@ -1757,7 +1757,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   deleteTitle: {
-    fontSize: 17,
+    fontSize: 18,
     lineHeight: 24,
     fontWeight: '700',
     fontFamily: fonts.display,

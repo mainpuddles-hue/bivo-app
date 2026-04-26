@@ -262,7 +262,7 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 14, elevation: 4,
   },
   heroTitle: {
-    fontSize: 22, fontWeight: '600', fontFamily: fonts.heading,
+    fontSize: 24, fontWeight: '600', fontFamily: fonts.heading,
     letterSpacing: -0.4, lineHeight: 26, textAlign: 'center',
   },
   heroMeta: { fontSize: 12, fontFamily: fonts.body, textAlign: 'center' },

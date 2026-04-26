@@ -997,7 +997,7 @@ function PostDetailScreenInner() {
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
           <Text style={[styles.notFound, { color: colors.mutedForeground, marginBottom: 16 }]}>{loadError}</Text>
           <PressableOpacity onPress={() => loadPost()} style={{ paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.foreground, borderRadius: 999 }} accessibilityRole="button" accessibilityLabel={t('common.retry')}>
-            <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodyMedium, fontSize: 15 }}>{t('common.retry')}</Text>
+            <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodyMedium, fontSize: 16 }}>{t('common.retry')}</Text>
           </PressableOpacity>
         </View>
       </View>
@@ -1856,7 +1856,7 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 },
   title: { fontSize: 28, fontFamily: fonts.displayMedium, lineHeight: 31, letterSpacing: -0.7, flex: 1 },
   pricePill: { flexShrink: 0, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
-  pricePillText: { fontSize: 15, fontWeight: '700', letterSpacing: -0.2, fontFamily: fonts.bodySemi },
+  pricePillText: { fontSize: 16, fontWeight: '700', letterSpacing: -0.2, fontFamily: fonts.bodySemi },
 
   // v3 Meta row
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: -4 },
@@ -1869,7 +1869,7 @@ const styles = StyleSheet.create({
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   // v3 Description — 15px, generous line-height
-  description: { fontSize: 15, fontFamily: fonts.body, lineHeight: 24, maxWidth: 560 },
+  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 24, maxWidth: 560 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 
@@ -1878,14 +1878,14 @@ const styles = StyleSheet.create({
   fact: { flex: 1, gap: 3, paddingHorizontal: 12, borderRightWidth: 1 },
   factLast: { flex: 1, gap: 3, paddingHorizontal: 12 },
   factLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
-  factValue: { fontSize: 17, fontFamily: fonts.displayMedium, letterSpacing: -0.3 },
+  factValue: { fontSize: 18, fontFamily: fonts.displayMedium, letterSpacing: -0.3 },
 
   // v3 Author card — separated card with border
   authorCard: { margin: 0, marginTop: -4, padding: 16, borderRadius: 20, borderWidth: 1 },
   authorHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   authorCardInfo: { flex: 1, minWidth: 0, gap: 3 },
   authorNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'nowrap' },
-  authorName: { fontSize: 17, fontFamily: fonts.displayMedium, lineHeight: 20, letterSpacing: -0.3, flexShrink: 1 },
+  authorName: { fontSize: 18, fontFamily: fonts.displayMedium, lineHeight: 20, letterSpacing: -0.3, flexShrink: 1 },
   authorSub: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   authorStars: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   authorStarVal: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
@@ -1894,7 +1894,7 @@ const styles = StyleSheet.create({
   // Rating bars
   ratingBars: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, gap: 6 },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ratingLabel: { width: 12, textAlign: 'right', fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi },
+  ratingLabel: { width: 12, textAlign: 'right', fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   barTrack: { flex: 1, height: 4, borderRadius: 2, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 2 },
 
@@ -1908,7 +1908,7 @@ const styles = StyleSheet.create({
 
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 100, lineHeight: 24 },
   commentSection: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 16, marginTop: 8, gap: 12 },
-  commentTitle: { fontSize: 15, fontFamily: fonts.heading, lineHeight: 20 },
+  commentTitle: { fontSize: 16, fontFamily: fonts.heading, lineHeight: 20 },
   commentRow: { flexDirection: 'row', gap: 12, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   commentAvatar: { width: 36, height: 36, borderRadius: 18 },
   commentBody: { flex: 1, gap: 4 },
@@ -2001,7 +2001,7 @@ const styles = StyleSheet.create({
   infoModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   infoModalCard: { width: '100%', maxWidth: 360, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, padding: 20, gap: 10 },
   infoModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  infoModalTitle: { fontSize: 15, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20, flex: 1 },
+  infoModalTitle: { fontSize: 16, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 20, flex: 1 },
   infoModalBody: { fontSize: 13, fontFamily: fonts.body, lineHeight: 19 },
 })
 
@@ -2041,7 +2041,7 @@ const ctaStyles = StyleSheet.create({
     flex: 1, height: 52, borderRadius: 26,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
   },
-  ctaPrimaryText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
+  ctaPrimaryText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
 })
 
 export default function PostDetailScreen() {

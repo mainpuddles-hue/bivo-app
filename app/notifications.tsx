@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     letterSpacing: 1.4,
     textTransform: 'uppercase',

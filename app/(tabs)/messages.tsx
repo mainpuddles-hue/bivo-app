@@ -858,7 +858,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   convName: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     lineHeight: 20,
     fontFamily: fonts.bodySemi,
