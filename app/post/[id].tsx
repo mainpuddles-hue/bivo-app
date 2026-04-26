@@ -933,6 +933,20 @@ function PostDetailScreenInner() {
     }
   }, [userId, post, sendingService, paymentLoading, svcFee, svcTotal, serviceNotes, id, supabase, router, t, toast, createPayment, trust])
 
+  // Moved before early returns to satisfy Rules of Hooks
+  const renderHeroImageItem = useCallback(({ item, index }: { item: string; index: number }) => (
+    <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
+      <Image source={{ uri: getImageUrl(item, 'medium')! }} style={[styles.heroImage, { width: screenWidth }]} contentFit="cover" cachePolicy="memory-disk" onError={() => setHeroImageError(true)} />
+    </PressableOpacity>
+  ), [openGallery, t, screenWidth])
+
+  const renderLikerItem = useCallback(({ item }: { item: { id: string; name: string; avatar_url: string | null } }) => (
+    <PressableOpacity onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
+      <Avatar url={item.avatar_url} name={item.name} size={40} />
+      <Text style={{ fontSize: 14, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1, lineHeight: 20 }}>{item.name}</Text>
+    </PressableOpacity>
+  ), [router, colors.foreground])
+
   const renderCommentItem = (c: PostComment, isReply: boolean) => (
     <View key={c.id} style={[styles.commentRow, isReply && styles.replyRow, { borderBottomColor: colors.border }]}>
       <Avatar url={c.user?.avatar_url} name={c.user?.name} size={isReply ? 28 : 36} />
@@ -1010,19 +1024,6 @@ function PostDetailScreenInner() {
   // expirationInfo moved before early returns (React hooks rules)
 
   const isItemExchange = post?.type === 'ilmaista' || post?.type === 'lainaa' || (post?.type === 'tarjoan' && post?.tags?.includes('tarjoan_item'))
-
-  const renderHeroImageItem = useCallback(({ item, index }: { item: string; index: number }) => (
-    <PressableOpacity onPress={() => openGallery(index)} accessibilityRole="button" accessibilityLabel={`${t('post.openGallery') ?? 'Open image'} ${index + 1}`}>
-      <Image source={{ uri: getImageUrl(item, 'medium')! }} style={[styles.heroImage, { width: screenWidth }]} contentFit="cover" cachePolicy="memory-disk" onError={() => setHeroImageError(true)} />
-    </PressableOpacity>
-  ), [openGallery, t, screenWidth])
-
-  const renderLikerItem = useCallback(({ item }: { item: { id: string; name: string; avatar_url: string | null } }) => (
-    <PressableOpacity onPress={() => { setShowLikersModal(false); router.push(`/profile/${item.id}` as any) }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
-      <Avatar url={item.avatar_url} name={item.name} size={40} />
-      <Text style={{ fontSize: 14, fontFamily: fonts.bodyMedium, color: colors.foreground, flex: 1, lineHeight: 20 }}>{item.name}</Text>
-    </PressableOpacity>
-  ), [router, colors.foreground])
 
   return (
     <FadeIn style={{ flex: 1 }}>
