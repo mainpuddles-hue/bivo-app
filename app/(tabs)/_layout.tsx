@@ -10,6 +10,7 @@ enableFreeze(true)
 import { Newspaper, Plus, MessageCircle, User, Compass } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useUnreadCount } from '@/hooks/useUnreadCount'
 import { useEventChatUnread } from '@/hooks/useEventChatUnread'
@@ -229,6 +230,7 @@ const s = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
 })

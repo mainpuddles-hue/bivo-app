@@ -862,6 +862,7 @@ const styles = StyleSheet.create({
   },
   convNameUnread: {
     fontWeight: '700',
+    fontFamily: fonts.bodySemi,
   },
   previewRow: {
     flexDirection: 'row',

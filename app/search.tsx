@@ -1627,6 +1627,7 @@ const s = StyleSheet.create({
   activeChipText: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
   addFilterChip: {
@@ -1641,6 +1642,7 @@ const s = StyleSheet.create({
   addFilterText: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
     lineHeight: 16,
   },
 
@@ -1667,6 +1669,7 @@ const s = StyleSheet.create({
   sortLabel: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
 
@@ -1699,6 +1702,7 @@ const s = StyleSheet.create({
   resultTitle: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 18,
   },
   resultMeta: {
@@ -1708,6 +1712,7 @@ const s = StyleSheet.create({
   resultPrice: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     lineHeight: 16,
     marginTop: 2,
   },
@@ -1758,6 +1763,7 @@ const s = StyleSheet.create({
   similarTitle: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
     lineHeight: 16,
   },
 

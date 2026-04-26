@@ -946,7 +946,7 @@ function NewListingScreenInner() {
                 >
                   <Text style={[s.segmentTabText, { color: on ? colors.foreground : colors.mutedForeground }]}>
                     {labels[tab]}{' '}
-                    <Text style={{ color: on ? colors.mutedForeground : colors.tertiaryForeground, fontWeight: '500' }}>
+                    <Text style={{ color: on ? colors.mutedForeground : colors.tertiaryForeground, fontWeight: '500', fontFamily: fonts.bodyMedium }}>
                       · {checklists[tab].length}
                     </Text>
                   </Text>
@@ -1182,7 +1182,7 @@ const s = StyleSheet.create({
   fieldsCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   fieldRow: { paddingHorizontal: 16, paddingVertical: 12 },
   fieldLabel: { fontSize: 12, fontWeight: '500', marginBottom: 4, fontFamily: fonts.bodyMedium },
-  fieldValue: { fontSize: 15, fontWeight: '500', padding: 0, minHeight: 24 },
+  fieldValue: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium, padding: 0, minHeight: 24 },
   fieldDivider: { height: 1 },
 
   // ── Step 2: Photos ──
@@ -1190,7 +1190,7 @@ const s = StyleSheet.create({
   photoCell: { width: '31%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden', position: 'relative' },
   photoImage: { width: '100%', height: '100%' },
   photoBadge: { position: 'absolute', top: 6, left: 6, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  photoBadgeText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.4, textTransform: 'uppercase' },
+  photoBadgeText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.4, textTransform: 'uppercase' },
   photoRemove: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   photoAdd: { width: '31%', aspectRatio: 1, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
   photoAddText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
@@ -1240,7 +1240,7 @@ const s = StyleSheet.create({
   calendarCell: { flex: 1, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
   calendarDayBtn: { margin: 4 },
   calendarDayHeader: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
-  calendarDayNum: { fontSize: 12, fontWeight: '500' },
+  calendarDayNum: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
   calendarLegend: { flexDirection: 'row', gap: 12, marginTop: 12, paddingTop: 12, borderTopWidth: 1 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   legendDot: { width: 10, height: 10, borderRadius: 3 },
@@ -1256,7 +1256,7 @@ const s = StyleSheet.create({
   locationCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   miniMap: { height: 120, alignItems: 'center', justifyContent: 'center' },
   locationInfo: { padding: 12 },
-  locationAddress: { fontSize: 14, fontWeight: '600', padding: 0, minHeight: 20 },
+  locationAddress: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, padding: 0, minHeight: 20 },
   locationHint: { fontSize: 12, marginTop: 4, fontFamily: fonts.body },
 
   // ── Pickup methods ──

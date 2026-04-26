@@ -93,7 +93,12 @@ function OnboardingScreenInner() {
   }, [SCREEN_WIDTH])
 
   const handleComplete = useCallback(async () => {
-    if (!selectedAddress) return
+    if (!selectedAddress) {
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning) } catch {}
+      toast.show({ message: t('onboarding.addressRequired') ?? 'Valitse ensin osoitteesi', type: 'error' })
+      goToStep(1) // Navigate back to address step
+      return
+    }
     setSaving(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -588,6 +593,7 @@ const s = StyleSheet.create({
   skipText: {
     fontSize: 13,
     fontWeight: '500',
+    fontFamily: fonts.bodyMedium,
   },
 
   // ── Slide content (steps 1 & 3: illustration + text) ──
@@ -670,6 +676,7 @@ const s = StyleSheet.create({
   stepTitle: {
     ...typeScale.display,
     fontWeight: '700',
+    fontFamily: fonts.displayBold,
     letterSpacing: -0.6,
     textAlign: 'center',
   },
@@ -764,6 +771,7 @@ const s = StyleSheet.create({
   ctaText: {
     fontSize: 15,
     fontWeight: '700',
+    fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,
   },
 })

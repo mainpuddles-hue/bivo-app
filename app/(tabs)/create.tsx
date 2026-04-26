@@ -878,7 +878,7 @@ export default function CreateScreen() {
                       ]}
                     >
                       {locked && <Lock size={12} color={active ? colors.background : colors.foreground} />}
-                      <Text style={[mk.pillText, { color: active ? colors.background : colors.foreground, fontWeight: active ? '600' : '500' }]}>{t(label)}</Text>
+                      <Text style={[mk.pillText, { color: active ? colors.background : colors.foreground, fontWeight: active ? '600' : '500', fontFamily: active ? fonts.bodySemi : fonts.bodyMedium }]}>{t(label)}</Text>
                     </Pressable>
                   )
                 })}
@@ -975,7 +975,7 @@ export default function CreateScreen() {
                         ]}
                       >
                         {locked && <Lock size={12} color={active ? colors.background : colors.foreground} />}
-                        <Text style={[mk.pillText, { color: active ? colors.background : colors.foreground, fontWeight: active ? '600' : '500' }]}>{t(label)}</Text>
+                        <Text style={[mk.pillText, { color: active ? colors.background : colors.foreground, fontWeight: active ? '600' : '500', fontFamily: active ? fonts.bodySemi : fonts.bodyMedium }]}>{t(label)}</Text>
                       </Pressable>
                     )
                   })}
@@ -1565,7 +1565,7 @@ const mk = StyleSheet.create({
   urgencyWrap: { gap: 8 },
   urgencyOpts: { flexDirection: 'row', gap: 12, paddingHorizontal: 20 },
   urgencyOpt: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 999, borderWidth: 1.5, minHeight: 44 },
-  urgencyOptText: { fontSize: 14, fontWeight: '700' },
+  urgencyOptText: { fontSize: 14, fontWeight: '700', fontFamily: fonts.bodySemi },
 
   // v3 Sticky publish
   stickyWrap: { position: 'absolute', left: 14, right: 14 },

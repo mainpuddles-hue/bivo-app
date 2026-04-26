@@ -282,7 +282,7 @@ const s = StyleSheet.create({
     fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi,
     letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10,
   },
-  optionalTag: { textTransform: 'none', fontWeight: '400', letterSpacing: 0 },
+  optionalTag: { textTransform: 'none', fontWeight: '400', fontFamily: fonts.body, letterSpacing: 0 },
 
   /* Tags */
   tagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 22 },

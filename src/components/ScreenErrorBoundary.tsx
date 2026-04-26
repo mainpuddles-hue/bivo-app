@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { AlertCircle, RotateCcw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
+import { fonts } from '@/lib/fonts'
 
 interface Props {
   children: React.ReactNode
@@ -119,10 +120,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: fonts.headingSemi,
     letterSpacing: -0.2,
   },
   description: {
     fontSize: 14,
+    fontFamily: fonts.body,
     lineHeight: 20,
   },
   errorDetail: {
@@ -148,5 +151,6 @@ const styles = StyleSheet.create({
   retryText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 })

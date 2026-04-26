@@ -746,6 +746,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     textAlign: 'center',
     letterSpacing: -0.1,
   },
@@ -797,6 +798,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 14,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginTop: 16,
@@ -907,5 +909,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     fontWeight: '600',
+    fontFamily: fonts.bodySemi,
   },
 })
