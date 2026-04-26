@@ -283,7 +283,8 @@
       "fast": "Svarar vanligtvis inom en timme",
       "moderate": "Svarar vanligtvis inom en dag",
       "slow": "Svarstiden varierar"
-    }
+    },
+    "distanceFromYou": "~{distance} från dig"
   },
   "offer": {
     "title": "Ge ett bud",
@@ -1094,7 +1095,9 @@
     "sessionExpired": "Din session har gått ut. Logga in igen.",
     "hidePassword": "Dölj lösenord",
     "showPassword": "Visa lösenord",
-    "invalidEmail": "Ogiltig e-postadress"
+    "invalidEmail": "Ogiltig e-postadress",
+    "sessionError": "Sessionsfel",
+    "sessionErrorDetail": "Kunde inte läsa inloggningsstatus. Du kan behöva logga in igen."
   },
   "onboarding": {
     "welcome": "Välkommen till TackBird!",
@@ -1195,7 +1198,8 @@
     "pushPromptDesc": "Vill du veta när något nytt händer i ditt grannskap?",
     "enableNotifications": "Aktivera aviseringar",
     "maybeLater": "Kanske senare",
-    "addressRequired": "Välj din adress för att fortsätta"
+    "addressRequired": "Välj din adress för att fortsätta",
+    "unknownAddress": "Okänd adress"
   },
   "resetPassword": {
     "title": "Byt lösenord",
@@ -2736,7 +2740,8 @@
     "safetyQ3": "Hur håller jag mina uppgifter säkra?",
     "safetyA3": "Använd ett starkt lösenord, dela inte dina inloggningsuppgifter och var försiktig med att dela personlig information i meddelanden.",
     "contactTitle": "Behöver du mer hjälp?",
-    "contactDesc": "Kontakta vårt supportteam så hjälper vi dig gärna."
+    "contactDesc": "Kontakta vårt supportteam så hjälper vi dig gärna.",
+    "contactSection": "KONTAKT"
   },
   "forum": {
     "title": "Diskussioner",
@@ -2967,7 +2972,8 @@
     "cancelBooking": "Avboka",
     "cancelConfirm": "Är du säker på att du vill avboka denna tjänstbokning?",
     "statusInProgress": "Pågår",
-    "updateFailed": "Uppdatering misslyckades"
+    "updateFailed": "Uppdatering misslyckades",
+    "rollbackFailed": "Bokningens rensning misslyckades. Kontakta support om du ser en dubblettbokning."
   },
   "verification": {
     "title": "Verifieringar",
@@ -3341,7 +3347,8 @@
     "publishing": "Publicerar…",
     "reviewPublished": "Omdöme publicerat",
     "reviewPublishedDesc": "Tack för ditt omdöme!",
-    "stars": "stjärnor"
+    "stars": "stjärnor",
+    "starsAccessibility": "{count} stjärnor"
   },
   "payouts": {
     "title": "Inkomster",

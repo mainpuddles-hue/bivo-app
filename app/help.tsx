@@ -130,7 +130,7 @@ function HelpScreenInner() {
         ))}
 
         {/* Contact support */}
-        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>YHTEYDENOTTO</Text>
+        <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('help.contactSection')}</Text>
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>

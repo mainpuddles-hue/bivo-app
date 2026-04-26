@@ -647,7 +647,7 @@ function BookingDetailScreenInner() {
           {/* Star rating */}
           <View style={s.starsRow}>
             {[1, 2, 3, 4, 5].map(n => (
-              <PressableOpacity key={n} onPress={() => setReviewStars(n)} accessibilityLabel={`${n} star`} accessibilityRole="button">
+              <PressableOpacity key={n} onPress={() => setReviewStars(n)} accessibilityLabel={t('reviewBorrower.starsAccessibility', { count: n })} accessibilityRole="button">
                 <Star size={34} color={colors.foreground} fill={n <= reviewStars ? colors.foreground : 'none'} strokeWidth={1.6} />
               </PressableOpacity>
             ))}

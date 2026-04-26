@@ -418,15 +418,23 @@ function ConversationScreenInner() {
       toast.show({ message: getRateLimitMessage('message', t), type: 'error' })
       return
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.6,
-    })
+    let result: ImagePicker.ImagePickerResult
+    try {
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.6,
+      })
+    } catch (err) {
+      if (__DEV__) console.warn('[conversation] image picker failed:', err)
+      toast.show({ message: t('messages.imageSendFailed'), type: 'error' })
+      return
+    }
     if (result.canceled || !result.assets[0]) return
     setSending(true)
     try {
       const uri = result.assets[0].uri
       const response = await fetch(uri)
+      if (!response.ok) throw new Error(`Image fetch failed: ${response.status}`)
       const blob = await response.blob()
       const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
@@ -448,7 +456,7 @@ function ConversationScreenInner() {
         supabase.storage.from('message-images').remove([path]).catch((e: any) => { if (__DEV__) console.warn('[conversation] orphaned image cleanup failed:', e) })
         throw msgError
       }
-      await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
+      ;(supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch((e: any) => { if (__DEV__) console.warn('[conversation] timestamp update failed:', e?.message) })
     } catch (err) {
       toast.show({ message: t('messages.imageSendFailed'), type: 'error' })
       if (__DEV__) console.error('[conversation] image send failed:', err)

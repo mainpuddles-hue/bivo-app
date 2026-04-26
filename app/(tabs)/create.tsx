@@ -416,11 +416,16 @@ export default function CreateScreen() {
         return
       }
     }
-    const result = useCamera
-      ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.6 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.6, allowsMultipleSelection: false })
-    if (!result.canceled && result.assets[0] && mountedRef.current) {
-      setImages(prev => [...prev, result.assets[0].uri])
+    try {
+      const result = useCamera
+        ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.6 })
+        : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.6, allowsMultipleSelection: false })
+      if (!result.canceled && result.assets[0] && mountedRef.current) {
+        setImages(prev => [...prev, result.assets[0].uri])
+      }
+    } catch (err) {
+      if (__DEV__) console.warn('[create] image picker failed:', err)
+      toast.show({ message: t('create.cameraPermissionRequired'), type: 'error' })
     }
   }, [images.length, t, toast])
 
@@ -496,6 +501,7 @@ export default function CreateScreen() {
       xhr.setRequestHeader('apikey', supabaseAnonKey)
       if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
       xhr.setRequestHeader('x-upsert', 'true')
+      xhr.timeout = 60000 // 60s timeout
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable && mountedRef.current) {
@@ -519,6 +525,11 @@ export default function CreateScreen() {
 
       xhr.onerror = () => {
         if (__DEV__) console.error('[create] XHR upload error for image', imageIndex)
+        resolve(false)
+      }
+
+      xhr.ontimeout = () => {
+        if (__DEV__) console.error('[create] XHR upload timed out for image', imageIndex)
         resolve(false)
       }
 
@@ -780,7 +791,7 @@ export default function CreateScreen() {
         }
       }
       trackEvent('post_created', { type: selectedType, has_price: !!servicePrice })
-      const createdPostId = post.id
+      const createdPostId = post?.id
       AsyncStorage.removeItem(DRAFT_KEY).catch((e) => { if (__DEV__) console.warn('Post-submit draft cleanup failed:', e) })
       if (!mountedRef.current) return
       setHasDraft(false)

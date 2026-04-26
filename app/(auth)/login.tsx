@@ -91,7 +91,7 @@ function LoginScreenInner() {
       }
     }).catch((e) => {
       if (__DEV__) console.warn('Session storage failed:', e)
-      Alert.alert('Session Error', 'Failed to read login lockout state. You may need to log in again if the app restarts.')
+      Alert.alert(t('auth.sessionError'), t('auth.sessionErrorDetail'))
     })
   }, [])
 

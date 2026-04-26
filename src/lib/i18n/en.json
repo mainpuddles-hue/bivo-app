@@ -283,7 +283,8 @@
       "fast": "Usually responds within an hour",
       "moderate": "Usually responds within a day",
       "slow": "Response time varies"
-    }
+    },
+    "distanceFromYou": "~{distance} from you"
   },
   "offer": {
     "title": "Make an Offer",
@@ -1094,7 +1095,9 @@
     "sessionExpired": "Your session has expired. Please log in again.",
     "hidePassword": "Hide password",
     "showPassword": "Show password",
-    "invalidEmail": "Invalid email address"
+    "invalidEmail": "Invalid email address",
+    "sessionError": "Session Error",
+    "sessionErrorDetail": "Failed to read login state. You may need to log in again."
   },
   "onboarding": {
     "welcome": "Welcome to TackBird!",
@@ -1195,7 +1198,8 @@
     "pushPromptDesc": "Want to hear when something new happens in your neighborhood?",
     "enableNotifications": "Enable notifications",
     "maybeLater": "Maybe later",
-    "addressRequired": "Please select your address to continue"
+    "addressRequired": "Please select your address to continue",
+    "unknownAddress": "Unknown address"
   },
   "resetPassword": {
     "title": "Change password",
@@ -2736,7 +2740,8 @@
     "safetyQ3": "How do I keep my data safe?",
     "safetyA3": "Use a strong password, don't share your login credentials, and be careful sharing personal information in messages.",
     "contactTitle": "Need more help?",
-    "contactDesc": "Contact our support team and we'll be happy to help."
+    "contactDesc": "Contact our support team and we'll be happy to help.",
+    "contactSection": "CONTACT"
   },
   "forum": {
     "title": "Discussions",
@@ -2967,7 +2972,8 @@
     "cancelBooking": "Cancel booking",
     "cancelConfirm": "Are you sure you want to cancel this service booking?",
     "statusInProgress": "In progress",
-    "updateFailed": "Update failed"
+    "updateFailed": "Update failed",
+    "rollbackFailed": "Booking cleanup failed. Please contact support if you see a duplicate booking."
   },
   "verification": {
     "title": "Verifications",
@@ -3341,7 +3347,8 @@
     "publishing": "Publishing…",
     "reviewPublished": "Review published",
     "reviewPublishedDesc": "Thanks for your review!",
-    "stars": "stars"
+    "stars": "stars",
+    "starsAccessibility": "{count} stars"
   },
   "payouts": {
     "title": "Earnings",

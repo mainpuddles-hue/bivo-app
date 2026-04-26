@@ -283,7 +283,8 @@
       "fast": "Vastaa yleensä tunnissa",
       "moderate": "Vastaa yleensä päivässä",
       "slow": "Vastausaika vaihtelee"
-    }
+    },
+    "distanceFromYou": "~{distance} sinusta"
   },
   "offer": {
     "title": "Tee tarjous",
@@ -1094,7 +1095,9 @@
     "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
     "hidePassword": "Piilota salasana",
     "showPassword": "Näytä salasana",
-    "invalidEmail": "Virheellinen sähköpostiosoite"
+    "invalidEmail": "Virheellinen sähköpostiosoite",
+    "sessionError": "Istuntovirhe",
+    "sessionErrorDetail": "Sisäänkirjautumistilan lukeminen epäonnistui. Saatat joutua kirjautumaan uudelleen."
   },
   "onboarding": {
     "welcome": "Tervetuloa TackBirdiin!",
@@ -1195,7 +1198,8 @@
     "pushPromptDesc": "Haluatko kuulla kun naapurustossasi tapahtuu jotain uutta?",
     "enableNotifications": "Ota ilmoitukset käyttöön",
     "maybeLater": "Ehkä myöhemmin",
-    "addressRequired": "Valitse osoitteesi jatkaaksesi"
+    "addressRequired": "Valitse osoitteesi jatkaaksesi",
+    "unknownAddress": "Tuntematon osoite"
   },
   "resetPassword": {
     "title": "Vaihda salasana",
@@ -2736,7 +2740,8 @@
     "safetyQ3": "Miten pidän tietoni turvassa?",
     "safetyA3": "Käytä vahvaa salasanaa, älä jaa kirjautumistietojasi ja ole varovainen henkilökohtaisten tietojen jakamisessa viesteissä.",
     "contactTitle": "Tarvitsetko lisäapua?",
-    "contactDesc": "Ota yhteyttä tukitiimiimme, niin autamme sinua mielellämme."
+    "contactDesc": "Ota yhteyttä tukitiimiimme, niin autamme sinua mielellämme.",
+    "contactSection": "YHTEYDENOTTO"
   },
   "forum": {
     "title": "Keskustelut",
@@ -2967,7 +2972,8 @@
     "cancelBooking": "Peru varaus",
     "cancelConfirm": "Haluatko varmasti perua tämän palveluvarauksen?",
     "statusInProgress": "Käynnissä",
-    "updateFailed": "Päivitys epäonnistui"
+    "updateFailed": "Päivitys epäonnistui",
+    "rollbackFailed": "Varauksen siivous epäonnistui. Ota yhteyttä tukeen jos näet tuplauksen."
   },
   "verification": {
     "title": "Vahvistukset",
@@ -3341,7 +3347,8 @@
     "publishing": "Julkaistaan…",
     "reviewPublished": "Arvio julkaistu",
     "reviewPublishedDesc": "Kiitos arviostasi!",
-    "stars": "tähteä"
+    "stars": "tähteä",
+    "starsAccessibility": "{count} tähteä"
   },
   "payouts": {
     "title": "Tulot",

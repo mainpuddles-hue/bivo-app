@@ -1326,7 +1326,7 @@ function PostDetailScreenInner() {
               <View style={styles.locText}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.locName, { color: colors.foreground }]}>{post.location}</Text>
-                  <Text style={[styles.locDistance, { color: colors.mutedForeground }]}>~1 km sinusta</Text>
+                  <Text style={[styles.locDistance, { color: colors.mutedForeground }]}>{t('post.distanceFromYou', { distance: '1 km' })}</Text>
                 </View>
                 <ChevronRight size={18} color={colors.mutedForeground} />
               </View>
