@@ -1342,7 +1342,7 @@ export default function CreateScreen() {
             </ScrollView>
 
             {/* Sticky publish */}
-            <View style={[mk.stickyWrap, { bottom: Math.max(insets.bottom, 22) }]}>
+            <View style={[mk.stickyWrap, { bottom: Math.max(insets.bottom, 22) + 68 }]}>
               {formError && (
                 <Text style={[mk.formError, { color: colors.destructive, backgroundColor: `${colors.destructive}10` }]} accessibilityRole="alert">{formError}</Text>
               )}
@@ -1538,7 +1538,7 @@ const mk = StyleSheet.create({
 
   // v3 Form fields
   fieldWrap: { gap: 4, paddingHorizontal: 20, paddingTop: 14 },
-  input: { minHeight: 70, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, fontSize: 28, fontWeight: '500', fontFamily: fonts.displayMedium, letterSpacing: -0.7 },
+  input: { minHeight: 52, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, fontSize: 16, fontWeight: '500', fontFamily: fonts.bodyMedium, letterSpacing: -0.2 },
   textarea: { minHeight: 110, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 22, fontFamily: fonts.body, textAlignVertical: 'top' },
   charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
 
