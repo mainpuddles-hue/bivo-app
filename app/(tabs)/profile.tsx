@@ -198,7 +198,12 @@ const [editingBio, setEditingBio] = useState(false)
   const handleAvatarUpload = useCallback(async () => {
     if (!profile) return
     if (avatarUploadingRef.current) return
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 })
+    let result: ImagePicker.ImagePickerResult
+    try {
+      result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 })
+    } catch {
+      toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return
+    }
     if (result.canceled || !result.assets[0]) return
     avatarUploadingRef.current = true
     try {
@@ -212,12 +217,31 @@ const [editingBio, setEditingBio] = useState(false)
       const mimeSubtype = mimeType.split('/')[1]
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `avatars/${profile.id}.${ext}`
-      const arrayBuffer = await blob.arrayBuffer()
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, arrayBuffer, { contentType: mimeType, upsert: true })
-      if (uploadError) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
+
+      // Use XHR for reliable React Native uploads (blob.arrayBuffer() is unreliable)
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData?.session?.access_token
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+      const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/avatars/${path}`
+
+      const uploadOk = await new Promise<boolean>((resolve) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', uploadUrl, true)
+        xhr.setRequestHeader('Content-Type', mimeType!)
+        xhr.setRequestHeader('apikey', supabaseAnonKey)
+        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        xhr.setRequestHeader('x-upsert', 'true')
+        xhr.timeout = 30000
+        xhr.onload = () => resolve(xhr.status >= 200 && xhr.status < 300)
+        xhr.onerror = () => resolve(false)
+        xhr.ontimeout = () => resolve(false)
+        xhr.send(blob)
+      })
+      if (!uploadOk) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
+
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
       if (!urlData?.publicUrl) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
-      // Append cache-busting param so the new avatar is fetched (same URL path after upsert)
       const avatarUrlWithCacheBust = `${urlData.publicUrl}?t=${Date.now()}`
       const { error: updateError } = await (supabase.from('profiles') as any).update({ avatar_url: avatarUrlWithCacheBust }).eq('id', profile.id)
       if (updateError) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
@@ -353,10 +377,21 @@ const [editingBio, setEditingBio] = useState(false)
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error } = await (supabase.from('posts') as any).delete().eq('id', postId)
+            // Soft-delete first (is_active=false), then cascade hard-delete related rows
+            const { error } = await (supabase.from('posts') as any).update({ is_active: false }).eq('id', postId)
             if (error) { toast.show({ message: t('profile.postActionFailed'), type: 'error' }); return }
             setAllPosts(prev => prev.filter(p => p.id !== postId))
             toast.show({ message: t('profile.postDeleted'), type: 'success' })
+            // Hard-delete related rows in background, then the post itself
+            try {
+              await Promise.allSettled([
+                (supabase.from('post_comments') as any).delete().eq('post_id', postId),
+                (supabase.from('post_likes') as any).delete().eq('post_id', postId),
+                (supabase.from('post_images') as any).delete().eq('post_id', postId),
+                (supabase.from('saved_posts') as any).delete().eq('post_id', postId),
+              ])
+              await (supabase.from('posts') as any).delete().eq('id', postId)
+            } catch {}
           },
         },
       ]
@@ -491,21 +526,13 @@ const [editingBio, setEditingBio] = useState(false)
             </Text>
           </View>
 
-          {/* Pro / Business badges */}
-          {(profile.is_pro || profile.is_business) && (
+          {/* Pro badge (business badge hidden — BUSINESS_ACCOUNT flag is off) */}
+          {profile.is_pro && (
             <View style={s.heroBadgesRow}>
-              {profile.is_pro && (
-                <View style={[s.inlineBadge, { backgroundColor: `${colors.foreground}20` }]}>
-                  <Crown size={10} color={colors.foreground} fill={colors.foreground} />
-                  <Text style={[s.inlineBadgeText, { color: colors.foreground }]}>Pro</Text>
-                </View>
-              )}
-              {profile.is_business && (
-                <View style={[s.inlineBadge, { backgroundColor: `${colors.foreground}15` }]}>
-                  <Building2 size={10} color={colors.foreground} />
-                  <Text style={[s.inlineBadgeText, { color: colors.foreground }]} numberOfLines={1}>{profile.business_name ?? t('business.verified')}</Text>
-                </View>
-              )}
+              <View style={[s.inlineBadge, { backgroundColor: `${colors.foreground}20` }]}>
+                <Crown size={10} color={colors.foreground} fill={colors.foreground} />
+                <Text style={[s.inlineBadgeText, { color: colors.foreground }]}>Pro</Text>
+              </View>
             </View>
           )}
         </View>
@@ -577,10 +604,10 @@ const [editingBio, setEditingBio] = useState(false)
             </Text>
           </PressableOpacity>
           <View style={[s.statDivider, { backgroundColor: colors.border }]} />
-          <View style={s.statCol}>
-            <Text style={[s.statNum, { color: colors.foreground }]}>~12m</Text>
-            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.responseRate')}</Text>
-          </View>
+          <PressableOpacity onPress={() => openFollowList('followers')} style={s.statCol}>
+            <Text style={[s.statNum, { color: colors.foreground }]}>{followerCount}</Text>
+            <Text style={[s.statLabel, { color: colors.mutedForeground }]}>{t('profile.followers')}</Text>
+          </PressableOpacity>
         </View>
 
         {/* Segmented tabs v3 — pill-style segmented control */}

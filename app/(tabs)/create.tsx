@@ -902,7 +902,6 @@ export default function CreateScreen() {
                 .map(([type, c]) => {
                   const Icon = CATEGORY_ICON_MAP[c.icon]
                   const locked = type === 'lainaa' && !trust.permissions.canLainaa
-                  const full = type === 'tapahtuma'
                   return (
                     <Pressable
                       key={type}
@@ -911,7 +910,7 @@ export default function CreateScreen() {
                       accessibilityLabel={`${t(c.label)}${locked ? `, ${t('trust.requiresTier2Short')}` : ''}`}
                       accessibilityState={{ disabled: locked }}
                       style={({ pressed }) => [
-                        mk.catCard, full && mk.catCardFull,
+                        mk.catCard,
                         { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
                         pressed && { backgroundColor: colors.muted }, locked && { opacity: 0.5 },
                       ]}

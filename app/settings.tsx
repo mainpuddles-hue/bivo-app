@@ -829,8 +829,8 @@ export default function SettingsScreen() {
           <Row
             icon={<Bell size={16} color={colors.foreground} strokeWidth={1.8} />}
             label={t('settings.notifSection') ?? 'Notifications'}
-            switchValue={push.isSupported ? push.isSubscribed : true}
-            onSwitchChange={push.isSupported ? (val) => val ? push.subscribe() : push.unsubscribe() : undefined}
+            switchValue={push.isSubscribed}
+            onSwitchChange={(val) => val ? push.subscribe() : push.unsubscribe()}
             disabled={push.isLoading}
             colors={colors}
             isDark={isDark}

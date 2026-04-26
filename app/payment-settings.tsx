@@ -33,6 +33,9 @@ function PaymentSettingsScreenInner() {
     }
   }, [router])
 
+  // Early return — never render content when payments are off
+  if (!FEATURES.PAYMENTS) return null
+
   // Auth gate — redirect to login if not authenticated
   useEffect(() => {
     async function checkAuth() {

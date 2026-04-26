@@ -447,9 +447,27 @@ function ConversationScreenInner() {
       const mimeSubtype = mimeType.split('/')[1]
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `messages/${id}/${Date.now()}.${ext}`
-      const arrayBuffer = await blob.arrayBuffer()
-      const { error: uploadError } = await supabase.storage.from('message-images').upload(path, arrayBuffer, { contentType: mimeType })
-      if (uploadError) throw uploadError
+
+      // Use XHR for reliable React Native uploads (blob.arrayBuffer() is unreliable)
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData?.session?.access_token
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+      const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/message-images/${path}`
+
+      const uploadOk = await new Promise<boolean>((resolve) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', uploadUrl, true)
+        xhr.setRequestHeader('Content-Type', mimeType!)
+        xhr.setRequestHeader('apikey', supabaseAnonKey)
+        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        xhr.timeout = 60000
+        xhr.onload = () => resolve(xhr.status >= 200 && xhr.status < 300)
+        xhr.onerror = () => resolve(false)
+        xhr.ontimeout = () => resolve(false)
+        xhr.send(blob)
+      })
+      if (!uploadOk) throw new Error('Image upload failed')
       const { data: urlData } = supabase.storage.from('message-images').getPublicUrl(path)
       const { error: msgError } = await (supabase.from('messages') as any).insert({
         conversation_id: id, sender_id: userId,
