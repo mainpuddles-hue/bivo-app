@@ -381,6 +381,7 @@ function BuildingChatScreenInner() {
           value={input}
           onChangeText={setInput}
           multiline
+              textAlignVertical="top"
           maxLength={2000}
           inputAccessoryViewID={KEYBOARD_DONE_ID}
         />

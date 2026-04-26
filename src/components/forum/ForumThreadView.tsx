@@ -247,6 +247,7 @@ function ForumThreadViewInner({
           value={replyText}
           onChangeText={onReplyTextChange}
           multiline
+              textAlignVertical="top"
           maxLength={2000}
           inputAccessoryViewID={KEYBOARD_DONE_ID}
         />

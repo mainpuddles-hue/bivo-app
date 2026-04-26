@@ -80,6 +80,7 @@ function GroupCommentListInner({
           value={commentText}
           onChangeText={onCommentTextChange}
           multiline
+              textAlignVertical="top"
           inputAccessoryViewID={KEYBOARD_DONE_ID}
         />
         <Pressable

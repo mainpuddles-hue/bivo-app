@@ -621,7 +621,6 @@ function MaintenanceDetailInner() {
                   value={resolutionNote}
                   onChangeText={setResolutionNote}
                   multiline
-                  textAlignVertical="top"
                 />
                 <View style={styles.resolutionActions}>
                   <PressableOpacity
