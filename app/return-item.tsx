@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback } from 'react'
 import {
-  View, Text, ScrollView, StyleSheet, TextInput,
+  View, Text, ScrollView, StyleSheet, TextInput, KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -147,9 +147,11 @@ function ReturnItemScreenInner() {
         <View style={s.headerSpacer} />
       </View>
 
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 100 }]}
+        keyboardDismissMode="interactive"
       >
         {/* Item strip */}
         <View style={[s.itemStrip, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -250,6 +252,7 @@ function ReturnItemScreenInner() {
           style={[s.noteInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
         />
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* CTA */}
       <View style={[s.ctaWrap, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background, borderTopColor: colors.border }]}>

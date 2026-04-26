@@ -162,7 +162,10 @@
     "weeklyPopularSub": "Tapahtumat lähialueellasi",
     "freeEvent": "Ilmainen",
     "participants": "osallistujaa",
-    "inviteNeighbors": "Kutsu naapurisi!"
+    "inviteNeighbors": "Kutsu naapurisi!",
+    "emptyTitle": "Ei ilmoituksia vielä",
+    "emptyDescription": "Ole ensimmäinen joka julkaisee naapurustossasi!",
+    "createFirst": "Luo ilmoitus"
   },
   "streak": {
     "milestone3": "3 päivää putkeen! Olet aktiivinen naapuri.",
@@ -1148,7 +1151,7 @@
     "locationCheckFailed": "Sijainnin tarkistus ei onnistunut",
     "howItWorks": "Näin se toimii",
     "askHelp": "Pyydä apua talosi ja naapuruston asukkailta",
-    "offerServices": "Tarjoa palveluksia ja tavaroita naapureille",
+    "offerServices": "Tarjota palveluita",
     "borrowSafely": "Lainaa ja vuokraa turvallisesti",
     "shareFree": "Jaa ilmaisia tavaroita ja järjestä tapahtumia",
     "trustSafety": "Luottamus ja turvallisuus",
@@ -1180,7 +1183,6 @@
     "lendBorrow": "Lainata tavaroita",
     "giveAway": "Antaa pois",
     "findEvents": "Löytää tapahtumia",
-    "offerServices": "Tarjota palveluita",
     "explore": "Tutustu naapurustoon →",
     "letsGo": "Aloitetaan!",
     "step1Title": "Selaa naapurustoasi",

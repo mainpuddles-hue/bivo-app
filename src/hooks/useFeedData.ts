@@ -474,6 +474,10 @@ export function useFeedData() {
 
   // ── Realtime with 5s debounce — INSERT only, filtered to active posts ──
   useEffect(() => {
+    // Remove any stale channel with same name before creating a new one
+    const existing = supabase.getChannels().find(ch => ch.topic === 'realtime:feed-new-posts')
+    if (existing) supabase.removeChannel(existing)
+
     const channel = supabase
       .channel('feed-new-posts')
       .on('postgres_changes', {

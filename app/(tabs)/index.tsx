@@ -22,6 +22,7 @@ import { AlertBanner } from '@/components/AlertBanner'
 import { PostCardSkeleton, FeedLoadMoreSkeleton, FadeIn } from '@/components/SkeletonLoaders'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { EmptyState } from '@/components/EmptyState'
 import { OnboardingOverlay } from '@/components/OnboardingOverlay'
 import { WeeklyPopularCarousel } from '@/components/WeeklyPopularCarousel'
 import { FeedMapView } from '@/components/FeedMapView'
@@ -879,6 +880,16 @@ function FeedScreenInner() {
 
           </View>
         }
+        ListEmptyComponent={!feed.loading ? (
+          <EmptyState
+            icon={<Search size={24} color={colors.mutedForeground} />}
+            title={t('feed.emptyTitle')}
+            description={t('feed.emptyDescription')}
+            actionLabel={t('feed.createFirst')}
+            actionVariant="filled"
+            onAction={() => router.push('/(tabs)/create')}
+          />
+        ) : null}
         ListFooterComponent={
           <>
             {feed.loading && feed.posts.length > 0 && <FeedLoadMoreSkeleton />}

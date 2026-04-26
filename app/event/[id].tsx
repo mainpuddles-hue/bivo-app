@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback, useRef } from 'react'
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator,
+  View, Text, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, RefreshControl,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
@@ -435,6 +435,7 @@ function EventDetailScreenInner() {
         style={s.scroll}
         contentContainerStyle={[s.scrollContent, (!isCreator && actionLabel !== '') && { paddingBottom: 100 + insets.bottom }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchEvent} />}
       >
         {/* Full-bleed hero image */}
         {event.image_url && !eventImgError ? (

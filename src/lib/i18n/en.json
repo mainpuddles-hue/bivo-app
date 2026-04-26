@@ -162,7 +162,10 @@
     "weeklyPopularSub": "Events in your area",
     "freeEvent": "Free",
     "participants": "participants",
-    "inviteNeighbors": "Invite your neighbors!"
+    "inviteNeighbors": "Invite your neighbors!",
+    "emptyTitle": "No posts yet",
+    "emptyDescription": "Be the first to post in your neighborhood!",
+    "createFirst": "Create a post"
   },
   "streak": {
     "milestone3": "3 days in a row! You're an active neighbor.",
@@ -1148,7 +1151,7 @@
     "locationCheckFailed": "Location check failed",
     "howItWorks": "How it works",
     "askHelp": "Ask your building and neighborhood for help",
-    "offerServices": "Offer services and items to neighbors",
+    "offerServices": "Offer services",
     "borrowSafely": "Borrow and rent safely",
     "shareFree": "Share free items and organize events",
     "trustSafety": "Trust & Safety",
@@ -1180,7 +1183,6 @@
     "lendBorrow": "Lend & borrow items",
     "giveAway": "Give things away",
     "findEvents": "Find events",
-    "offerServices": "Offer services",
     "explore": "Explore your neighborhood →",
     "letsGo": "Let's go!",
     "step1Title": "Browse your neighborhood",

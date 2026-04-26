@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useCallback } from 'react'
 import {
-  View, Text, ScrollView, StyleSheet, TextInput,
+  View, Text, ScrollView, StyleSheet, TextInput, KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -113,9 +113,11 @@ function ReviewBorrowerScreenInner() {
         <View style={s.headerSpacer} />
       </View>
 
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 100 }]}
+        keyboardDismissMode="interactive"
       >
         {/* Avatar + question */}
         <View style={s.heroSection}>
@@ -215,6 +217,7 @@ function ReviewBorrowerScreenInner() {
           {t('reviewBorrower.footerNote', { name: params.userName || t('rental.borrower') })}
         </Text>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* CTA */}
       <View style={[s.ctaWrap, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background, borderTopColor: colors.border }]}>

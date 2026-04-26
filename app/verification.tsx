@@ -1,7 +1,7 @@
 declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback } from 'react'
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native'
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Shield, Check, Plus, ChevronLeft } from 'lucide-react-native'
@@ -127,6 +127,7 @@ function VerificationScreenInner() {
         <ScrollView
           contentContainerStyle={[s.scrollContent, { paddingBottom: insets.bottom + 32 }]}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchProfile} />}
         >
           {/* ── Hero section ── */}
           <View style={s.heroSection}>

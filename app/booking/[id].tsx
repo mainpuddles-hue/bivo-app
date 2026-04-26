@@ -2,7 +2,7 @@ declare const __DEV__: boolean
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
-  View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert, TextInput,
+  View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert, TextInput, KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -624,7 +624,8 @@ function BookingDetailScreenInner() {
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.reviewTitle')} />
 
-        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false} keyboardDismissMode="interactive">
           {/* Lifecycle stepper */}
           <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
 
@@ -701,6 +702,7 @@ function BookingDetailScreenInner() {
             />
           </View>
         </ScrollView>
+        </KeyboardAvoidingView>
 
         {/* Sticky CTA */}
         <StickyCTA

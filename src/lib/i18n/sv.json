@@ -162,7 +162,10 @@
     "weeklyPopularSub": "Evenemang i ditt område",
     "freeEvent": "Gratis",
     "participants": "deltagare",
-    "inviteNeighbors": "Bjud in dina grannar!"
+    "inviteNeighbors": "Bjud in dina grannar!",
+    "emptyTitle": "Inga inlägg ännu",
+    "emptyDescription": "Bli först med att publicera i ditt grannskap!",
+    "createFirst": "Skapa ett inlägg"
   },
   "streak": {
     "milestone3": "3 dagar i rad! Du är en aktiv granne.",
@@ -1148,7 +1151,7 @@
     "locationCheckFailed": "Platskontroll misslyckades",
     "howItWorks": "Så fungerar det",
     "askHelp": "Be din byggnads och grannskaps invånare om hjälp",
-    "offerServices": "Erbjud tjänster och saker till grannar",
+    "offerServices": "Erbjuda tjänster",
     "borrowSafely": "Låna och hyr tryggt",
     "shareFree": "Dela gratis saker och ordna evenemang",
     "trustSafety": "Tillit och säkerhet",
@@ -1180,7 +1183,6 @@
     "lendBorrow": "Låna ut och låna saker",
     "giveAway": "Ge bort saker",
     "findEvents": "Hitta evenemang",
-    "offerServices": "Erbjuda tjänster",
     "explore": "Utforska ditt grannskap →",
     "letsGo": "Vi kör!",
     "step1Title": "Bläddra i ditt grannskap",
