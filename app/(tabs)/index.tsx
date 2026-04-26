@@ -349,10 +349,15 @@ function FeedScreenInner() {
     }
   }, [params.openNeighborhoodPicker, feed.setShowNeighborhoodPicker])
 
+  // FlatList ref for scroll-to-top on filter change
+  const flatListRef = useRef<FlatList>(null)
+
   // Wrap filter change with haptic feedback
   const handleFilterChangeWithHaptics = useCallback((type: PostType | null) => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     feed.handleFilterChange(type)
+    // Scroll to top so the user sees the new content immediately
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false })
   }, [feed.handleFilterChange])
 
   // Wrap sort change with haptic feedback
@@ -628,6 +633,7 @@ function FeedScreenInner() {
         </>
       ) : (
       <FlatList
+        ref={flatListRef}
         data={feedItems}
         renderItem={renderFeedItem}
         keyExtractor={item => item.key}
