@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
   },
   imgContent: {
     padding: 14,
-    gap: 8,
+    gap: 4,
   },
   imgTitle: {
     fontSize: 16,
@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
   // ── TINT variant (text-only) ──
   tintCard: {
     padding: 14,
-    gap: 10,
+    gap: 4,
     minHeight: 220,
   },
   tintTopRow: {
@@ -587,6 +587,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
+    marginBottom: 4,
   },
   tintCatLabel: {
     fontSize: 10,
@@ -634,6 +635,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginTop: 'auto',
+    paddingTop: 6,
   },
   miniAvatar: {
     width: 16,
