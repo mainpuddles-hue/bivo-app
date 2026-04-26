@@ -5,9 +5,11 @@ import { View, Text, ScrollView, ActivityIndicator, StyleSheet, RefreshControl }
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Shield, Check, Plus, ChevronLeft } from 'lucide-react-native'
+import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
+import { useToast } from '@/components/Toast'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -48,6 +50,56 @@ function VerificationScreenInner() {
   const [loading, setLoading] = useState(true)
   const [phoneModalVisible, setPhoneModalVisible] = useState(false)
   const [addressModalVisible, setAddressModalVisible] = useState(false)
+  const toast = useToast()
+
+  const handleAvatarUpload = useCallback(async () => {
+    if (!profile) return
+    let result: ImagePicker.ImagePickerResult
+    try {
+      result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 })
+    } catch {
+      toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return
+    }
+    if (result.canceled || !result.assets[0]) return
+    try {
+      const uri = result.assets[0].uri
+      const response = await fetch(uri)
+      const blob = await response.blob()
+      const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp']
+      const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
+      if (!mimeType) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
+      const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : mimeType.split('/')[1]
+      const path = `${profile.id}/avatar.${ext}`
+
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData?.session?.access_token
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+      const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
+
+      const uploadOk = await new Promise<boolean>((resolve) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', `${supabaseUrl}/storage/v1/object/avatars/${path}`, true)
+        xhr.setRequestHeader('Content-Type', mimeType!)
+        xhr.setRequestHeader('apikey', supabaseAnonKey)
+        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        xhr.setRequestHeader('x-upsert', 'true')
+        xhr.timeout = 30000
+        xhr.onload = () => resolve(xhr.status >= 200 && xhr.status < 300)
+        xhr.onerror = () => resolve(false)
+        xhr.ontimeout = () => resolve(false)
+        xhr.send(blob)
+      })
+      if (!uploadOk) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
+
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
+      if (!urlData?.publicUrl) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
+      const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`
+      const { error } = await (supabase.from('profiles') as any).update({ avatar_url: avatarUrl }).eq('id', profile.id)
+      if (error) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
+      setProfile(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
+      toast.show({ message: t('profile.avatarUpdated'), type: 'success' })
+    } catch { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }) }
+  }, [profile, supabase, t, toast])
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -202,7 +254,7 @@ function VerificationScreenInner() {
                   </PressableOpacity>
                 ) : step.key === 'photo' ? (
                   <PressableOpacity
-                    onPress={() => router.push('/(tabs)/profile')}
+                    onPress={handleAvatarUpload}
                     style={[s.stepActionPill, { backgroundColor: colors.foreground }]}
                     accessibilityLabel={`${t('verification.doNow')} ${step.title}`}
                     accessibilityRole="button"

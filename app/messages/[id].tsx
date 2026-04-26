@@ -446,7 +446,8 @@ function ConversationScreenInner() {
       if (blob.size > MAX_MSG_FILE_SIZE) { toast.show({ message: t('messages.imageSendFailed'), type: 'error' }); setSending(false); return }
       const mimeSubtype = mimeType.split('/')[1]
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
-      const path = `messages/${id}/${Date.now()}.${ext}`
+      // Path: userId/timestamp.ext — first folder must be user ID for RLS policy
+      const path = `${userId}/${Date.now()}.${ext}`
 
       // Use XHR for reliable React Native uploads (blob.arrayBuffer() is unreliable)
       const { data: sessionData } = await supabase.auth.getSession()

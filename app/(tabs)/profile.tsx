@@ -216,7 +216,8 @@ const [editingBio, setEditingBio] = useState(false)
       if (blob.size > MAX_AVATAR_SIZE) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
       const mimeSubtype = mimeType.split('/')[1]
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
-      const path = `avatars/${profile.id}.${ext}`
+      // Path: userId/filename — first folder must be user ID for RLS policy
+      const path = `${profile.id}/avatar.${ext}`
 
       // Use XHR for reliable React Native uploads (blob.arrayBuffer() is unreliable)
       const { data: sessionData } = await supabase.auth.getSession()

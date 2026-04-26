@@ -92,6 +92,7 @@
     "yourNeighborhood": "Your neighborhood",
     "neighborsNow": "neighbors right now",
     "yourBuilding": "Your building",
+    "buildingNotReady": "Building community not yet established",
     "neighbors": "neighbors",
     "nearby": "nearby",
     "loadError": "Failed to load feed",

@@ -92,6 +92,7 @@
     "yourNeighborhood": "Ditt grannskap",
     "neighborsNow": "grannar just nu",
     "yourBuilding": "Ditt hus",
+    "buildingNotReady": "Husgemenskapen har inte etablerats ännu",
     "neighbors": "grannar",
     "nearby": "i närheten",
     "loadError": "Kunde inte ladda flödet",

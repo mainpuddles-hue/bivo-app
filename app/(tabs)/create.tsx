@@ -1046,7 +1046,7 @@ export default function CreateScreen() {
                     )}
                   </ScrollView>
                 )}
-                <Text style={[mk.charCount, { color: colors.mutedForeground }]}>{t('create.imageUploadLimit') ?? 'Max 5 kuvaa, enintään 10 MB/kuva'}</Text>
+                <Text style={[mk.charCount, { color: colors.mutedForeground }]}>{t('post.imageUploadLimit')}</Text>
               </View>
 
               {/* Tarjoan sub-type */}

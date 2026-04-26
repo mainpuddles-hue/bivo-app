@@ -92,6 +92,7 @@
     "yourNeighborhood": "Naapurustosi",
     "neighborsNow": "naapuria juuri nyt",
     "yourBuilding": "Taloyhtiösi",
+    "buildingNotReady": "Taloyhtiön yhteisöä ei ole vielä perustettu",
     "neighbors": "naapuria",
     "nearby": "lähellä",
     "loadError": "Ilmoitusten lataaminen ei onnistunut. Yritä uudelleen.",

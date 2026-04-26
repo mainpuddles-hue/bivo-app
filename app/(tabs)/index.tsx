@@ -772,6 +772,8 @@ function FeedScreenInner() {
                   try { Haptics.selectionAsync() } catch {}
                   if (userBuilding.org_id) {
                     router.push(`/building/${userBuilding.org_id}`)
+                  } else {
+                    toast.show({ message: t('feed.buildingNotReady'), type: 'info' })
                   }
                 }}
                 style={[styles.bldCard, { backgroundColor: colors.foreground }]}
