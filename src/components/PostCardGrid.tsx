@@ -290,6 +290,11 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             <Text style={[styles.imgTitle, { color: colors.foreground }]} numberOfLines={2}>
               {post.title}
             </Text>
+            {!!post.description && (
+              <Text style={[styles.descSnippet, { color: colors.mutedForeground }]} numberOfLines={2}>
+                {post.description}
+              </Text>
+            )}
             {post.is_seed && (
               <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
             )}
@@ -379,9 +384,14 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           )}
         </View>
         {/* Title */}
-        <Text style={[styles.tintTitle, { color: colors.foreground }]} numberOfLines={4}>
+        <Text style={[styles.tintTitle, { color: colors.foreground }]} numberOfLines={3}>
           {post.title}
         </Text>
+        {!!post.description && (
+          <Text style={[styles.descSnippet, { color: colors.mutedForeground }]} numberOfLines={2}>
+            {post.description}
+          </Text>
+        )}
         {post.is_seed && (
           <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
         )}
@@ -514,11 +524,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   imgTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '500',
     fontFamily: fonts.displayMedium,
     letterSpacing: -0.3,
-    lineHeight: 18,
+    lineHeight: 20,
   },
 
   // ── INK variant (events) ──
@@ -600,15 +610,20 @@ const styles = StyleSheet.create({
     lineHeight: 12,
   },
   tintTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '500',
     fontFamily: fonts.displayMedium,
     letterSpacing: -0.4,
-    lineHeight: 20,
+    lineHeight: 22,
     flex: 1,
   },
 
   // ── Shared ──
+  descSnippet: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+    lineHeight: 18,
+  },
   seedLabel: {
     fontSize: 11,
     fontFamily: fonts.body,
