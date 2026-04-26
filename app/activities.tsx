@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useMemo, useRef, memo } from 'react'
 import {
   View, Text, FlatList, RefreshControl, ScrollView, StyleSheet,
@@ -528,7 +526,7 @@ function ActivitiesScreenInner() {
         <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[st.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
-        <Text style={[st.headerTitle, { color: colors.foreground }]}>
+        <Text style={[st.headerTitle, { color: colors.foreground }]} accessibilityRole="header">
           {t('activities.title')}
         </Text>
         <PressableOpacity
@@ -614,6 +612,9 @@ function ActivitiesScreenInner() {
           }
           ItemSeparatorComponent={ActivityItemSeparator}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
           ListEmptyComponent={
             <EmptyState
               icon={<RefreshCw size={48} color={colors.mutedForeground} />}

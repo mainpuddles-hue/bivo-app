@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useCallback } from 'react'
 import { useSupabase } from './useSupabase'
 
@@ -102,11 +100,12 @@ export function useCooperativeInvite() {
         throw joinError
       }
 
-      // 4. Increment uses_count atomically
+      // 4. Increment uses_count
+      // TODO: Replace with server-side increment RPC to prevent race condition
+      // This client-side increment can lose updates under concurrent access
       await (supabase.from('cooperative_invite_codes') as any)
-        .update({ uses_count: row.uses_count + 1 })
+        .update({ uses_count: (row.uses_count ?? 0) + 1 })
         .eq('id', row.id)
-        .eq('uses_count', row.uses_count) // optimistic lock
 
       // 5. Update org member_count
       const { count } = await supabase

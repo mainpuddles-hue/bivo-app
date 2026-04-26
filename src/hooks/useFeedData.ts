@@ -85,6 +85,7 @@ export function useFeedData() {
   // ── Refs ──
   const userNeighborhoodRef = useRef(userNeighborhood)
   userNeighborhoodRef.current = userNeighborhood
+  const blockedIdsRef = useRef<string[]>([])
   const offsetRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -293,67 +294,70 @@ export function useFeedData() {
       let newPosts = (data ?? []) as unknown as Post[]
       const dbRowCount = newPosts.length // Track DB count before client-side filtering
 
-      // Filter out posts from blocked users
-      if (currentUserId) {
-        try {
-          const { data: blockedData, error: blockedError } = await supabase
-            .from('blocked_users')
-            .select('blocked_id')
-            .eq('blocker_id', currentUserId)
-          if (blockedError) {
-            if (__DEV__) console.warn('[feed] blocked users fetch failed:', blockedError.message)
-          }
-          const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
-          if (blockedIds.size > 0) {
-            newPosts = newPosts.filter(p => !blockedIds.has(p.user_id))
-          }
-        } catch {
-          // blocked_users table may not exist yet — continue without filtering
-        }
-      }
+      // ── Parallel fetch: blocked users, liked/saved, boosts ──
+      // On full refresh (reset), re-fetch blocked_users; on loadMore, reuse cached ref
+      const postIds = newPosts.map(p => p.id)
+      let boostedPostIds = new Set<string>()
 
-      // Batch-fetch liked/saved status to avoid N+1 queries in PostCard
-      if (newPosts.length > 0 && currentUserId) {
-        const postIds = newPosts.map(p => p.id)
-        const [likedSettled, savedSettled] = await Promise.allSettled([
+      if (currentUserId && newPosts.length > 0) {
+        const [blockedResult, likedResult, savedResult, boostsResult] = await Promise.allSettled([
+          reset
+            ? supabase.from('blocked_users').select('blocked_id').eq('blocker_id', currentUserId)
+            : Promise.resolve({ data: null, error: null }),
           supabase.from('post_likes').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
           supabase.from('saved_posts').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
+          supabase.from('post_boosts').select('post_id').in('post_id', postIds)
+            .eq('is_active', true)
+            .lte('boost_start', new Date().toISOString())
+            .gte('boost_end', new Date().toISOString()),
         ])
-        const likedResult = likedSettled.status === 'fulfilled' ? likedSettled.value : { data: null, error: null }
-        const savedResult = savedSettled.status === 'fulfilled' ? savedSettled.value : { data: null, error: null }
-        if (__DEV__ && (likedResult as any).error) console.warn('[feed] liked fetch error:', (likedResult as any).error.message)
-        if (__DEV__ && (savedResult as any).error) console.warn('[feed] saved fetch error:', (savedResult as any).error.message)
-        const { data: likedData } = likedResult
-        const { data: savedData } = savedResult
-        const likedSet = new Set((likedData ?? []).map((l: any) => l.post_id))
-        const savedSet = new Set((savedData ?? []).map((s: any) => s.post_id))
+
+        // Extract blocked user IDs — update cache on full refresh
+        if (reset) {
+          const blockedData = blockedResult.status === 'fulfilled' ? (blockedResult.value as any)?.data : null
+          const blockedError = blockedResult.status === 'fulfilled' ? (blockedResult.value as any)?.error : null
+          if (blockedError && __DEV__) console.warn('[feed] blocked users fetch failed:', blockedError.message)
+          blockedIdsRef.current = (blockedData ?? []).map((b: any) => b.blocked_id)
+        }
+
+        // Filter out posts from blocked users
+        const blockedSet = new Set(blockedIdsRef.current)
+        if (blockedSet.size > 0) {
+          newPosts = newPosts.filter(p => !blockedSet.has(p.user_id))
+        }
+
+        // Extract liked/saved status
+        const likedRes = likedResult.status === 'fulfilled' ? likedResult.value : { data: null, error: null }
+        const savedRes = savedResult.status === 'fulfilled' ? savedResult.value : { data: null, error: null }
+        if (__DEV__ && (likedRes as any).error) console.warn('[feed] liked fetch error:', (likedRes as any).error.message)
+        if (__DEV__ && (savedRes as any).error) console.warn('[feed] saved fetch error:', (savedRes as any).error.message)
+        const likedSet = new Set(((likedRes as any).data ?? []).map((l: any) => l.post_id))
+        const savedSet = new Set(((savedRes as any).data ?? []).map((s: any) => s.post_id))
         newPosts.forEach(p => {
           (p as any).is_liked = likedSet.has(p.id)
           ;(p as any).is_saved = savedSet.has(p.id)
         })
-      }
 
-      // Fetch active boosts for these posts
-      let boostedPostIds = new Set<string>()
-      if (newPosts.length > 0) {
-        try {
-          const postIds = newPosts.map(p => p.id)
-          const { data: boosts, error: boostError } = await supabase
-            .from('post_boosts')
-            .select('post_id')
-            .in('post_id', postIds)
-            .eq('is_active', true)
-            .lte('boost_start', new Date().toISOString())
-            .gte('boost_end', new Date().toISOString())
-          if (boostError && __DEV__) console.warn('[feed] boosts fetch error:', boostError.message)
-          if (boosts) {
-            boostedPostIds = new Set(boosts.map((b: any) => b.post_id))
-            newPosts.forEach(p => {
-              (p as any).is_boosted = boostedPostIds.has(p.id)
-            })
+        // Extract boosts
+        const boostsData = boostsResult.status === 'fulfilled' ? (boostsResult.value as any)?.data : null
+        const boostError = boostsResult.status === 'fulfilled' ? (boostsResult.value as any)?.error : null
+        if (boostError && __DEV__) console.warn('[feed] boosts fetch error:', boostError.message)
+        if (boostsData) {
+          boostedPostIds = new Set(boostsData.map((b: any) => b.post_id))
+          newPosts.forEach(p => {
+            (p as any).is_boosted = boostedPostIds.has(p.id)
+          })
+        }
+      } else if (currentUserId && newPosts.length === 0) {
+        // No posts — still refresh blocked cache on full refresh
+        if (reset) {
+          try {
+            const { data: blockedData } = await supabase
+              .from('blocked_users').select('blocked_id').eq('blocker_id', currentUserId)
+            blockedIdsRef.current = (blockedData ?? []).map((b: any) => b.blocked_id)
+          } catch {
+            // blocked_users table may not exist yet
           }
-        } catch {
-          // post_boosts table may not exist yet — continue without boost data
         }
       }
 
@@ -523,7 +527,11 @@ export function useFeedData() {
           setPosts(prev => prev.filter(p => p.id !== deleted.id))
         }
       })
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          if (__DEV__) console.warn('[feed] Realtime channel error:', status)
+        }
+      })
     return () => {
       supabase.removeChannel(channel)
       if (debounceRef.current) clearTimeout(debounceRef.current)

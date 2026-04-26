@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useRef } from 'react'
 import {
   View, Text, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, RefreshControl,
@@ -339,6 +337,8 @@ function EventDetailScreenInner() {
           {fetchError && (
             <PressableOpacity
               onPress={() => { setFetchError(false); setEventImgError(false); setLoading(true); fetchEvent() }}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.retry')}
               style={{ backgroundColor: colors.foreground, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, marginTop: 12 }}
             >
               <Text style={{ color: colors.background, fontFamily: fonts.bodySemi, fontSize: 13 }}>{t('common.retry')}</Text>

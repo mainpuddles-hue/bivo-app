@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share, Animated as RNAnimated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -33,6 +31,8 @@ import { useToast } from '@/components/Toast'
 import { suggestTags } from '@/lib/autoCategory'
 import type { PostType, TrustLevel } from '@/lib/types'
 import { suggestExpirationDays } from '@/lib/expirePrediction'
+
+const DRAFT_KEY = 'tackbird_post_draft'
 
 const TARJOAN_SERVICE_TAGS: { id: string; label: string }[] = [
   { id: 'kodinhoito', label: 'tags.kodinhoito' },
@@ -223,8 +223,6 @@ export default function CreateScreen() {
     ]).start()
   }, [shakeAnim])
 
-  const DRAFT_KEY = 'tackbird_post_draft'
-
   // Restore draft on mount
   useEffect(() => {
     AsyncStorage.getItem(DRAFT_KEY).then((raw) => {
@@ -316,7 +314,7 @@ export default function CreateScreen() {
     if (userNeighborhood && !location && step === 'form') {
       setLocation(userNeighborhood)
     }
-  }, [userNeighborhood, step])
+  }, [userNeighborhood, step, location])
 
   useEffect(() => {
     if (selectedType === 'lainaa' || selectedType === 'tapahtuma' || selectedType === 'tarjoan') {
@@ -329,7 +327,7 @@ export default function CreateScreen() {
       const suggested = suggestExpirationDays(selectedType, selectedTags)
       setExpirationDays(suggested)
     }
-  }, [selectedType, selectedTags])
+  }, [selectedType, selectedTags, expirationDays])
 
   const resetForm = useCallback(() => {
     setTitle(''); setDescription(''); setImages([]); setLocation('')
@@ -437,9 +435,9 @@ export default function CreateScreen() {
     ])
   }, [launchPicker, t])
 
-  const removeImage = (index: number) => {
+  const removeImage = useCallback((index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index))
-  }
+  }, [])
 
   const handleOpenMapPicker = useCallback(() => {
     setTempMapCoords(latitude && longitude ? { lat: latitude, lng: longitude } : null)
@@ -558,7 +556,11 @@ export default function CreateScreen() {
         failedCount++; continue
       }
       const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-      const mimeType = ALLOWED_MIMES.includes(blob.type) ? blob.type : 'image/jpeg'
+      if (!ALLOWED_MIMES.includes(blob.type)) {
+        toast.show({ message: t('create.invalidFileType') ?? 'Tiedostotyyppi ei ole tuettu', type: 'error' })
+        failedCount++; continue
+      }
+      const mimeType = blob.type
       const mimeSubtype = mimeType.split('/')[1] ?? 'jpeg'
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `${userId}/${postId}/${i}.${ext}`
@@ -839,7 +841,7 @@ export default function CreateScreen() {
           >
             <X size={14} color={colors.foreground} strokeWidth={2.5} />
           </Pressable>
-          <Text style={[mk.headerTitle, { color: colors.foreground }]}>
+          <Text style={[mk.headerTitle, { color: colors.foreground }]} accessibilityRole="header">
             {step === 'category' ? t('create.selectCategory') : (t('create.newPost') ?? 'New post')}
           </Text>
           <Text style={[mk.headerDraft, { color: colors.mutedForeground }]}>
@@ -978,6 +980,9 @@ export default function CreateScreen() {
                           try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
                           setSelectedType(type); setSelectedTags([]); setTarjoanType('service'); setItemCondition(null)
                         }}
+                        accessibilityRole="button"
+                        accessibilityLabel={t(label)}
+                        accessibilityState={{ selected: active, disabled: locked }}
                         style={({ pressed }) => [
                           mk.pill,
                           active ? { backgroundColor: colors.foreground } : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
@@ -998,6 +1003,8 @@ export default function CreateScreen() {
                 {images.length === 0 ? (
                   <Pressable
                     onPress={pickImage}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('create.addImage') ?? 'Lisää kuva'}
                     style={({ pressed }) => [mk.photoDashed, { borderColor: colors.border, backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
                   >
                     <View style={[mk.photoCircle, { backgroundColor: colors.background }]}>
@@ -1028,7 +1035,7 @@ export default function CreateScreen() {
                             </View>
                           </View>
                         )}
-                        <PressableOpacity onPress={() => removeImage(idx)} style={mk.imgRemove} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.remove') ?? 'Remove'}>
+                        <PressableOpacity onPress={() => removeImage(idx)} style={mk.imgRemove} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('create.removeImage') ?? 'Poista kuva'}>
                           <X size={12} color="#fff" />
                         </PressableOpacity>
                         {idx === 0 && (
@@ -1039,7 +1046,7 @@ export default function CreateScreen() {
                       </View>
                     ))}
                     {images.length < 5 && (
-                      <Pressable onPress={pickImage} style={({ pressed }) => [mk.imgAddMore, { borderColor: colors.border, backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
+                      <Pressable onPress={pickImage} accessibilityRole="button" accessibilityLabel={t('create.addImage') ?? 'Lisää kuva'} style={({ pressed }) => [mk.imgAddMore, { borderColor: colors.border, backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}>
                         <Camera size={20} color={colors.mutedForeground} />
                         <Text style={[mk.imgAddMoreText, { color: colors.mutedForeground }]}>{images.length}/5</Text>
                       </Pressable>
@@ -1213,6 +1220,7 @@ export default function CreateScreen() {
                           const sel = itemCondition === opt.id
                           return (
                             <PressableOpacity key={opt.id} onPress={() => setItemCondition(sel ? null : opt.id)}
+                              accessibilityRole="button" accessibilityLabel={t(opt.label)} accessibilityState={{ selected: sel }}
                               style={[mk.tagChip, sel ? { backgroundColor: colors.foreground } : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
                               {sel && <Check size={12} color={colors.background} />}
                               <Text style={[mk.tagText, { color: sel ? colors.background : colors.foreground }]}>{t(opt.label)}</Text>
@@ -1278,6 +1286,7 @@ export default function CreateScreen() {
                         const sel = expirationDays === opt.days
                         return (
                           <PressableOpacity key={opt.days} onPress={() => { expirationSetByUser.current = true; setExpirationDays(opt.days) }}
+                            accessibilityRole="button" accessibilityLabel={opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`} accessibilityState={{ selected: sel }}
                             style={[mk.tagChip, sel ? { backgroundColor: colors.foreground } : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
                             <Text style={[mk.tagText, { color: sel ? colors.background : colors.foreground }]}>
                               {opt.days === 0 ? t('create.noExpiration') : `${opt.days} ${t('common.daysShort')}`}

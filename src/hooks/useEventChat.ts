@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSupabase } from './useSupabase'
 import { EVENT_CHAT_PAGE_SIZE } from '@/lib/constants'
@@ -186,7 +184,11 @@ export function useEventChat(conversationId: string | null, userId: string | nul
           })
         },
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          if (__DEV__) console.warn('[useEventChat] Realtime channel error:', status)
+        }
+      })
 
     channelRef.current = channel
 

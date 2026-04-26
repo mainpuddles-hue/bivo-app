@@ -102,11 +102,16 @@ function AuthCallbackScreenInner() {
           }
         }
 
+        // SECURITY: Prefer PKCE code exchange (Method 1 above) over raw token injection.
+        // The access_token/refresh_token path below is kept for backwards compatibility
+        // but should be removed once all OAuth flows use PKCE.
         // Method 1b: Native deep link — tokens arrive as query params
         // Supabase email links use #fragment which Expo Router may pass as params
         const accessTokenParam = params.access_token as string | undefined
         const refreshTokenParam = params.refresh_token as string | undefined
         if (accessTokenParam && refreshTokenParam) {
+          // DEPRECATED: Direct token injection — vulnerable to deep link hijacking
+          if (__DEV__) console.warn('[auth] Using deprecated direct token path — prefer PKCE code exchange')
           const { error: setSessionError } = await supabase.auth.setSession({
             access_token: accessTokenParam,
             refresh_token: refreshTokenParam,

@@ -1,9 +1,7 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useMemo, useEffect, useRef, memo } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, StyleSheet,
-  Pressable, Linking, ActionSheetIOS, Alert, Platform,
+  Pressable, Linking, ActionSheetIOS, Alert, Platform, FlatList, ListRenderItemInfo,
 } from 'react-native'
 import { Image } from 'expo-image'
 import { hapticMedium } from '@/lib/haptics'
@@ -596,6 +594,34 @@ function ExploreScreenInner() {
     }
   }, [activeTab, eventSort, placeSort, eventSortOptions, placeSortOptions, t])
 
+  // ── FlatList renderItem callbacks ──
+  const renderEventItem = useCallback(({ item, index }: ListRenderItemInfo<ExploreEvent>) => (
+    <EventListRow
+      event={item}
+      isLast={index === allEvents.length - 1}
+      colors={colors}
+      isDark={isDark}
+      locale={locale}
+      t={t}
+      onPress={handleEventPress}
+    />
+  ), [allEvents.length, colors, isDark, locale, t, handleEventPress])
+
+  const eventKeyExtractor = useCallback((item: ExploreEvent) => item.id, [])
+
+  const renderPlaceItem = useCallback(({ item, index }: ListRenderItemInfo<LocalPlace & { _distance?: number }>) => (
+    <PlaceListRow
+      place={item}
+      isLast={index === sortedPlaces.length - 1}
+      colors={colors}
+      isDark={isDark}
+      t={t}
+      onPress={openPlaceInMaps}
+    />
+  ), [sortedPlaces.length, colors, isDark, t, openPlaceInMaps])
+
+  const placeKeyExtractor = useCallback((item: LocalPlace & { _distance?: number }) => item.id, [])
+
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* ── Sticky header — Helsinki Monochrome (matches feed 05) ── */}
@@ -889,18 +915,15 @@ function ExploreScreenInner() {
               </View>
             ) : (
               <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {allEvents.map((event, idx) => (
-                  <EventListRow
-                    key={event.id}
-                    event={event}
-                    isLast={idx === allEvents.length - 1}
-                    colors={colors}
-                    isDark={isDark}
-                    locale={locale}
-                    t={t}
-                    onPress={handleEventPress}
-                  />
-                ))}
+                <FlatList
+                  data={allEvents}
+                  keyExtractor={eventKeyExtractor}
+                  renderItem={renderEventItem}
+                  removeClippedSubviews={true}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
+                  scrollEnabled={false}
+                />
               </View>
             )}
           </>
@@ -980,17 +1003,15 @@ function ExploreScreenInner() {
               </View>
             ) : (
               <View style={[s.sectionCardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {sortedPlaces.map((place, idx) => (
-                  <PlaceListRow
-                    key={place.id}
-                    place={place}
-                    isLast={idx === sortedPlaces.length - 1}
-                    colors={colors}
-                    isDark={isDark}
-                    t={t}
-                    onPress={openPlaceInMaps}
-                  />
-                ))}
+                <FlatList
+                  data={sortedPlaces}
+                  keyExtractor={placeKeyExtractor}
+                  renderItem={renderPlaceItem}
+                  removeClippedSubviews={true}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
+                  scrollEnabled={false}
+                />
               </View>
             )}
           </>

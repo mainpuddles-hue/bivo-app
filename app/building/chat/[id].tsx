@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   View, Text, FlatList, TextInput, Pressable, StyleSheet,

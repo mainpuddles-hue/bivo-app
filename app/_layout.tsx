@@ -126,68 +126,85 @@ function useOnboardingGuard() {
 
 function useNotificationNavigation() {
   const router = useRouter()
+  const routerRef = useRef(router)
+  routerRef.current = router
   const responseListener = useRef<Notifications.EventSubscription | null>(null)
 
   useEffect(() => {
     if (Platform.OS === 'web') return
+
+    function handleNotificationRoute(data: Record<string, string> | undefined) {
+      if (!data?.type) return
+
+      const r = routerRef.current
+
+      switch (data.type) {
+        case 'message':
+          if (data.conversationId && isValidUUID(data.conversationId)) {
+            r.push(`/messages/${data.conversationId}`)
+          }
+          break
+
+        case 'review':
+        case 'follow':
+          if (data.userId && isValidUUID(data.userId)) {
+            r.push(`/profile/${data.userId}`)
+          }
+          break
+
+        case 'booking':
+          if (data.bookingId && isValidUUID(data.bookingId)) {
+            r.push(`/booking/${data.bookingId}` as any)
+          } else if (data.postId && isValidUUID(data.postId)) {
+            r.push(`/post/${data.postId}`)
+          } else {
+            r.push('/notifications')
+          }
+          break
+
+        case 'event':
+          if (data.eventId && isValidUUID(data.eventId)) {
+            r.push(`/event/${data.eventId}` as any)
+          } else {
+            r.push('/notifications')
+          }
+          break
+
+        case 'like':
+        case 'comment':
+          if (data.postId && isValidUUID(data.postId)) {
+            r.push(`/post/${data.postId}`)
+          }
+          break
+
+        default:
+          r.push('/notifications')
+          break
+      }
+    }
+
+    // Handle cold-start notification (app was killed, user tapped notification)
+    Notifications.getLastNotificationResponseAsync().then(response => {
+      if (response) {
+        const data = response.notification.request.content.data as
+          | Record<string, string>
+          | undefined
+        handleNotificationRoute(data)
+      }
+    }).catch(() => {})
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const data = response.notification.request.content.data as
           | Record<string, string>
           | undefined
-
-        if (!data?.type) return
-
-        switch (data.type) {
-          case 'message':
-            if (data.conversationId && isValidUUID(data.conversationId)) {
-              router.push(`/messages/${data.conversationId}`)
-            }
-            break
-
-          case 'review':
-          case 'follow':
-            if (data.userId && isValidUUID(data.userId)) {
-              router.push(`/profile/${data.userId}`)
-            }
-            break
-
-          case 'booking':
-            if (data.bookingId && isValidUUID(data.bookingId)) {
-              router.push(`/booking/${data.bookingId}` as any)
-            } else if (data.postId && isValidUUID(data.postId)) {
-              router.push(`/post/${data.postId}`)
-            } else {
-              router.push('/notifications')
-            }
-            break
-
-          case 'event':
-            if (data.eventId && isValidUUID(data.eventId)) {
-              router.push(`/event/${data.eventId}` as any)
-            } else {
-              router.push('/notifications')
-            }
-            break
-
-          case 'like':
-          case 'comment':
-            if (data.postId && isValidUUID(data.postId)) {
-              router.push(`/post/${data.postId}`)
-            }
-            break
-
-          default:
-            router.push('/notifications')
-            break
-        }
+        handleNotificationRoute(data)
       })
 
     return () => {
       responseListener.current?.remove()
     }
-  }, [router])
+  }, [])
 }
 
 function useAnalyticsSetup() {
@@ -643,6 +660,22 @@ function RootLayoutInner() {
         <Stack.Screen name="create-event" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="community-events" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="verify-otp" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="my-listings" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="new-listing" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="payouts" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="payment-checkout" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="return-item" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="review-borrower" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="create-poll" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="verification" options={{ headerShown: false, animation: 'fade' }} />
+        <Stack.Screen name="invite/[code]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="event-chat/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="building/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="building/chat/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="building/announcement/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="building/maintenance/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="city-admin" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="+not-found" options={{ headerShown: false, animation: 'fade' }} />
       </Stack>
     </View>
   )

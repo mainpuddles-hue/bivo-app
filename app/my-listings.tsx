@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pressable, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -106,6 +104,7 @@ function MyListingsScreenInner() {
         .select('id, title, image_url, type, is_active, created_at, like_count, comment_count, images:post_images(image_url, sort_order)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
+        .limit(100)
 
       if (error) {
         if (__DEV__) console.warn('MyListings fetch error:', error.message)
@@ -404,6 +403,9 @@ function MyListingsScreenInner() {
         renderItem={renderItem}
         contentContainerStyle={[s.listContent, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -442,7 +444,7 @@ function Header({ colors, router }: { colors: any; router: any }) {
       </PressableOpacity>
 
       {/* Title */}
-      <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('myListings.title')}</Text>
+      <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('myListings.title')}</Text>
 
       {/* Add button */}
       <PressableOpacity

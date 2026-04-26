@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { View, Text, TextInput, FlatList, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { Image } from 'expo-image'
@@ -433,6 +431,8 @@ function SearchScreenInner() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const mountedRef = useRef(true)
+  // Cache blocked_users to avoid re-fetching on every search/pagination
+  const blockedIdsRef = useRef<Set<string> | null>(null)
 
   const filterCount = useMemo(() => countActiveFilters(filters), [filters])
 
@@ -798,21 +798,21 @@ function SearchScreenInner() {
 
       let postResults = (posts ?? []) as unknown as Post[]
 
-      // Filter out posts from blocked users
+      // Filter out posts from blocked users (refresh cache on each new search)
       const searchUserId = await getCachedUserId()
-      let blockedIds = new Set<string>()
       if (searchUserId) {
         try {
           const { data: blockedData } = await supabase
             .from('blocked_users')
             .select('blocked_id')
             .eq('blocker_id', searchUserId)
-          blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
-          if (blockedIds.size > 0) {
-            postResults = postResults.filter(p => !blockedIds.has(p.user_id))
-          }
+          blockedIdsRef.current = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
         } catch {
           // blocked_users table may not exist yet — continue without filtering
+          blockedIdsRef.current = new Set()
+        }
+        if (blockedIdsRef.current.size > 0) {
+          postResults = postResults.filter(p => !blockedIdsRef.current!.has(p.user_id))
         }
       }
       if (controller.signal.aborted) return
@@ -914,8 +914,8 @@ function SearchScreenInner() {
       const usersRes = usersSettled.status === 'fulfilled' ? usersSettled.value : { data: null }
       const eventsRes = eventsSettled.status === 'fulfilled' ? eventsSettled.value : { data: [] }
       let userResultsData = (usersRes.data ?? []) as any[]
-      if (blockedIds.size > 0) {
-        userResultsData = userResultsData.filter((u: any) => !blockedIds.has(u.id))
+      if (blockedIdsRef.current && blockedIdsRef.current.size > 0) {
+        userResultsData = userResultsData.filter((u: any) => !blockedIdsRef.current!.has(u.id))
       }
       setUserResults(userResultsData)
       setEventResults((eventsRes.data ?? []) as any[])
@@ -989,21 +989,9 @@ function SearchScreenInner() {
       const { data } = await postQuery
       let newPosts = (data ?? []) as unknown as Post[]
 
-      // Filter out posts from blocked users
-      const loadMoreUserId = await getCachedUserId()
-      if (loadMoreUserId) {
-        try {
-          const { data: blockedData } = await supabase
-            .from('blocked_users')
-            .select('blocked_id')
-            .eq('blocker_id', loadMoreUserId)
-          const blockedIds = new Set((blockedData ?? []).map((b: any) => b.blocked_id))
-          if (blockedIds.size > 0) {
-            newPosts = newPosts.filter(p => !blockedIds.has(p.user_id))
-          }
-        } catch {
-          // blocked_users table may not exist yet — continue without filtering
-        }
+      // Filter out posts from blocked users (use cached set from initial search)
+      if (blockedIdsRef.current && blockedIdsRef.current.size > 0) {
+        newPosts = newPosts.filter(p => !blockedIdsRef.current!.has(p.user_id))
       }
 
       const rawCount = (data ?? []).length
@@ -1330,7 +1318,7 @@ function SearchScreenInner() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Top search area — no bar header, direct search */}
-      <View style={[s.header, { paddingTop: insets.top + 16 }]}>
+      <View style={[s.header, { paddingTop: insets.top + 16 }]} accessibilityRole="header">
         <View style={[s.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <SearchIcon size={18} color={colors.mutedForeground} />
           <TextInput

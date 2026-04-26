@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS, useWindowDimensions, Keyboard } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -148,34 +146,35 @@ function PostDetailScreenInner() {
       setLoadError(null)
 
       const cachedId = await getCachedUserId()
+      if (!mountedRef.current) return
       if (cachedId) setUserId(cachedId)
 
       const { data } = await supabase.from('posts').select(POST_SELECT).eq('id', id).maybeSingle()
+      if (!mountedRef.current) return
       if (!data) {
         setLoadError(t('post.notFound') ?? 'Post not found')
         return
       }
-      if (data) {
-        const p = data as unknown as Post
-        // Apply location_accuracy privacy for other users' posts
-        const accuracy = (p.user as any)?.location_accuracy
-        if (accuracy && accuracy !== 'exact' && cachedId !== p.user_id) {
-          const result = applyLocationAccuracy(accuracy, (p as any).latitude, (p as any).longitude, p.location)
-          ;(p as any).latitude = result.latitude
-          ;(p as any).longitude = result.longitude
-          p.location = result.location
-        }
-        setPost(p)
-        setHeroImageError(false)
-        setLikeCount(p.like_count ?? 0)
-        trackEvent('post_viewed', { post_id: id as string, type: p.type })
+      const p = data as unknown as Post
+      // Apply location_accuracy privacy for other users' posts
+      const accuracy = (p.user as any)?.location_accuracy
+      if (accuracy && accuracy !== 'exact' && cachedId !== p.user_id) {
+        const result = applyLocationAccuracy(accuracy, (p as any).latitude, (p as any).longitude, p.location)
+        ;(p as any).latitude = result.latitude
+        ;(p as any).longitude = result.longitude
+        p.location = result.location
       }
+      setPost(p)
+      setHeroImageError(false)
+      setLikeCount(p.like_count ?? 0)
+      trackEvent('post_viewed', { post_id: id as string, type: p.type })
 
       if (cachedId) {
         const [likeRes, saveRes] = await Promise.all([
           supabase.from('post_likes').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
           supabase.from('saved_posts').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
         ])
+        if (!mountedRef.current) return
         setIsLiked(!!likeRes.data)
         setIsSaved(!!saveRes.data)
       }
@@ -186,7 +185,8 @@ function PostDetailScreenInner() {
           .from('post_comments')
           .select('*, user:profiles!post_comments_user_id_fkey(id, name, avatar_url)')
           .eq('post_id', id)
-          .order('created_at', { ascending: true }),
+          .order('created_at', { ascending: true })
+          .limit(50),
         data
           ? supabase
               .from('posts')
@@ -198,14 +198,18 @@ function PostDetailScreenInner() {
               .limit(4)
           : Promise.resolve({ data: null }),
       ])
+      if (!mountedRef.current) return
       setComments((cmtsRes.data ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
       if (relatedRes.data) setRelatedPosts(relatedRes.data as any[])
     } catch (err: any) {
       if (__DEV__) console.error('[PostDetail] loadPost error:', err)
+      if (!mountedRef.current) return
       setLoadError(t('common.error'))
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      if (mountedRef.current) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [id, supabase, t])
 
@@ -239,6 +243,7 @@ function PostDetailScreenInner() {
       .from('reviews')
       .select('rating')
       .eq('reviewed_id', post.user_id)
+      .limit(500)
       .then(({ data }) => {
         if (!mounted || !data || data.length === 0) return
         const avg = data.reduce((s: number, r: any) => s + r.rating, 0) / data.length
@@ -312,7 +317,7 @@ function PostDetailScreenInner() {
         if (error.code === '23505') setIsLiked(true)
       } else {
         // Sync count from source of truth
-        const { count: realCount } = await supabase.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', id)
+        const { count: realCount } = await supabase.from('post_likes').select('id', { count: 'exact', head: true }).eq('post_id', id)
         if (realCount !== null) {
           setLikeCount(realCount)
           ;(supabase.from('posts') as any).update({ like_count: realCount }).eq('id', id).then(() => {}).catch((e: any) => { if (__DEV__) console.warn('[post] like count sync failed:', e?.message) })
@@ -1090,9 +1095,9 @@ function PostDetailScreenInner() {
           )}
           {/* Page dots */}
           {allImages.length > 1 && (
-            <View style={styles.pageDots}>
+            <View style={styles.pageDots} accessibilityRole="tablist" accessibilityLabel={t('post.imageIndicator') ?? 'Kuvasivu'}>
               {allImages.map((_, i) => (
-                <View key={i} style={[styles.dot, i === heroPage && styles.dotActive]} />
+                <View key={i} style={[styles.dot, i === heroPage && styles.dotActive]} accessibilityRole="tab" accessibilityLabel={`${t('post.image') ?? 'Kuva'} ${i + 1} / ${allImages.length}`} accessibilityState={{ selected: i === heroPage }} />
               ))}
             </View>
           )}
@@ -1408,7 +1413,7 @@ function PostDetailScreenInner() {
                             <Text style={{ fontSize: 14, fontFamily: fonts.heading, color: colors.foreground }} numberOfLines={1}>{rp.title.charAt(0).toUpperCase()}</Text>
                           </View>
                         )}
-                        <PressableOpacity hitSlop={8} style={[styles.relatedHeartCircle, { backgroundColor: colors.card + 'EB' }]}>
+                        <PressableOpacity hitSlop={8} style={[styles.relatedHeartCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('engagement.like') ?? 'Tykkaa'}>
                           <Heart size={14} color={colors.foreground} />
                         </PressableOpacity>
                       </View>

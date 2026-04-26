@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert
 // Alert kept for destructive unblock confirmation
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, ShieldOff } from 'lucide-react-native'
+import { ArrowLeft, ShieldOff, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -36,28 +36,33 @@ function BlockedUsersScreenInner() {
   const [loading, setLoading] = useState(true)
   const [unblocking, setUnblocking] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  const [fetchError, setFetchError] = useState(false)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
-        setUserId(user.id)
+  const loadBlocked = useCallback(async () => {
+    setFetchError(false)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      setUserId(user.id)
 
-        const { data } = await supabase
-          .from('blocked_users')
-          .select('blocked_id, blocked_user:profiles!blocked_users_blocked_id_fkey(id, name, avatar_url, naapurusto)')
-          .eq('blocker_id', user.id)
+      const { data, error } = await supabase
+        .from('blocked_users')
+        .select('blocked_id, blocked_user:profiles!blocked_users_blocked_id_fkey(id, name, avatar_url, naapurusto)')
+        .eq('blocker_id', user.id)
 
-        setBlockedUsers((data ?? []) as unknown as BlockedUser[])
-      } catch {
-        // Table may not exist or network error — show empty state
-      } finally {
-        setLoading(false)
+      if (error) {
+        setFetchError(true)
+        return
       }
+      setBlockedUsers((data ?? []) as unknown as BlockedUser[])
+    } catch {
+      setFetchError(true)
+    } finally {
+      setLoading(false)
     }
-    load()
   }, [supabase])
+
+  useEffect(() => { loadBlocked() }, [loadBlocked])
 
   const handleUnblock = useCallback(async (blockedUserId: string, name: string | null) => {
     if (!userId) return
@@ -108,6 +113,19 @@ function BlockedUsersScreenInner() {
 
       {loading ? (
         <ActivityIndicator size="large" color={colors.foreground} style={{ marginTop: 80 }} />
+      ) : fetchError ? (
+        <View style={s.errorCenter}>
+          <RefreshCw size={36} color={colors.mutedForeground} />
+          <Text style={[s.errorTitle, { color: colors.foreground }]}>{t('common.error')}</Text>
+          <PressableOpacity
+            onPress={() => { setLoading(true); loadBlocked() }}
+            style={[s.retryBtn, { backgroundColor: colors.foreground }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.retry')}
+          >
+            <Text style={[s.retryBtnText, { color: colors.background }]}>{t('common.retry')}</Text>
+          </PressableOpacity>
+        </View>
       ) : blockedUsers.length === 0 ? (
         <EmptyState
           icon={<ShieldOff size={36} color={colors.mutedForeground} />}
@@ -162,6 +180,10 @@ function BlockedUsersScreenInner() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
+  errorCenter: { alignItems: 'center', paddingTop: 60, gap: 12 },
+  errorTitle: { fontFamily: fonts.headingSemi, fontSize: 16, lineHeight: 22 },
+  retryBtn: { marginTop: 8, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999 },
+  retryBtnText: { fontFamily: fonts.bodySemi, fontSize: 14, lineHeight: 20 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

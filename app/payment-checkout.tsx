@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useEffect } from 'react'
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
@@ -94,7 +92,12 @@ function PaymentCheckoutScreenInner() {
       const userId = await getCachedUserId()
       if (!userId) { router.replace('/(auth)/login'); return }
 
-      // Update booking status to paid
+      // SECURITY WARNING: This is a placeholder flow. In production, booking status
+      // must only be updated by a server-side webhook after Stripe confirms payment.
+      // TODO: Replace with Stripe PaymentIntent + webhook confirmation
+      if (__DEV__) {
+        console.warn('[checkout] DEV MODE: Simulating payment without real Stripe integration')
+      }
       const { error: payError } = await (supabase.from('bookings') as any).update({
         status: 'paid',
         payment_method: selectedMethod,

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronLeft, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink, Phone, Plus, DollarSign, CheckCircle, XCircle } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronLeft, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink, Phone, Plus, DollarSign, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
@@ -94,13 +94,16 @@ function ConversationScreenInner() {
 
   // Report modal state
   const [showReportModal, setShowReportModal] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     async function load() {
       setLoading(true)
       setNotFound(false)
+      setFetchError(false)
 
+      try {
       let uid = await getCachedUserId()
       if (cancelled) return
       if (!uid) {
@@ -111,7 +114,7 @@ function ConversationScreenInner() {
       }
       setUserId(uid)
 
-      const { data: conv } = await supabase.from('conversations').select('*').eq('id', id).maybeSingle()
+      const { data: conv } = await supabase.from('conversations').select('id, user1_id, user2_id, post_id, created_at, updated_at, user1_archived, user2_archived').eq('id', id).maybeSingle()
       if (cancelled) return
       if (!conv) {
         setNotFound(true)
@@ -137,7 +140,7 @@ function ConversationScreenInner() {
 
       // Parallel fetch: profile, messages, and post+offer are independent
       const profilePromise = supabase.from('profiles').select('id, name, avatar_url, naapurusto').eq('id', otherId).maybeSingle()
-      const messagesPromise = supabase.from('messages').select('*').eq('conversation_id', id).order('created_at', { ascending: false }).limit(PAGE_SIZE)
+      const messagesPromise = supabase.from('messages').select('id, conversation_id, sender_id, content, image_url, is_read, created_at').eq('conversation_id', id).order('created_at', { ascending: false }).limit(PAGE_SIZE)
       const postPromise = (conv as any).post_id
         ? supabase.from('posts').select('id, title, type, image_url').eq('id', (conv as any).post_id).maybeSingle()
         : Promise.resolve({ data: null })
@@ -169,7 +172,7 @@ function ConversationScreenInner() {
       const reactionsPromise = msgIds.length > 0
         ? (async () => {
             try {
-              const { data: rxns } = await supabase.from('message_reactions').select('*').in('message_id', msgIds)
+              const { data: rxns } = await supabase.from('message_reactions').select('message_id, emoji, user_id').in('message_id', msgIds)
               if (cancelled || !rxns) return
               const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
               for (const r of rxns as any[]) {
@@ -191,6 +194,13 @@ function ConversationScreenInner() {
       await Promise.all([reactionsPromise, markReadPromise])
 
       if (!cancelled) setLoading(false)
+      } catch (err) {
+        if (!cancelled) {
+          if (__DEV__) console.warn('[conversation] load failed:', err)
+          setFetchError(true)
+          setLoading(false)
+        }
+      }
     }
     if (id && isValidUUID(id)) {
       load()
@@ -259,7 +269,11 @@ function ConversationScreenInner() {
           typingTimerRef.current = setTimeout(() => setOtherTyping(false), 3000)
         }
       })
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          if (__DEV__) console.warn('[conversation] Realtime error:', status)
+        }
+      })
     // Store channel ref so sendTyping can reuse it
     channelRef.current = channel
     return () => {
@@ -287,7 +301,7 @@ function ConversationScreenInner() {
       const oldest = messagesRef.current[0]
       const { data: older } = await supabase
         .from('messages')
-        .select('*')
+        .select('id, conversation_id, sender_id, content, image_url, is_read, created_at')
         .eq('conversation_id', id)
         .lt('created_at', oldest.created_at)
         .order('created_at', { ascending: false })
@@ -302,7 +316,7 @@ function ConversationScreenInner() {
           const olderMsgIds = sorted.map(m => m.id)
           const { data: olderReactions } = await supabase
             .from('message_reactions')
-            .select('*')
+            .select('message_id, emoji, user_id')
             .in('message_id', olderMsgIds)
           if (olderReactions) {
             const grouped: Record<string, { emoji: string; user_id: string }[]> = {}
@@ -441,8 +455,12 @@ function ConversationScreenInner() {
       if (!response.ok) throw new Error(`Image fetch failed: ${response.status}`)
       const blob = await response.blob()
       const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-      const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
-      if (!mimeType) { toast.show({ message: t('messages.imageSendFailed'), type: 'error' }); setSending(false); return }
+      if (!ALLOWED_MIMES.includes(blob.type)) {
+        toast.show({ message: t('messages.invalidFileType') ?? 'Tiedostotyyppi ei ole tuettu', type: 'error' })
+        setSending(false)
+        return
+      }
+      const mimeType = blob.type
       if (blob.size > MAX_MSG_FILE_SIZE) { toast.show({ message: t('messages.imageSendFailed'), type: 'error' }); setSending(false); return }
       const mimeSubtype = mimeType.split('/')[1]
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
@@ -851,6 +869,14 @@ function ConversationScreenInner() {
           <Text style={[contextStyles.postTitle, { color: colors.foreground }]} numberOfLines={1}>{linkedPost.title}</Text>
           <ChevronRight size={14} color={colors.mutedForeground} strokeWidth={2} />
         </PressableOpacity>
+      )}
+
+      {/* Fetch error banner */}
+      {fetchError && !loading && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginTop: 8, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 999, backgroundColor: `${colors.destructive}10`, borderWidth: 1, borderColor: `${colors.destructive}30` }}>
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, flex: 1, lineHeight: 18, color: colors.destructive }}>{t('common.loadError')}</Text>
+        </View>
       )}
 
       {/* Messages */}

@@ -167,18 +167,6 @@ export const EVENT_CATEGORY_COLORS: Record<string, string> = {
   other: '#6B7280',
 } as const
 
-// Centralized group category colors — used by groups list and group detail
-export const GROUP_CATEGORY_COLORS: Record<string, string> = {
-  general: '#1A1D1F',
-  sports: '#2B8A62',
-  kids: '#FF9800',
-  pets: '#D08B30',
-  garden: '#2B8A62',
-  food: '#E74C3C',
-  culture: '#8E44AD',
-  other: '#607D8B',
-} as const
-
 // Quick event ("Pöytä") categories — icon names map to Lucide React Native components
 export const TABLE_CATEGORIES = {
   coffee: { icon: 'Coffee' as const, color: '#8B5E3C', bgLight: '#FDF5F0', bgDark: '#2A1E15', label: 'tables.catCoffee' },

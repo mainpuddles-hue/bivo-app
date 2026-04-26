@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback } from 'react'
 import {
   View, Text, ScrollView, Pressable, TextInput, StyleSheet,
@@ -241,7 +239,7 @@ function CityAdminScreenInner() {
           >
             <ArrowLeft size={20} color={colors.foreground} />
           </Pressable>
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('cityAdmin.accessDenied')}</Text>
+          <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('cityAdmin.accessDenied')}</Text>
           <View style={{ width: 36 }} />
         </View>
         <View style={s.emptyContainer}>
@@ -269,7 +267,7 @@ function CityAdminScreenInner() {
         >
           <ArrowLeft size={20} color={colors.foreground} />
         </Pressable>
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('cityAdmin.title')}</Text>
+        <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('cityAdmin.title')}</Text>
         <View style={{ width: 36 }} />
       </View>
 

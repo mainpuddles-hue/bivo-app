@@ -1,10 +1,8 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ArrowLeft, AlertTriangle, AlertCircle, Pin } from 'lucide-react-native'
+import { ArrowLeft, AlertTriangle, AlertCircle, Pin, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -36,10 +34,13 @@ function AnnouncementDetailInner() {
 
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!id || !isValidUUID(id)) return
     let mounted = true
+    setFetchError(false)
 
     async function load() {
       try {
@@ -74,6 +75,7 @@ function AnnouncementDetailInner() {
         }
       } catch (err) {
         if (__DEV__) console.warn('[announcement] load error:', err)
+        if (mounted) setFetchError(true)
       } finally {
         if (mounted) setLoading(false)
       }
@@ -81,7 +83,7 @@ function AnnouncementDetailInner() {
 
     load()
     return () => { mounted = false }
-  }, [id, supabase])
+  }, [id, supabase, retryKey])
 
   const priorityConfig = {
     urgent: { color: colors.destructive, icon: AlertTriangle, label: t('building.priorityUrgent') },
@@ -100,6 +102,19 @@ function AnnouncementDetailInner() {
   if (!announcement) {
     return (
       <View style={[s.center, { backgroundColor: colors.background }]}>
+        {fetchError && (
+          <PressableOpacity
+            onPress={() => { setFetchError(false); setLoading(true); setRetryKey(k => k + 1) }}
+            style={[s.errorBanner, { backgroundColor: colors.destructive + '18' }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.retry') ?? 'Yritä uudelleen'}
+          >
+            <RefreshCw size={16} color={colors.destructive} />
+            <Text style={[s.errorText, { color: colors.destructive }]}>
+              {t('common.loadError') ?? 'Latausvirhe — napauta yrittääksesi uudelleen'}
+            </Text>
+          </PressableOpacity>
+        )}
         <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body }}>
           {t('common.notFound') ?? 'Not found'}
         </Text>
@@ -203,6 +218,10 @@ const s = StyleSheet.create({
   authorTime: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   body: { fontSize: 16, fontFamily: fonts.body, lineHeight: 24 },
   readCount: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, marginTop: 8 },
+
+  // Error banner
+  errorBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, marginHorizontal: 16, marginTop: 8 },
+  errorText: { fontSize: 13, fontFamily: fonts.body, flex: 1 },
 })
 
 export default function AnnouncementDetailScreen() {

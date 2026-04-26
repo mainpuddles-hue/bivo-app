@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useRef, useMemo } from 'react'
 import {
   View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator,
@@ -233,7 +231,7 @@ function BuildingScreenInner() {
 
       // Parallel fetches
       const [orgResult, membersResult, annResult, maintResult] = await Promise.all([
-        supabase.from('organizations').select('*').eq('id', id).maybeSingle(),
+        supabase.from('organizations').select('id, name, street_address, city, postal_code, type, member_count, created_at, updated_at').eq('id', id).maybeSingle(),
         (supabase.from('organization_members').select('*, profiles:profiles(id, name, avatar_url)') as any).eq('org_id', id),
         (supabase.from('announcements').select('*, author:profiles!announcements_author_id_fkey(id, name, avatar_url)') as any)
           .eq('org_id', id).order('pinned', { ascending: false }).order('created_at', { ascending: false }),
@@ -268,6 +266,7 @@ function BuildingScreenInner() {
             .select('*')
             .eq('org_id', id)
             .order('created_at', { ascending: false })
+            .limit(20)
           if (mountedRef.current && codes) setInviteCodes(codes as InviteCode[])
         }
       }
@@ -514,6 +513,7 @@ function BuildingScreenInner() {
         <Text
           style={[s.headerTitle, { color: colors.foreground }]}
           numberOfLines={1}
+          accessibilityRole="header"
         >
           {org.name}
         </Text>

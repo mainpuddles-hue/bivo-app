@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
   View,
@@ -29,6 +27,7 @@ import {
   Send,
   AlertCircle,
   ImageIcon,
+  RefreshCw,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -150,6 +149,7 @@ function MaintenanceDetailInner() {
   const [request, setRequest] = useState<MaintenanceRequest | null>(null)
   const [comments, setComments] = useState<MaintenanceComment[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<UserRole>(null)
@@ -186,6 +186,7 @@ function MaintenanceDetailInner() {
 
   const loadData = useCallback(async () => {
     if (!id || !isValidUUID(id)) return
+    setFetchError(false)
     try {
       const uid = await getCachedUserId()
       if (mountedRef.current) setUserId(uid)
@@ -250,6 +251,7 @@ function MaintenanceDetailInner() {
       }
     } catch (err) {
       if (__DEV__) console.warn('[MaintenanceDetail] loadData error:', err)
+      if (mountedRef.current) setFetchError(true)
     } finally {
       if (mountedRef.current) {
         setLoading(false)
@@ -390,6 +392,19 @@ function MaintenanceDetailInner() {
   if (!request) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+        {fetchError && (
+          <PressableOpacity
+            onPress={() => { setFetchError(false); setLoading(true); loadData() }}
+            style={[styles.fetchErrorBanner, { backgroundColor: colors.destructive + '18' }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.retry') ?? 'Yritä uudelleen'}
+          >
+            <RefreshCw size={16} color={colors.destructive} />
+            <Text style={[styles.fetchErrorText, { color: colors.destructive }]}>
+              {t('common.loadError') ?? 'Latausvirhe — napauta yrittääksesi uudelleen'}
+            </Text>
+          </PressableOpacity>
+        )}
         <AlertCircle size={48} color={colors.mutedForeground} />
         <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
           {t('building.errorLoadingRequest')}
@@ -1098,6 +1113,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  // Error banner
+  fetchErrorBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, marginHorizontal: 16, marginTop: 8 },
+  fetchErrorText: { fontSize: 13, fontFamily: fonts.body, flex: 1 },
 })
 
 export default function MaintenanceDetailScreen() {

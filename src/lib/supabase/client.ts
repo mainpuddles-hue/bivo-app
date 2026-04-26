@@ -12,6 +12,7 @@ if (__DEV__ && (!supabaseUrl || !supabaseAnonKey)) {
 }
 
 let _client: ReturnType<typeof createSupabaseClient> | null = null
+let _authSubscription: { unsubscribe: () => void } | null = null
 
 export function createClient() {
   if (_client) return _client
@@ -46,11 +47,15 @@ export function createClient() {
 
   // Listen for auth errors and log them as warnings instead of errors
   // This prevents GoTrueClient errors from triggering LogBox red screens
-  _client.auth.onAuthStateChange((event, session) => {
-    if (event === 'TOKEN_REFRESHED' && !session) {
-      if (__DEV__) console.warn('[Supabase] Token refresh returned no session')
-    }
-  })
+  // Guard against hot-reload re-subscription: only subscribe once
+  if (!_authSubscription) {
+    const { data: { subscription } } = _client.auth.onAuthStateChange((event, session) => {
+      if (event === 'TOKEN_REFRESHED' && !session) {
+        if (__DEV__) console.warn('[Supabase] Token refresh returned no session')
+      }
+    })
+    _authSubscription = subscription
+  }
 
   return _client
 }

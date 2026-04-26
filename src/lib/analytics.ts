@@ -43,12 +43,14 @@ export function trackEvent(event: AnalyticsEvent, props?: EventProps) {
     .then(() => {})
     .catch(() => {
       // Queue locally for retry on next app launch
-      AsyncStorage.getItem('analytics_queue').then(raw => {
-        const queue = raw ? JSON.parse(raw) : []
-        queue.push(payload)
-        // Keep max 100 events to avoid unbounded storage
-        AsyncStorage.setItem('analytics_queue', JSON.stringify(queue.slice(-100))).catch(() => {})
-      }).catch(() => {})
+      AsyncStorage.getItem('analytics_queue')
+        .then(raw => {
+          const queue = raw ? (() => { try { return JSON.parse(raw) } catch { return [] } })() : []
+          queue.push(payload)
+          // Keep max 100 events to avoid unbounded storage
+          return AsyncStorage.setItem('analytics_queue', JSON.stringify(queue.slice(-100)))
+        })
+        .catch(() => {})
     })
 }
 
@@ -57,7 +59,13 @@ export async function flushAnalyticsQueue() {
   try {
     const raw = await AsyncStorage.getItem('analytics_queue')
     if (!raw) return
-    const queue = JSON.parse(raw)
+    let queue: unknown[]
+    try {
+      queue = JSON.parse(raw)
+      if (!Array.isArray(queue)) queue = []
+    } catch {
+      queue = []
+    }
     if (!queue.length) return
     const supabase = createClient()
     await (supabase.from('analytics_events') as any).insert(queue)

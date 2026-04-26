@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback } from 'react'
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
@@ -7,7 +5,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
-import { ArrowLeft, TrendingUp, ChevronRight, Archive } from 'lucide-react-native'
+import { ArrowLeft, TrendingUp, ChevronRight, Archive, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -43,6 +41,7 @@ function PayoutsScreenInner() {
 
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
   const [totalEarnings, setTotalEarnings] = useState(0)
   const [loanCount, setLoanCount] = useState(0)
   const [monthlyData, setMonthlyData] = useState<MonthlyBar[]>([])
@@ -55,6 +54,7 @@ function PayoutsScreenInner() {
   const monthLabels = locale === 'fi' ? MONTH_LABELS_FI : MONTH_LABELS_EN
 
   const loadData = useCallback(async () => {
+    setFetchError(false)
     try {
       const userId = await getCachedUserId()
       if (!userId) { router.replace('/(auth)/login'); return }
@@ -121,6 +121,7 @@ function PayoutsScreenInner() {
       ))
     } catch (err) {
       if (__DEV__) console.warn('[payouts] load failed:', err)
+      setFetchError(true)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -174,6 +175,21 @@ function PayoutsScreenInner() {
           />
         }
       >
+        {/* Error banner */}
+        {fetchError && (
+          <PressableOpacity
+            onPress={() => { setFetchError(false); loadData() }}
+            style={[s.errorBanner, { backgroundColor: colors.destructive + '18' }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.retry') ?? 'Yritä uudelleen'}
+          >
+            <RefreshCw size={16} color={colors.destructive} />
+            <Text style={[s.errorText, { color: colors.destructive }]}>
+              {t('common.loadError') ?? 'Latausvirhe — napauta yrittääksesi uudelleen'}
+            </Text>
+          </PressableOpacity>
+        )}
+
         {/* Total earnings hero */}
         <View style={s.totalSection}>
           <Text style={[s.totalLabel, { color: colors.mutedForeground }]}>
@@ -366,6 +382,10 @@ const s = StyleSheet.create({
   txnDate: { fontSize: 12, fontFamily: fonts.body, marginTop: 4 },
   txnAmount: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
   txnDivider: { height: 1, marginLeft: 12 },
+
+  /* Error banner */
+  errorBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, marginBottom: 8 },
+  errorText: { fontSize: 13, fontFamily: fonts.body, flex: 1 },
 })
 
 export default function PayoutsScreen() {

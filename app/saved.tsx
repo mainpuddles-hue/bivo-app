@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, Pressable,
@@ -264,7 +262,7 @@ function SavedScreenInner() {
           <ArrowLeft size={13} color={colors.foreground} />
         </Pressable>
         <View style={s.headerTitleWrap}>
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>
+          <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">
             {t('saved.title')}
           </Text>
         </View>

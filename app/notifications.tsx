@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { View, Text, SectionList, RefreshControl, StyleSheet, Animated, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -392,7 +390,11 @@ function NotificationsScreenInner() {
       }, () => {
         fetchNotificationsRef.current()
       })
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          if (__DEV__) console.warn('[notifications] Realtime error:', status)
+        }
+      })
     return () => { supabase.removeChannel(channel) }
   }, [userId, isLoggedIn, supabase])
 
@@ -526,7 +528,7 @@ function NotificationsScreenInner() {
           >
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
-          <Text style={[styles.pageTitle, { color: colors.foreground }]}>
+          <Text style={[styles.pageTitle, { color: colors.foreground }]} accessibilityRole="header">
             {t('nav.notifications')}
           </Text>
         </View>

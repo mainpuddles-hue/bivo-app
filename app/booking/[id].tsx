@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert, TextInput, KeyboardAvoidingView, Platform,
@@ -9,7 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ImageWithFallback } from '@/components/ImageWithFallback'
 import {
   ArrowLeft, MessageCircle, Package, ShoppingBag, CheckCircle, XCircle,
-  RotateCcw, Star, Check, ChevronRight, AlertCircle, Clock,
+  RotateCcw, Star, Check, ChevronRight, AlertCircle, Clock, RefreshCw,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -110,6 +108,8 @@ function BookingDetailScreenInner() {
 
   const [booking, setBooking] = useState<BookingData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
   const [userId, setUserId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
 
@@ -126,6 +126,7 @@ function BookingDetailScreenInner() {
   }, [router])
 
   useEffect(() => {
+    setFetchError(false)
     async function load() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
@@ -201,12 +202,13 @@ function BookingDetailScreenInner() {
         }
       } catch (err) {
         if (__DEV__) console.log('[booking detail] load error:', err)
+        setFetchError(true)
       } finally {
         setLoading(false)
       }
     }
     load()
-  }, [id, supabase])
+  }, [id, supabase, retryKey])
 
   // ─── Messaging ───
   const messagingRef = useRef(false)
@@ -330,6 +332,19 @@ function BookingDetailScreenInner() {
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <BarHeader colors={colors} t={t} insets={insets} router={router} />
+        {fetchError && (
+          <PressableOpacity
+            onPress={() => { setFetchError(false); setLoading(true); setRetryKey(k => k + 1) }}
+            style={[s.errorBanner, { backgroundColor: colors.destructive + '18' }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.retry') ?? 'Yritä uudelleen'}
+          >
+            <RefreshCw size={16} color={colors.destructive} />
+            <Text style={[s.errorBannerText, { color: colors.destructive }]}>
+              {t('common.loadError') ?? 'Latausvirhe — napauta yrittääksesi uudelleen'}
+            </Text>
+          </PressableOpacity>
+        )}
         <Text style={[s.notFound, { color: colors.mutedForeground }]}>{t('booking.notFound')}</Text>
       </View>
     )
@@ -779,7 +794,7 @@ function BarHeader({ colors, t, insets, router, title, subtitle }: {
         <ArrowLeft size={16} color={colors.foreground} strokeWidth={2.2} />
       </PressableOpacity>
       <View style={{ flex: 1, alignItems: 'center' }}>
-        <Text style={[s.headerTitle, { color: colors.foreground }]}>{title ?? t('booking.details')}</Text>
+        <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{title ?? t('booking.details')}</Text>
         {subtitle ? <Text style={[s.headerSubtitle, { color: colors.mutedForeground }]}>{subtitle}</Text> : null}
       </View>
       <View style={s.headerSpacer} />
@@ -1462,6 +1477,10 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.1,
   },
+
+  // Error banner
+  errorBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginTop: 8, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
+  errorBannerText: { fontSize: 13, fontFamily: fonts.body, flex: 1 },
 })
 
 export default function BookingDetailScreen() {

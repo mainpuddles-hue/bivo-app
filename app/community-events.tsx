@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, FlatList, RefreshControl, Pressable, ScrollView, StyleSheet,
@@ -388,6 +386,9 @@ function CommunityEventsScreenInner() {
           filteredEvents.length === 0 && !loading && s.emptyContainer,
         ]}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.foreground} />
         }

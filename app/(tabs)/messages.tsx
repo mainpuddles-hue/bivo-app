@@ -259,7 +259,11 @@ export default function MessagesScreen() {
         if (!myConvIdsRef.current.has(msg.conversation_id)) return
         fetchConversationsRef.current()
       })
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          if (__DEV__) console.warn('[messages] Realtime error:', status)
+        }
+      })
     return () => { supabase.removeChannel(channel) }
   }, [userId, supabase])
 
@@ -554,7 +558,7 @@ export default function MessagesScreen() {
                 ? `${totalUnread} ${(t('messages.unread') ?? 'lukematon').toUpperCase()}`
                 : (t('messages.directMessages') ?? 'Viestit').toUpperCase()}
           </Text>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]} accessibilityRole="header">
             {t('messages.title')}
           </Text>
         </View>

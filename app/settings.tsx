@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -152,7 +150,7 @@ export default function SettingsScreen() {
         const providerName = identities[0]?.provider ?? null
         setOauthProvider(providerName)
       }
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+      const { data } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto, profile_visibility, location_accuracy, is_pro, pro_expires_at, stripe_subscription_id, city_id, building_id').eq('id', user.id).maybeSingle()
       if (!mounted) return
       if (data) {
         // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
@@ -219,12 +217,20 @@ export default function SettingsScreen() {
   }, [profile?.id, supabase])
 
   const toggleSearchPush = useCallback(async (searchId: string, enabled: boolean) => {
-    await (supabase.from('saved_searches') as any).update({ push_enabled: enabled }).eq('id', searchId)
+    const { error } = await (supabase.from('saved_searches') as any).update({ push_enabled: enabled }).eq('id', searchId)
+    if (error) {
+      toast.show({ message: t('common.error') ?? 'Virhe', type: 'error' })
+      return
+    }
     setSavedSearches(prev => prev.map(s => s.id === searchId ? { ...s, push_enabled: enabled } : s))
-  }, [supabase])
+  }, [supabase, toast, t])
 
   const deleteSearch = useCallback(async (searchId: string) => {
-    await (supabase.from('saved_searches') as any).delete().eq('id', searchId)
+    const { error } = await (supabase.from('saved_searches') as any).delete().eq('id', searchId)
+    if (error) {
+      toast.show({ message: t('common.error') ?? 'Virhe', type: 'error' })
+      return
+    }
     setSavedSearches(prev => prev.filter(s => s.id !== searchId))
     toast.show({ message: t('savedSearch.deleted') ?? 'Deleted', type: 'success' })
   }, [supabase, toast, t])
@@ -782,7 +788,7 @@ export default function SettingsScreen() {
           <ChevronLeft size={15} color={colors.foreground} strokeWidth={2.2} />
         </PressableOpacity>
         <View style={s.headerCenter}>
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('settings.title')}</Text>
+          <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('settings.title')}</Text>
         </View>
         <View style={s.headerRightSpacer}>
           {dirty && (

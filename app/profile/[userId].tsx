@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useCallback, useRef } from 'react'
 import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, Alert, useWindowDimensions, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -442,6 +440,8 @@ export default function PublicProfileScreen() {
   }
 
   // --- Review refresher (shared between personal + business) ---
+  // Fetches only the latest review and prepends it to the existing list
+  // instead of refetching all reviews.
   const refreshReviews = () => {
     setHasExistingReview(true)
     supabase
@@ -449,20 +449,28 @@ export default function PublicProfileScreen() {
       .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar_url)')
       .eq('reviewed_id', userId)
       .order('created_at', { ascending: false })
-      .limit(200)
+      .limit(1)
       .then(({ data }) => {
-        if (data) {
-          const revsList = data as unknown as Review[]
-          setReviews(revsList)
-          setTotalReviewCount(revsList.length)
-          const avg = revsList.length > 0 ? (revsList as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / revsList.length : 0
-          setAvgRating(Math.round(avg * 10) / 10)
-          const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-          for (const r of revsList as any[]) {
-            const star = Math.min(5, Math.max(1, Math.round(r.rating)))
-            dist[star] = (dist[star] ?? 0) + 1
-          }
-          setRatingDistribution(dist)
+        if (data && data.length > 0) {
+          const newReview = data[0] as unknown as Review
+          setReviews(prev => {
+            // Avoid duplicates if the review already exists
+            if (prev.some(r => r.id === newReview.id)) return prev
+            const updated = [newReview, ...prev]
+            // Recompute stats from the updated list
+            setTotalReviewCount(updated.length)
+            const avg = updated.length > 0
+              ? (updated as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / updated.length
+              : 0
+            setAvgRating(Math.round(avg * 10) / 10)
+            const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            for (const r of updated as any[]) {
+              const star = Math.min(5, Math.max(1, Math.round(r.rating)))
+              dist[star] = (dist[star] ?? 0) + 1
+            }
+            setRatingDistribution(dist)
+            return updated
+          })
         }
       })
   }
@@ -836,19 +844,19 @@ export default function PublicProfileScreen() {
           </View>
         </ScrollView>
 
-        <ReviewModal
+        {userId && <ReviewModal
           visible={showReviewModal}
           onClose={() => setShowReviewModal(false)}
-          reviewedUserId={userId!}
+          reviewedUserId={userId}
           onReviewSubmitted={refreshReviews}
-        />
+        />}
 
-        <ReportModal
+        {userId && <ReportModal
           visible={showReportModal}
           onClose={() => setShowReportModal(false)}
           type="user"
-          targetId={userId!}
-        />
+          targetId={userId}
+        />}
       </View>
       </ScreenErrorBoundary>
     )
@@ -1023,20 +1031,20 @@ export default function PublicProfileScreen() {
       </ScrollView>
 
       {/* Review Modal */}
-      <ReviewModal
+      {userId && <ReviewModal
         visible={showReviewModal}
         onClose={() => setShowReviewModal(false)}
-        reviewedUserId={userId!}
+        reviewedUserId={userId}
         onReviewSubmitted={refreshReviews}
-      />
+      />}
 
       {/* Report Modal */}
-      <ReportModal
+      {userId && <ReportModal
         visible={showReportModal}
         onClose={() => setShowReportModal(false)}
         type="user"
-        targetId={userId!}
-      />
+        targetId={userId}
+      />}
     </View>
     </ScreenErrorBoundary>
   )

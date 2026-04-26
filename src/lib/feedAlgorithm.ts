@@ -122,12 +122,18 @@ function enforceBoostedCap(posts: Post[], boostedIds: Set<string>): Post[] {
  * Sort posts by relevance score, with Pro listings always first.
  */
 export function rankFeed(posts: Post[], ctx: FeedContext): Post[] {
+  // Pre-compute scores to avoid O(n log n) redundant scorePost calls during sort
+  const scoreMap = new Map<string, number>()
+  for (const post of posts) {
+    scoreMap.set(post.id, scorePost(post, ctx))
+  }
+
   const sorted = [...posts].sort((a, b) => {
     // Pro listings always on top
     if (a.is_pro_listing && !b.is_pro_listing) return -1
     if (!a.is_pro_listing && b.is_pro_listing) return 1
-    // Then by score
-    return scorePost(b, ctx) - scorePost(a, ctx)
+    // Then by pre-computed score
+    return (scoreMap.get(b.id) ?? 0) - (scoreMap.get(a.id) ?? 0)
   })
 
   // Cap boosted posts in top positions to avoid feed domination

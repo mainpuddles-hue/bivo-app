@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { View, Text, SectionList, RefreshControl, StyleSheet, Alert, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -372,7 +370,7 @@ function BookingsScreenInner() {
         >
           <ArrowLeft size={20} color={colors.foreground} />
         </PressableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('bookings.title')}</Text>
+        <Text style={[styles.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('bookings.title')}</Text>
         <View style={styles.headerSpacer} />
       </View>
 

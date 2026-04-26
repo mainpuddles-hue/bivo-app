@@ -22,7 +22,13 @@ export function BackButton({ onPress, color }: BackButtonProps) {
 
   return (
     <Pressable
-      onPress={onPress ?? (() => router.back())}
+      onPress={onPress ?? (() => {
+        if (router.canGoBack()) {
+          router.back()
+        } else {
+          router.replace('/')
+        }
+      })}
       hitSlop={12}
       accessibilityRole="button"
       accessibilityLabel={t('common.back')}

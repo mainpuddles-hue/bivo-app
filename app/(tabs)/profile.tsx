@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { View, Text, ScrollView, RefreshControl, TextInput, StyleSheet, Alert, Modal, FlatList, Animated } from 'react-native'
 import { withHapticRefresh } from '@/lib/haptics'
@@ -93,21 +91,21 @@ const [editingBio, setEditingBio] = useState(false)
     extrapolate: 'clamp',
   })
 
-  const loadProfile = useCallback(async () => {
+  const loadProfile = useCallback(async (mounted: { current: boolean }) => {
     setFetchError(false)
     try {
     const cachedId = await getCachedUserId()
-    if (!mountedRef.current) return
+    if (!mounted.current) return
     if (!cachedId) { setProfileLoading(false); return }
     const user = { id: cachedId }
 
     // Profile
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
-    if (!mountedRef.current) return
+    if (!mounted.current) return
     if (p) {
       // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
       await clearExpiredPro(supabase, user.id, p as any)
-      if (!mountedRef.current) return
+      if (!mounted.current) return
       setProfile(p as unknown as Profile); setBioText((p as any).bio ?? '')
     }
 
@@ -134,7 +132,7 @@ const [editingBio, setEditingBio] = useState(false)
     const followersRes = followersSettled.status === 'fulfilled' ? followersSettled.value : { count: 0 }
     const followingRes = followingSettled.status === 'fulfilled' ? followingSettled.value : { count: 0 }
     const savedRes = savedSettled.status === 'fulfilled' ? savedSettled.value : { count: 0 }
-    if (!mountedRef.current) return
+    if (!mounted.current) return
     setPostCount(postsRes.count ?? 0)
     setFollowerCount(followersRes.count ?? 0)
     setFollowingCount(followingRes.count ?? 0)
@@ -147,7 +145,7 @@ const [editingBio, setEditingBio] = useState(false)
         .eq('reviewed_id', user.id)
         .order('created_at', { ascending: false })
         .limit(100)
-      if (!mountedRef.current) return
+      if (!mounted.current) return
       const allRevs = (revs ?? []) as any[]
       setReviews(allRevs.slice(0, 10) as unknown as Review[])
       if (allRevs.length > 0) {
@@ -157,7 +155,7 @@ const [editingBio, setEditingBio] = useState(false)
 
       // Badges
       const { data: bdg } = await supabase.from('user_badges').select('badge_type').eq('user_id', user.id)
-      if (!mountedRef.current) return
+      if (!mounted.current) return
       setBadges((bdg ?? []) as UserBadge[])
 
       // Recent posts
@@ -167,32 +165,32 @@ const [editingBio, setEditingBio] = useState(false)
         .eq('user_id', user.id)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .limit(5)
-      if (!mountedRef.current) return
+        .limit(50)
+      if (!mounted.current) return
       setRecentPosts((posts ?? []) as unknown as Post[])
 
     } catch {
       // Network error — show whatever we have
       setFetchError(true)
     } finally {
-      if (mountedRef.current) setProfileLoading(false)
+      if (mounted.current) setProfileLoading(false)
     }
-  }, [supabase, t])
+  }, [supabase])
 
   // Stable onRefresh — withHapticRefresh returns a new function on every
   // call, which would cause RefreshControl to rebind on every render.
   const onRefreshHandler = useMemo(
     () => withHapticRefresh(() => {
       setRefreshing(true)
-      loadProfile().finally(() => setRefreshing(false))
+      loadProfile(mountedRef).finally(() => setRefreshing(false))
     }),
     [loadProfile],
   )
 
   useFocusEffect(useCallback(() => {
-    mountedRef.current = true
-    loadProfile()
-    return () => { mountedRef.current = false }
+    const mounted = { current: true }
+    loadProfile(mounted)
+    return () => { mounted.current = false }
   }, [loadProfile]))
 
   const handleAvatarUpload = useCallback(async () => {
@@ -429,7 +427,7 @@ const [editingBio, setEditingBio] = useState(false)
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 12 }]}>
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
+          <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('profile.title')}</Text>
         </View>
         <ProfileSkeleton />
       </View>
@@ -440,7 +438,7 @@ const [editingBio, setEditingBio] = useState(false)
     return (
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 12 }]}>
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
+          <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('profile.title')}</Text>
         </View>
         <View style={s.emptyLogin}>
           <View style={[s.emptyIconCircle, { backgroundColor: colors.foreground + '14' }]}>
@@ -462,7 +460,7 @@ const [editingBio, setEditingBio] = useState(false)
       {/* Header v3 — Bell + Settings icons at top-right */}
       <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <Animated.View style={{ opacity: titleOpacity }}>
-          <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('profile.title')}</Text>
+          <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('profile.title')}</Text>
         </Animated.View>
         <View style={s.headerIcons}>
           <PressableOpacity
@@ -503,7 +501,7 @@ const [editingBio, setEditingBio] = useState(false)
         }
       >
         {fetchError && !profileLoading && (
-          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile().finally(() => setRefreshing(false)) }} style={[s.errorBanner, { backgroundColor: `${colors.destructive}10` }]}>
+          <PressableOpacity onPress={() => { setRefreshing(true); loadProfile(mountedRef).finally(() => setRefreshing(false)) }} style={[s.errorBanner, { backgroundColor: `${colors.destructive}10` }]}>
             <RefreshCw size={14} color={colors.destructive} />
             <Text style={[s.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
           </PressableOpacity>

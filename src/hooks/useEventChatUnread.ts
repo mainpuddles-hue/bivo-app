@@ -1,5 +1,3 @@
-declare const __DEV__: boolean
-
 import { useState, useEffect, useRef } from 'react'
 import { useSupabase } from './useSupabase'
 
@@ -80,7 +78,11 @@ export function useEventChatUnread(userId: string | null) {
           debouncedFetchUnread()
         },
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          if (__DEV__) console.warn('[useEventChatUnread] Realtime channel error:', status)
+        }
+      })
 
     return () => {
       mounted = false
