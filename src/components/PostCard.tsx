@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
   conditionBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   conditionBadgeText: { fontSize: 12, fontWeight: '600', lineHeight: 16, fontFamily: fonts.bodySemi },
   // Action row — tight, touch targets met via hitSlop not minHeight
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
   actionItem: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, minWidth: 44, paddingHorizontal: 4, justifyContent: 'center' as const },
   actionText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 16 },
   distanceRow: { marginLeft: 'auto' as any, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4 },

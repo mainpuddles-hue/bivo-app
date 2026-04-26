@@ -975,7 +975,7 @@ function PostDetailScreenInner() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Minimal back button overlay for loading state */}
         <View style={[styles.heroNav, { top: insets.top + 16 }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
         </View>
@@ -990,7 +990,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.heroNav, { top: insets.top + 16 }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
         </View>
@@ -1008,7 +1008,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.heroNav, { top: insets.top + 16 }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
         </View>
@@ -1034,19 +1034,19 @@ function PostDetailScreenInner() {
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Hero nav overlay — back + heart circles on top of photo */}
       <View style={[styles.heroNav, { top: insets.top + 16 }]} pointerEvents="box-none">
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={18} color={colors.foreground} />
         </PressableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <PressableOpacity onPress={toggleSave} hitSlop={8} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}>
+          <PressableOpacity onPress={toggleSave} hitSlop={8} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.save')} accessibilityState={{ selected: isSaved }}>
             <Bookmark size={16} color={isSaved ? colors.foreground : colors.foreground} fill={isSaved ? colors.foreground : 'transparent'} />
           </PressableOpacity>
           {isAuthor ? (
-            <PressableOpacity onPress={handleMorePress} hitSlop={8} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('feed.moreOptions')}>
+            <PressableOpacity onPress={handleMorePress} hitSlop={8} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('feed.moreOptions')}>
               <MoreHorizontal size={18} color={colors.foreground} />
             </PressableOpacity>
           ) : userId ? (
-            <PressableOpacity onPress={handleReport} hitSlop={8} style={[styles.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]} accessibilityRole="button" accessibilityLabel={t('post.report')}>
+            <PressableOpacity onPress={handleReport} hitSlop={8} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('post.report')}>
               <Flag size={16} color={colors.foreground} />
             </PressableOpacity>
           ) : null}
@@ -1084,7 +1084,7 @@ function PostDetailScreenInner() {
           <LinearGradient colors={['rgba(0,0,0,0.20)', 'rgba(0,0,0,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 0.35 }} style={styles.heroOverlay} pointerEvents="none" />
           {/* Category chip on hero */}
           {category && (
-            <View style={[styles.catChipHero, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]}>
+            <View style={[styles.catChipHero, { backgroundColor: colors.card + 'EB' }]}>
               <Text style={[styles.catChipHeroText, { color: colors.foreground }]}>{t(category.label)}</Text>
             </View>
           )}
@@ -1322,7 +1322,7 @@ function PostDetailScreenInner() {
           {/* v3 Location card */}
           {post.location && (
             <View style={[styles.locCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={[styles.locMap, { backgroundColor: isDark ? '#2A2D30' : '#E8EAEC' }]}>
+              <View style={[styles.locMap, { backgroundColor: isDark ? colors.foreground : colors.muted }]}>
                 <View style={[styles.locPin, { backgroundColor: colors.foreground }]}>
                   <MapPin size={12} color={colors.background} strokeWidth={2.4} />
                 </View>
@@ -1408,9 +1408,9 @@ function PostDetailScreenInner() {
                             <Text style={{ fontSize: 14, fontFamily: fonts.heading, color: colors.foreground }} numberOfLines={1}>{rp.title.charAt(0).toUpperCase()}</Text>
                           </View>
                         )}
-                        <View style={[styles.relatedHeartCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]}>
+                        <PressableOpacity hitSlop={8} style={[styles.relatedHeartCircle, { backgroundColor: colors.card + 'EB' }]}>
                           <Heart size={14} color={colors.foreground} />
-                        </View>
+                        </PressableOpacity>
                       </View>
                       <View style={styles.relatedCardBody}>
                         <Text style={[styles.relatedCardTitle, { color: colors.foreground }]} numberOfLines={1}>{rp.title}</Text>
@@ -1476,7 +1476,7 @@ function PostDetailScreenInner() {
 
       {/* Edit Modal */}
       <Modal visible={editModalVisible} animationType="slide" transparent onRequestClose={() => setEditModalVisible(false)}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.modalOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.editPost')}</Text>
@@ -1500,7 +1500,7 @@ function PostDetailScreenInner() {
 
       {/* Booking Modal */}
       <Modal visible={bookingModalVisible} animationType="slide" transparent onRequestClose={() => setBookingModalVisible(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setBookingModalVisible(false)}>
+        <Pressable style={[styles.modalOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.5)' }]} onPress={() => setBookingModalVisible(false)}>
           <Pressable style={[styles.modalContent, { backgroundColor: colors.card }]} onPress={() => {}}>
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
               <View style={styles.modalHeader}>
@@ -1589,7 +1589,7 @@ function PostDetailScreenInner() {
 
       {/* Service Booking Modal */}
       <Modal visible={serviceModalVisible} animationType="slide" transparent onRequestClose={() => setServiceModalVisible(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setServiceModalVisible(false)}>
+        <Pressable style={[styles.modalOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.5)' }]} onPress={() => setServiceModalVisible(false)}>
           <Pressable style={[styles.modalContent, { backgroundColor: colors.card }]} onPress={() => {}}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('service.bookService')}</Text>
@@ -1678,6 +1678,7 @@ function PostDetailScreenInner() {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
           paddingBottom: insets.bottom + 10,
+          shadowColor: colors.foreground,
         }]}>
           {replyToComment && (
             <View style={[ctaStyles.replyIndicator, { backgroundColor: `${colors.foreground}10`, borderColor: colors.foreground }]}>
@@ -1753,7 +1754,7 @@ function PostDetailScreenInner() {
 
       {/* Likers Modal */}
       <Modal visible={showLikersModal} animationType="slide" transparent onRequestClose={() => setShowLikersModal(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setShowLikersModal(false)}>
+        <Pressable style={[styles.modalOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.5)' }]} onPress={() => setShowLikersModal(false)}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t('post.likedBy')}</Text>
@@ -1797,7 +1798,7 @@ function PostDetailScreenInner() {
 
       {/* Undo delete bar — shows for 10s after soft-delete */}
       {undoBarVisible && (
-        <View style={[undoStyles.bar, { backgroundColor: colors.card, borderColor: colors.border, bottom: insets.bottom + 88 }]}>
+        <View style={[undoStyles.bar, { backgroundColor: colors.card, borderColor: colors.border, bottom: insets.bottom + 88, shadowColor: colors.foreground }]}>
           <Text style={[undoStyles.label, { color: colors.foreground }]}>{t('post.deletedUndo')}</Text>
           <PressableOpacity onPress={handleUndoDelete} style={[undoStyles.btn, { backgroundColor: colors.foreground }]} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('post.undo')}>
             <Text style={[undoStyles.btnText, { color: colors.background }]}>{t('post.undo')}</Text>
@@ -1836,7 +1837,7 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 108, left: 16,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
   },
-  catChipHeroText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
+  catChipHeroText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
   pageDots: { position: 'absolute', bottom: 14, alignSelf: 'center', flexDirection: 'row', gap: 5 },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)' },
   dotActive: { width: 16, backgroundColor: 'white' },
@@ -1877,7 +1878,7 @@ const styles = StyleSheet.create({
   factsGrid: { flexDirection: 'row', paddingVertical: 16, borderTopWidth: 1, borderBottomWidth: 1, marginTop: -4 },
   fact: { flex: 1, gap: 3, paddingHorizontal: 12, borderRightWidth: 1 },
   factLast: { flex: 1, gap: 3, paddingHorizontal: 12 },
-  factLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
+  factLabel: { fontSize: 12, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
   factValue: { fontSize: 18, fontFamily: fonts.displayMedium, letterSpacing: -0.3 },
 
   // v3 Author card — separated card with border
@@ -1975,7 +1976,7 @@ const styles = StyleSheet.create({
   relatedCardLocation: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   relatedCardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   relatedCardArrow: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  relatedHeartCircle: { position: 'absolute', top: 8, right: 8, width: 32, height: 32, borderRadius: 999, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
+  relatedHeartCircle: { position: 'absolute', top: 8, right: 8, width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
   bookingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 999, alignSelf: 'flex-start' },
   bookingBtnText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   bookingPostTitle: { fontSize: 16, fontFamily: fonts.bodySemi, lineHeight: 24 },

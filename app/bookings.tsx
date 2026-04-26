@@ -196,6 +196,7 @@ function BookingsScreenInner() {
 
       if (error) {
         if (__DEV__) console.log('[bookings] error:', error.message)
+        setFetchError(true)
         setBookings([])
       } else {
         setBookings((data ?? []) as unknown as RentalBooking[])
@@ -434,10 +435,11 @@ function BookingsScreenInner() {
       {fetchError && !loading && (
         <PressableOpacity
           onPress={() => { setRefreshing(true); fetchBookings() }}
-          style={[styles.errorBanner, { backgroundColor: colors.card, borderColor: colors.border }]}
+          style={[styles.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+          accessibilityRole="button"
         >
-          <RefreshCw size={14} color={colors.mutedForeground} />
-          <Text style={[styles.errorBannerText, { color: colors.foreground }]}>{t('common.loadError')}</Text>
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={[styles.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
         </PressableOpacity>
       )}
 
@@ -654,9 +656,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     margin: 16,
-    padding: 14,
+    padding: 12,
     borderRadius: 20,
-    borderWidth: 1,
   },
   errorBannerText: {
     fontSize: 13,

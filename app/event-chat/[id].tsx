@@ -9,11 +9,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, Users, CalendarDays } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, Users, CalendarDays, RefreshCw } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
+import { KeyboardDoneAccessory, KEYBOARD_DONE_ID, PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useEventChat } from '@/hooks/useEventChat'
 import { Avatar } from '@/components/Avatar'
@@ -46,6 +46,7 @@ function EventChatScreenInner() {
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null)
   const [memberCount, setMemberCount] = useState(0)
   const [input, setInput] = useState('')
+  const [initError, setInitError] = useState(false)
 
   // Get user
   useEffect(() => {
@@ -82,6 +83,7 @@ function EventChatScreenInner() {
         setMemberCount((countResult as any).count ?? 0)
       } catch (err) {
         if (__DEV__) console.warn('[event-chat] loadEventInfo error:', err)
+        if (!cancelled) setInitError(true)
       }
     }
 
@@ -289,6 +291,18 @@ function EventChatScreenInner() {
             )}
           </Text>
         </Pressable>
+      )}
+
+      {/* Error banner for fetch failures */}
+      {(initError || fetchError) && !loading && (
+        <PressableOpacity
+          onPress={() => { setInitError(false); refetch() }}
+          style={[s.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+          accessibilityRole="button"
+        >
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={[s.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
+        </PressableOpacity>
       )}
 
       {/* Messages */}
@@ -538,6 +552,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  // Error banner
+  errorBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20 },
+  errorBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
 })
 
 export default function EventChatScreen() {

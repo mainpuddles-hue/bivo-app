@@ -623,7 +623,7 @@ const [editingBio, setEditingBio] = useState(false)
               onPress={() => setActiveTab(tab.key)}
               style={[
                 s.segItem,
-                activeTab === tab.key && [s.segItemActive, { backgroundColor: colors.card }],
+                activeTab === tab.key && [s.segItemActive, { backgroundColor: colors.card, shadowColor: colors.foreground }],
               ]}
               accessibilityLabel={tab.label}
               accessibilityRole="tab"
@@ -937,11 +937,11 @@ const s = StyleSheet.create({
   statCol: { flex: 1, alignItems: 'center', gap: 2 },
   statDivider: { width: 1, height: 32, alignSelf: 'center' },
   statNum: { fontSize: 24, fontWeight: '700', fontFamily: fonts.display, letterSpacing: -0.4, lineHeight: 28 },
-  statLabel: { fontSize: 11, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 16, letterSpacing: 0.6, textTransform: 'uppercase' },
+  statLabel: { fontSize: 12, fontFamily: fonts.bodySemi, fontWeight: '600', lineHeight: 16, letterSpacing: 0.6, textTransform: 'uppercase' },
 
   // Segmented control v3
   segmented: { flexDirection: 'row', padding: 4, borderRadius: 999, gap: 4 },
-  segItem: { flex: 1, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  segItem: { flex: 1, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   segItemActive: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

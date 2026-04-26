@@ -662,7 +662,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 32,
+    fontSize: 28,
     lineHeight: 40,
     fontFamily: fonts.heading,
     marginBottom: 4,

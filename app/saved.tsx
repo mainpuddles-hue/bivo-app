@@ -552,7 +552,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.display,
     letterSpacing: -0.15,
@@ -675,7 +675,7 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 1.4,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,

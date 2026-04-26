@@ -958,10 +958,10 @@ function BookingLifecycleStepper({ booking, colors, isDark, t }: {
   const isRental = booking.type === 'rental'
   const currentIdx = mapStatusToStepperIndex(booking.status, isRental)
 
-  const doneColor = '#4CAF6A'
-  const currentColor = isDark ? '#6FCF97' : '#2D6B5E'
-  const futureColor = isDark ? '#555555' : '#C0C0C0'
-  const cancelledColor = isDark ? '#EF4444' : '#D94F4F'
+  const doneColor = colors.accent ?? '#4CAF6A'
+  const currentColor = colors.primary
+  const futureColor = colors.border
+  const cancelledColor = colors.destructive
 
   const stepDefs = isRental ? RENTAL_STEPPER_STEPS : SERVICE_STEPPER_STEPS
 
@@ -983,7 +983,7 @@ function BookingLifecycleStepper({ booking, colors, isDark, t }: {
           const iconColor = isCancelled
             ? futureColor
             : (done || current)
-              ? (isDark ? '#121212' : '#FFFFFF')
+              ? colors.primaryForeground
               : futureColor
 
           const circleBg = isCancelled

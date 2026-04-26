@@ -979,10 +979,10 @@ export default function SettingsScreen() {
                 placeholderTextColor={colors.tertiaryForeground}
                 style={{
                   flex: 1,
-                  height: 40,
+                  height: 44,
                   borderWidth: 1,
                   borderColor: (coopStatus === 'invalid' || coopStatus === 'expired' || coopStatus === 'exhausted') ? colors.destructive : coopStatus === 'applied' ? (colors.accent ?? colors.primary) : colors.border,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   paddingHorizontal: 12,
                   fontFamily: fonts.bodySemi,
                   fontSize: 16,
@@ -998,9 +998,9 @@ export default function SettingsScreen() {
                 onPress={handleApplyCoopCode}
                 disabled={!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying'}
                 style={{
-                  height: 40,
+                  height: 44,
                   paddingHorizontal: 14,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   backgroundColor: (!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying') ? colors.muted : colors.primary,
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -1009,35 +1009,35 @@ export default function SettingsScreen() {
                 {coopStatus === 'checking' || coopStatus === 'applying' ? (
                   <ActivityIndicator size="small" color={colors.foreground} />
                 ) : (
-                  <Text style={{ fontFamily: fonts.bodySemi, fontSize: 14, color: (!coopCode.trim()) ? colors.tertiaryForeground : '#FFFFFF' }}>
+                  <Text style={{ fontFamily: fonts.bodySemi, fontSize: 14, color: (!coopCode.trim()) ? colors.tertiaryForeground : colors.primaryForeground }}>
                     {t('settings.applyCode') ?? 'Liity'}
                   </Text>
                 )}
               </PressableOpacity>
             </View>
             {coopStatus === 'applied' && coopOrgName ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <CheckCircle size={14} color={colors.accent ?? colors.primary} strokeWidth={1.8} />
                 <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.accent ?? colors.primary }}>
                   {coopOrgName}
                 </Text>
               </View>
             ) : coopStatus === 'invalid' ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
                 <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
                   {t('settings.codeInvalid') ?? 'Virheellinen koodi'}
                 </Text>
               </View>
             ) : coopStatus === 'expired' ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
                 <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
                   {t('settings.codeExpired') ?? 'Koodi on vanhentunut'}
                 </Text>
               </View>
             ) : coopStatus === 'exhausted' ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
                 <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
                   {t('settings.codeExhausted') ?? 'Koodi on käytetty loppuun'}

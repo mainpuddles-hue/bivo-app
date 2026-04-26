@@ -538,7 +538,7 @@ function NewListingScreenInner() {
                 <PressableOpacity
                   onPress={() => removePhoto(i)}
                   style={[s.photoRemove, { backgroundColor: 'rgba(0,0,0,0.55)' }]}
-                  hitSlop={8}
+                  hitSlop={12}
                 >
                   <X size={10} color="#fff" strokeWidth={2.5} />
                 </PressableOpacity>
@@ -1217,11 +1217,11 @@ const s = StyleSheet.create({
   // ── Deposit ──
   depositCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
   depositRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
-  depositAmount: { fontSize: 36, fontWeight: '600', letterSpacing: -1.2, lineHeight: 40, fontFamily: fonts.bodySemi },
-  depositCurrency: { fontSize: 17, fontWeight: '600', fontFamily: fonts.bodySemi },
+  depositAmount: { fontSize: 32, fontWeight: '600', letterSpacing: -1.2, lineHeight: 40, fontFamily: fonts.bodySemi },
+  depositCurrency: { fontSize: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   depositControls: { flexDirection: 'row', gap: 8 },
-  depositBtn: { width: 40, height: 40, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  depositBtnDark: { width: 40, height: 40, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  depositBtn: { width: 44, height: 44, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  depositBtnDark: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   depositHint: { fontSize: 12, lineHeight: 16, marginTop: 8, fontFamily: fonts.body },
 
   // ── Suggestion card ──

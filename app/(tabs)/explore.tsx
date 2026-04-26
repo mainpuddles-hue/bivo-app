@@ -1018,7 +1018,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
   },
-  headerLeft: { flex: 1, gap: 2 },
+  headerLeft: { flex: 1, gap: 4 },
   locationEyebrow: {
     fontSize: 11,
     fontWeight: '600',
@@ -1194,7 +1194,7 @@ const s = StyleSheet.create({
   // ── Card content (event/place rows) ──
   cardContent: {
     flex: 1,
-    gap: 3,
+    gap: 4,
   },
   cardFlex: {
     flex: 1,
@@ -1351,7 +1351,7 @@ const s = StyleSheet.create({
   },
   ceCardBody: {
     padding: 12,
-    gap: 4,
+    gap: 6,
   },
   ceCardTitle: {
     fontSize: 13,

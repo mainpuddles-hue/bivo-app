@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { ArrowLeft, Receipt, ChevronRight, CreditCard } from 'lucide-react-native'
+import { ArrowLeft, Receipt, ChevronRight, CreditCard, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -242,7 +242,7 @@ function PaymentHistoryScreenInner() {
         <View style={{ paddingHorizontal: 16, paddingTop: 24 }}>
           <SectionSkeleton count={5} />
         </View>
-      ) : fetchError ? (
+      ) : fetchError && payments.length === 0 ? (
         <View style={styles.empty}>
           <CreditCard size={48} color={colors.mutedForeground} style={{ opacity: 0.3 }} />
           <Text style={[styles.emptyTitle, { color: colors.mutedForeground }]}>
@@ -264,20 +264,32 @@ function PaymentHistoryScreenInner() {
           <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>{t('payment.noPaymentsHint')}</Text>
         </View>
       ) : (
-        <FlatList
-          data={grouped}
-          keyExtractor={g => g.month}
-          renderItem={renderGroupItem}
-          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 40 }]}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => { setRefreshing(true); fetchPayments() }}
-              tintColor={colors.foreground}
-            />
-          }
-          showsVerticalScrollIndicator={false}
-        />
+        <>
+          {fetchError && !loading && (
+            <PressableOpacity
+              onPress={() => { setRefreshing(true); fetchPayments() }}
+              style={[styles.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+              accessibilityRole="button"
+            >
+              <RefreshCw size={14} color={colors.destructive} />
+              <Text style={[styles.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
+            </PressableOpacity>
+          )}
+          <FlatList
+            data={grouped}
+            keyExtractor={g => g.month}
+            renderItem={renderGroupItem}
+            contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 40 }]}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => { setRefreshing(true); fetchPayments() }}
+                tintColor={colors.foreground}
+              />
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        </>
       )}
     </View>
   )
@@ -320,7 +332,7 @@ const styles = StyleSheet.create({
   },
   sectionCards: { gap: 8 },
   paymentRow: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -405,6 +417,20 @@ const styles = StyleSheet.create({
   viewPostBtnText: {
     fontSize: 13,
     fontFamily: fonts.bodySemi,
+  },
+  // Error banner
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    margin: 16,
+    padding: 12,
+    borderRadius: 20,
+  },
+  errorBannerText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
   },
   empty: {
     alignItems: 'center',

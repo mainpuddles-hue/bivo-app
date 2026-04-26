@@ -10,7 +10,7 @@ import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import {
   Settings, Pin, ChevronUp, Plus, Copy, Trash2, Key,
   Droplets, Zap, Flame, ArrowUpDown, Building2, Trees, Shield, HelpCircle,
-  X, AlertTriangle, UserMinus, Save, ChevronDown,
+  X, AlertTriangle, UserMinus, Save, ChevronDown, RefreshCw,
 } from 'lucide-react-native'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
@@ -180,6 +180,7 @@ function BuildingScreenInner() {
   // ── State ──
   const [org, setOrg] = useState<Organization | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [myRole, setMyRole] = useState<MemberRole | null>(null)
@@ -224,6 +225,7 @@ function BuildingScreenInner() {
       setLoading(false)
       return
     }
+    setFetchError(false)
     try {
       const cachedId = await getCachedUserId()
       if (!mountedRef.current) return
@@ -271,6 +273,7 @@ function BuildingScreenInner() {
       }
     } catch (err) {
       if (__DEV__) console.log('[building] error:', err)
+      if (mountedRef.current) setFetchError(true)
     } finally {
       if (mountedRef.current) setLoading(false)
     }
@@ -528,6 +531,17 @@ function BuildingScreenInner() {
           <View style={s.headerSpacer} />
         )}
       </View>
+
+      {fetchError && !loading && (
+        <PressableOpacity
+          onPress={() => { setFetchError(false); fetchData() }}
+          style={[s.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+          accessibilityRole="button"
+        >
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={[s.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
+        </PressableOpacity>
+      )}
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -2063,4 +2077,8 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     ...typeScale.body,
   },
+
+  // Error banner
+  errorBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20 },
+  errorBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
 })

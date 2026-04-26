@@ -27,7 +27,7 @@ interface Announcement {
 }
 
 function AnnouncementDetailInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -85,7 +85,7 @@ function AnnouncementDetailInner() {
 
   const priorityConfig = {
     urgent: { color: colors.destructive, icon: AlertTriangle, label: t('building.priorityUrgent') },
-    important: { color: '#F59E0B', icon: AlertCircle, label: t('building.priorityImportant') },
+    important: { color: colors.pro, icon: AlertCircle, label: t('building.priorityImportant') },
     normal: { color: colors.mutedForeground, icon: null, label: t('building.priorityNormal') },
   }
 

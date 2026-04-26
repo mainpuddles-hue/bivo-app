@@ -5,7 +5,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pr
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
-import { ChevronLeft, Plus, MoreHorizontal, Heart, MessageCircle, Eye, Package } from 'lucide-react-native'
+import { ChevronLeft, Plus, MoreHorizontal, Heart, MessageCircle, Eye, Package, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -237,13 +237,13 @@ function MyListingsScreenInner() {
           {/* Stats row */}
           <View style={s.cardStats}>
             <View style={s.statItem}>
-              <Heart size={11} color={colors.mutedForeground} />
+              <Heart size={12} color={colors.mutedForeground} />
               <Text style={[s.statText, { color: colors.mutedForeground }]}>
                 <Text style={s.statBold}>{item.like_count}</Text>
               </Text>
             </View>
             <View style={s.statItem}>
-              <MessageCircle size={11} color={colors.mutedForeground} />
+              <MessageCircle size={12} color={colors.mutedForeground} />
               <Text style={[s.statText, { color: colors.mutedForeground }]}>
                 <Text style={s.statBold}>{item.comment_count}</Text>
               </Text>
@@ -324,6 +324,18 @@ function MyListingsScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Header */}
       <Header colors={colors} router={router} />
+
+      {/* Error banner */}
+      {fetchError && !loading && (
+        <PressableOpacity
+          onPress={() => { setRefreshing(true); fetchPosts() }}
+          style={[s.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+          accessibilityRole="button"
+        >
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={[s.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
+        </PressableOpacity>
+      )}
 
       {/* Segment tabs */}
       <View style={s.tabsOuter}>
@@ -473,7 +485,7 @@ const s = StyleSheet.create({
   headerCircle: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,
@@ -613,7 +625,7 @@ const s = StyleSheet.create({
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
   statText: {
     fontSize: 12,
@@ -637,5 +649,20 @@ const s = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // Error banner
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    margin: 16,
+    padding: 12,
+    borderRadius: 20,
+  },
+  errorBannerText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
   },
 })

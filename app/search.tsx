@@ -130,6 +130,8 @@ function DiscoveryView({
                     removeFromHistory(h)
                   }}
                   hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.remove')}
                 >
                   <X size={12} color={colors.mutedForeground} />
                 </PressableOpacity>
@@ -166,7 +168,7 @@ function DiscoveryView({
                 </PressableOpacity>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   {saved.id.includes('-') && (
-                    <PressableOpacity onPress={() => toggleSearchPush(saved.id)} hitSlop={8} accessibilityLabel={saved.push_enabled ? t('search.pushOff') : t('search.pushOn')}>
+                    <PressableOpacity onPress={() => toggleSearchPush(saved.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={saved.push_enabled ? t('search.pushOff') : t('search.pushOn')}>
                       {saved.push_enabled ? (
                         <Bell size={14} color={colors.primary} />
                       ) : (
@@ -174,7 +176,7 @@ function DiscoveryView({
                       )}
                     </PressableOpacity>
                   )}
-                  <PressableOpacity onPress={() => removeSavedSearch(saved.id)} hitSlop={8}>
+                  <PressableOpacity onPress={() => removeSavedSearch(saved.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
                     <Trash2 size={14} color={colors.mutedForeground} />
                   </PressableOpacity>
                 </View>
@@ -235,6 +237,8 @@ function DiscoveryView({
                   executeSearch(d.tag)
                 }}
                 style={[s.demandChip, { backgroundColor: isDark ? colors.card : colors.muted, borderColor: colors.border }]}
+                accessibilityRole="button"
+                accessibilityLabel={d.tag}
               >
                 <Text style={[s.recentChipText, { color: colors.foreground, fontFamily: fonts.bodyMedium }]}>{d.tag}</Text>
                 <Text style={[s.demandChipCount, { color: colors.mutedForeground, fontFamily: fonts.body }]}>({d.count})</Text>
@@ -1258,7 +1262,7 @@ function SearchScreenInner() {
           <ActivityIndicator size="small" color={colors.mutedForeground} style={{ marginVertical: 16 }} />
         )}
         {hasMore && !loadingMore && (
-          <PressableOpacity onPress={loadMore} style={s.loadMoreBtn}>
+          <PressableOpacity onPress={loadMore} style={s.loadMoreBtn} accessibilityRole="button">
             <Text style={[s.loadMoreText, { color: colors.foreground, fontFamily: fonts.bodySemi }]}>
               {t('search.loadMore')}
             </Text>
@@ -1420,6 +1424,8 @@ function SearchScreenInner() {
                 executeSearch(suggestion.text)
               }}
               style={s.suggestionRow}
+              accessibilityRole="button"
+              accessibilityLabel={suggestion.text}
             >
               {suggestion.type === 'history' ? (
                 <Clock size={14} color={colors.mutedForeground} />
@@ -1569,7 +1575,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   errorText: { fontSize: 13, flex: 1 },
   errorRetry: { fontSize: 13, marginLeft: 12 },
@@ -1612,14 +1618,14 @@ const s = StyleSheet.create({
   activeChipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 7,
+    gap: 8,
     paddingHorizontal: 16,
     paddingBottom: 12,
   },
   activeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
@@ -1800,14 +1806,14 @@ const s = StyleSheet.create({
     paddingHorizontal: 0, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   categoryIconBox: {
-    width: 36, height: 36, borderRadius: 12,
+    width: 36, height: 36, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
   },
   categoryCardText: { fontSize: 14, flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
 
   // ── Empty state ──
   empty: { alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 32 },
-  emptyIconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  emptyIconCircle: { width: 100, height: 100, borderRadius: 999, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   emptyTitle: { fontSize: 16, fontFamily: fonts.display, lineHeight: 22 },
   emptyHint: { fontSize: 14, textAlign: 'center', fontFamily: fonts.body, lineHeight: 20 },
   emptyCategoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 4 },
@@ -1816,7 +1822,7 @@ const s = StyleSheet.create({
 
   // ── User / event / group cards ──
   userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth },
-  searchEventIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  searchEventIcon: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   userName: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
   userNh: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
 

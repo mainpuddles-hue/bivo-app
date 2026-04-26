@@ -135,7 +135,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   logoText: { fontSize: 28, fontFamily: fonts.heading },
-  appName: { fontSize: 22, fontFamily: fonts.heading, letterSpacing: -0.5 },
+  appName: { fontSize: 20, fontFamily: fonts.heading, letterSpacing: -0.5 },
   versionText: { fontSize: 13, fontFamily: fonts.body },
   tagline: { fontSize: 14, fontFamily: fonts.body, marginTop: 2 },
   sectionLabel: {
@@ -148,7 +148,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 4,
   },
   card: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
   },

@@ -38,7 +38,7 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
 }
 
 function EventDetailScreenInner() {
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const { t, locale } = useI18n()
   const toast = useToast()
   const insets = useSafeAreaInsets()
@@ -308,7 +308,7 @@ function EventDetailScreenInner() {
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={t('common.back')}
-            style={[s.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]}
+            style={[s.heroCircle, { backgroundColor: `${colors.card}EB` }]}
           >
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
@@ -327,7 +327,7 @@ function EventDetailScreenInner() {
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={t('common.back')}
-            style={[s.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)' }]}
+            style={[s.heroCircle, { backgroundColor: `${colors.card}EB` }]}
           >
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
@@ -405,7 +405,7 @@ function EventDetailScreenInner() {
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
-          style={[s.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)', borderColor: colors.border }]}
+          style={[s.heroCircle, { backgroundColor: `${colors.card}EB`, borderColor: colors.border }]}
         >
           <ArrowLeft size={18} color={colors.foreground} />
         </PressableOpacity>
@@ -415,7 +415,7 @@ function EventDetailScreenInner() {
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={t('common.share')}
-            style={[s.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)', borderColor: colors.border }]}
+            style={[s.heroCircle, { backgroundColor: `${colors.card}EB`, borderColor: colors.border }]}
           >
             <Share2 size={16} color={colors.foreground} />
           </PressableOpacity>
@@ -424,7 +424,7 @@ function EventDetailScreenInner() {
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={t('report.title')}
-            style={[s.heroCircle, { backgroundColor: isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)', borderColor: colors.border }]}
+            style={[s.heroCircle, { backgroundColor: `${colors.card}EB`, borderColor: colors.border }]}
           >
             <Flag size={16} color={colors.foreground} />
           </PressableOpacity>

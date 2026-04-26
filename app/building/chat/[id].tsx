@@ -9,11 +9,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, Users, Building2 } from 'lucide-react-native'
+import { ArrowLeft, Send, ImageIcon, Users, Building2, RefreshCw } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
-import { KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
+import { KeyboardDoneAccessory, KEYBOARD_DONE_ID, PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
 import { useEventChat } from '@/hooks/useEventChat'
 import { Avatar } from '@/components/Avatar'
@@ -125,8 +125,8 @@ function BuildingChatScreenInner() {
   }, [orgId, userId, supabase])
 
   const {
-    messages, loading, sending, hasOlder,
-    sendMessage, loadOlder, markAsRead,
+    messages, loading, sending, hasOlder, fetchError,
+    sendMessage, loadOlder, markAsRead, refetch,
   } = useEventChat(conversationId, userId)
 
   // Mark as read on mount
@@ -323,6 +323,18 @@ function BuildingChatScreenInner() {
         </Pressable>
       )}
 
+      {/* Error banner for message fetch failures */}
+      {fetchError && !loading && (
+        <PressableOpacity
+          onPress={() => refetch()}
+          style={[s.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+          accessibilityRole="button"
+        >
+          <RefreshCw size={14} color={colors.destructive} />
+          <Text style={[s.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
+        </PressableOpacity>
+      )}
+
       {/* Messages */}
       {initError && !conversationId ? (
         <View style={s.center}>
@@ -479,6 +491,10 @@ const s = StyleSheet.create({
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
   },
+
+  // Error banner
+  errorBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, padding: 12, borderRadius: 20 },
+  errorBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
 })
 
 export default function BuildingChatScreen() {

@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 14,
   },
-  headerLeft: { flex: 1, gap: 2 },
+  headerLeft: { flex: 1, gap: 4 },
   locationEyebrow: {
     fontSize: 11,
     fontWeight: '600',
@@ -785,7 +785,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 16,
-    height: 42,
+    height: 44,
   },
   searchInput: {
     flex: 1,
@@ -851,11 +851,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
   },
-  convContent: { flex: 1, gap: 3 },
+  convContent: { flex: 1, gap: 4 },
   convNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   convName: {
     fontSize: 16,
@@ -871,12 +871,12 @@ const styles = StyleSheet.create({
   previewRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   imgPreview: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   convPreview: {
     fontSize: 12,
@@ -927,7 +927,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     padding: 12,
-    gap: 4,
+    gap: 6,
     minHeight: 80,
   },
   eventChatTop: {
@@ -958,7 +958,7 @@ const styles = StyleSheet.create({
   eventChatMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   eventChatMetaText: {
     fontSize: 12,

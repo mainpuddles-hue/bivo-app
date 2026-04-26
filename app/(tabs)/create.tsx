@@ -1257,7 +1257,7 @@ export default function CreateScreen() {
                         })}
                       </View>
                       {autoTags.length > 0 && selectedTags.length === 0 && (
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingTop: 4 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingTop: 4 }}>
                           <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: fonts.body, width: '100%' }}>{t('create.suggestedTags') ?? 'Ehdotetut:'}</Text>
                           {autoTags.map(tag => (
                             <PressableOpacity key={tag} onPress={() => setSelectedTags(prev => prev.includes(tag) ? prev : [...prev, tag])}
@@ -1489,7 +1489,7 @@ const mk = StyleSheet.create({
   headerDraft: { width: 56, fontSize: 14, fontWeight: '600', textAlign: 'right', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
 
   // Step indicator
-  stepRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingBottom: 10 },
+  stepRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingBottom: 10 },
   stepDot: { width: 6, height: 6, borderRadius: 3 },
   stepLabel: { fontSize: 12, fontWeight: '500' as const, marginLeft: 4, fontFamily: fonts.bodyMedium },
 
@@ -1533,11 +1533,11 @@ const mk = StyleSheet.create({
   imgProgressText: { fontSize: 12, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 16 },
   imgCompleteOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center', borderRadius: 20 },
   imgCompleteCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  imgAddMore: { width: 100, height: 100, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  imgAddMore: { width: 100, height: 100, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
   imgAddMoreText: { fontSize: 12, fontFamily: fonts.body },
 
   // v3 Form fields
-  fieldWrap: { gap: 4, paddingHorizontal: 20, paddingTop: 14 },
+  fieldWrap: { gap: 6, paddingHorizontal: 20, paddingTop: 14 },
   input: { minHeight: 52, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, fontSize: 16, fontWeight: '500', fontFamily: fonts.bodyMedium, letterSpacing: -0.2 },
   textarea: { minHeight: 110, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 22, fontFamily: fonts.body, textAlignVertical: 'top' },
   charCount: { fontSize: 12, textAlign: 'right', fontFamily: fonts.body },

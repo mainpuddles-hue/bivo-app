@@ -578,7 +578,7 @@ function ActivitiesScreenInner() {
         <View style={st.listPad}>
           <ActivitySkeleton colors={colors} />
         </View>
-      ) : fetchError ? (
+      ) : fetchError && activities.length === 0 ? (
         <EmptyState
           icon={<RefreshCw size={48} color={colors.mutedForeground} />}
           title={t('common.error')}
@@ -589,6 +589,17 @@ function ActivitiesScreenInner() {
           actionVariant="filled"
         />
       ) : (
+        <>
+        {fetchError && !loading && (
+          <PressableOpacity
+            onPress={() => { setRefreshing(true); fetchActivities() }}
+            style={[st.errorBanner, { backgroundColor: `${colors.destructive}10` }]}
+            accessibilityRole="button"
+          >
+            <RefreshCw size={14} color={colors.destructive} />
+            <Text style={[st.errorBannerText, { color: colors.destructive }]}>{t('common.loadError')}</Text>
+          </PressableOpacity>
+        )}
         <FlatList
           data={filteredActivities}
           keyExtractor={item => item.id}
@@ -618,6 +629,7 @@ function ActivitiesScreenInner() {
             />
           }
         />
+        </>
       )}
 
       {/* ── FAB ── */}
@@ -974,6 +986,21 @@ const st = StyleSheet.create({
     fontSize: 13,
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
+  },
+
+  // Error banner
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    margin: 16,
+    padding: 12,
+    borderRadius: 20,
+  },
+  errorBannerText: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemi,
+    flex: 1,
   },
 
   // FAB

@@ -649,7 +649,7 @@ function FeedScreenInner() {
               <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.header} hitSlop={8}>
                 <View style={styles.hLocLine}>
                   <View style={[styles.hLocPin, { backgroundColor: colors.success }]}>
-                    <View style={styles.hLocPinDot} />
+                    <View style={[styles.hLocPinDot, { backgroundColor: colors.card }]} />
                   </View>
                   <Text style={[styles.hLocText, { color: colors.mutedForeground }]}>
                     {t('feed.yourNeighborhood') ?? 'Naapurustosi'}
@@ -791,7 +791,7 @@ function FeedScreenInner() {
                 style={[styles.bldCard, { backgroundColor: colors.foreground }]}
                 accessibilityLabel={`${userBuilding.street_address} — ${userBuilding.member_count - 1} ${t('feed.neighbors') ?? 'naapuria'}`}
               >
-                <View style={styles.bldIconWrap}>
+                <View style={[styles.bldIconWrap, { backgroundColor: `${colors.background}1A`, borderColor: `${colors.background}14` }]}>
                   <Home size={20} color={colors.background} strokeWidth={1.8} />
                 </View>
                 <View style={styles.bldText}>
@@ -979,7 +979,7 @@ const styles = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 3,
-    backgroundColor: '#FFFFFF',
+    // backgroundColor set dynamically via inline style (colors.card)
   },
   hLocText: {
     fontSize: 12,
@@ -1202,17 +1202,16 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    // backgroundColor set dynamically via inline style (`${colors.foreground}0F`)
   },
   bldIconWrap: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    // backgroundColor and borderColor set dynamically via inline style
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
   bldText: {
     flex: 1,
