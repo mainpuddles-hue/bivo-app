@@ -356,8 +356,11 @@ function FeedScreenInner() {
   const handleFilterChangeWithHaptics = useCallback((type: PostType | null) => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
     feed.handleFilterChange(type)
-    // Scroll to top so the user sees the new content immediately
+    // Scroll to top AFTER React re-renders with the new data
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false })
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: false })
+    })
   }, [feed.handleFilterChange])
 
   // Wrap sort change with haptic feedback
@@ -638,7 +641,6 @@ function FeedScreenInner() {
         renderItem={renderFeedItem}
         keyExtractor={item => item.key}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100, gap: 8 }}
-        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
         ListHeaderComponent={
           <View>
             {/* ── Top area with safe area padding ── */}
