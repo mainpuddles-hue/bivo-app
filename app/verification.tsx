@@ -97,7 +97,45 @@ function VerificationScreenInner() {
       const { error } = await (supabase.from('profiles') as any).update({ avatar_url: avatarUrl }).eq('id', profile.id)
       if (error) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
       setProfile(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
-      toast.show({ message: t('profile.avatarUpdated'), type: 'success' })
+
+      // Call face verification Edge Function
+      toast.show({ message: t('verification.verifyingFace'), type: 'info' })
+      try {
+        const verifyRes = await fetch(`${supabaseUrl}/functions/v1/verify-face`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseAnonKey,
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+        })
+        const verifyData = await verifyRes.json()
+        if (verifyData.verified) {
+          toast.show({ message: t('verification.faceVerified'), type: 'success' })
+        } else if (verifyData.retry) {
+          // Model loading — retry once after 3s
+          await new Promise(r => setTimeout(r, 3000))
+          const retryRes = await fetch(`${supabaseUrl}/functions/v1/verify-face`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': supabaseAnonKey,
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+          })
+          const retryData = await retryRes.json()
+          if (retryData.verified) {
+            toast.show({ message: t('verification.faceVerified'), type: 'success' })
+          } else {
+            toast.show({ message: t('verification.noFaceDetected'), type: 'error' })
+          }
+        } else {
+          toast.show({ message: t('verification.noFaceDetected'), type: 'error' })
+        }
+      } catch {
+        // Face verification failed but avatar was uploaded — not critical
+        toast.show({ message: t('profile.avatarUpdated'), type: 'success' })
+      }
     } catch { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }) }
   }, [profile, supabase, t, toast])
 

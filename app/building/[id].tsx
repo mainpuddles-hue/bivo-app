@@ -8,10 +8,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import {
-  Settings, Pin, ChevronUp, Plus,
+  Settings, Pin, ChevronUp, Plus, Copy, Trash2, Key,
   Droplets, Zap, Flame, ArrowUpDown, Building2, Trees, Shield, HelpCircle,
   X, AlertTriangle,
 } from 'lucide-react-native'
+import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useToast } from '@/components/Toast'
@@ -31,7 +32,7 @@ type MemberRole = 'member' | 'board' | 'manager' | 'admin'
 type AnnouncementPriority = 'normal' | 'important' | 'urgent'
 type MaintenanceStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 type MaintenanceCategory = 'plumbing' | 'electrical' | 'heating' | 'elevator' | 'common_area' | 'outdoor' | 'security' | 'other'
-type TabKey = 'announcements' | 'maintenance' | 'members' | 'rules'
+type TabKey = 'announcements' | 'maintenance' | 'members' | 'rules' | 'admin'
 
 interface Organization {
   id: string
@@ -88,12 +89,24 @@ interface MaintenanceRequest {
 // ── Constants ──
 
 const TABS: TabKey[] = ['announcements', 'maintenance', 'members', 'rules']
+const ADMIN_TABS: TabKey[] = ['announcements', 'maintenance', 'members', 'rules', 'admin']
 
 const TAB_LABEL_KEYS: Record<TabKey, string> = {
   announcements: 'building.announcements',
   maintenance: 'building.maintenance',
   members: 'building.members',
   rules: 'building.rules',
+  admin: 'building.admin',
+}
+
+interface InviteCode {
+  id: string
+  code: string
+  created_at: string
+  expires_at: string | null
+  max_uses: number | null
+  uses_count: number
+  is_active: boolean
 }
 
 const CATEGORY_ICONS: Record<MaintenanceCategory, typeof Droplets> = {
@@ -197,8 +210,13 @@ function BuildingScreenInner() {
   // Upvoting ref
   const upvotingRef = useRef(false)
 
+  // Invite codes (admin tab)
+  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
+  const [creatingCode, setCreatingCode] = useState(false)
+
   // ── Derived ──
   const isPrivileged = myRole === 'board' || myRole === 'manager' || myRole === 'admin'
+  const visibleTabs = isPrivileged ? ADMIN_TABS : TABS
 
   // ── Fetch ──
   const fetchData = useCallback(async () => {
@@ -238,7 +256,18 @@ function BuildingScreenInner() {
       // Find current user's role
       if (cachedId) {
         const myMembership = membersList.find(m => m.user_id === cachedId)
-        setMyRole(myMembership?.role ?? null)
+        const role = myMembership?.role ?? null
+        setMyRole(role)
+
+        // Fetch invite codes if privileged
+        if (role === 'board' || role === 'manager' || role === 'admin') {
+          const { data: codes } = await supabase
+            .from('cooperative_invite_codes')
+            .select('*')
+            .eq('org_id', id)
+            .order('created_at', { ascending: false })
+          if (mountedRef.current && codes) setInviteCodes(codes as InviteCode[])
+        }
       }
     } catch (err) {
       if (__DEV__) console.log('[building] error:', err)
@@ -387,6 +416,64 @@ function BuildingScreenInner() {
     }
   }, [userId, supabase])
 
+  // ── Generate invite code ──
+  const handleGenerateCode = useCallback(async () => {
+    if (!org || !userId || creatingCode) return
+    setCreatingCode(true)
+    try {
+      // Generate a readable 8-char code
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+      let code = ''
+      for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)]
+
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + 30) // 30 day expiry
+
+      const { error } = await (supabase.from('cooperative_invite_codes') as any).insert({
+        org_id: org.id,
+        code,
+        created_by: userId,
+        expires_at: expiresAt.toISOString(),
+        max_uses: 10,
+        uses_count: 0,
+        is_active: true,
+      })
+      if (error) {
+        toast.show({ message: t('common.error'), type: 'error' })
+      } else {
+        toast.show({ message: t('building.codeCreated'), type: 'success' })
+        await fetchData()
+      }
+    } catch {
+      toast.show({ message: t('common.error'), type: 'error' })
+    } finally {
+      setCreatingCode(false)
+    }
+  }, [org, userId, creatingCode, supabase, t, toast, fetchData])
+
+  // ── Deactivate invite code ──
+  const handleDeactivateCode = useCallback(async (codeId: string) => {
+    try {
+      const { error } = await (supabase.from('cooperative_invite_codes') as any)
+        .update({ is_active: false })
+        .eq('id', codeId)
+      if (error) {
+        toast.show({ message: t('common.error'), type: 'error' })
+      } else {
+        setInviteCodes(prev => prev.map(c => c.id === codeId ? { ...c, is_active: false } : c))
+        toast.show({ message: t('building.codeDeactivated'), type: 'success' })
+      }
+    } catch {
+      toast.show({ message: t('common.error'), type: 'error' })
+    }
+  }, [supabase, t, toast])
+
+  // ── Copy invite code ──
+  const handleCopyCode = useCallback(async (code: string) => {
+    await Clipboard.setStringAsync(code)
+    toast.show({ message: t('building.codeCopied'), type: 'success' })
+  }, [t, toast])
+
   // ── Loading state ──
   if (loading) {
     return (
@@ -469,7 +556,7 @@ function BuildingScreenInner() {
 
         {/* Segmented tabs */}
         <View style={[s.tabBar, { backgroundColor: colors.muted }]}>
-          {TABS.map(tab => {
+          {visibleTabs.map(tab => {
             const isActive = tab === activeTab
             return (
               <PressableOpacity
@@ -528,6 +615,17 @@ function BuildingScreenInner() {
             rulesMarkdown={org.rules_markdown}
             colors={colors}
             t={t}
+          />
+        )}
+        {activeTab === 'admin' && isPrivileged && (
+          <AdminTab
+            inviteCodes={inviteCodes}
+            colors={colors}
+            t={t}
+            creatingCode={creatingCode}
+            onGenerateCode={handleGenerateCode}
+            onDeactivateCode={handleDeactivateCode}
+            onCopyCode={handleCopyCode}
           />
         )}
       </ScrollView>
@@ -1101,6 +1199,126 @@ function CreateMaintenanceModal({
   )
 }
 
+// ── Admin Tab ──
+
+function AdminTab({
+  inviteCodes,
+  colors,
+  t,
+  creatingCode,
+  onGenerateCode,
+  onDeactivateCode,
+  onCopyCode,
+}: {
+  inviteCodes: InviteCode[]
+  colors: ThemeColors
+  t: (k: string, p?: Record<string, string | number>) => string
+  creatingCode: boolean
+  onGenerateCode: () => void
+  onDeactivateCode: (id: string) => void
+  onCopyCode: (code: string) => void
+}) {
+  const activeCodes = inviteCodes.filter(c => c.is_active)
+  const expiredCodes = inviteCodes.filter(c => !c.is_active)
+
+  return (
+    <View style={s.listContainer}>
+      {/* Section: Invite codes */}
+      <Text style={[s.adminSectionTitle, { color: colors.foreground }]}>
+        {t('building.inviteCodes')}
+      </Text>
+      <Text style={[s.adminSectionHint, { color: colors.mutedForeground }]}>
+        {t('building.inviteCodesHint')}
+      </Text>
+
+      {/* Generate button */}
+      <PressableOpacity
+        onPress={onGenerateCode}
+        disabled={creatingCode}
+        style={[s.generateBtn, { backgroundColor: colors.foreground }, creatingCode && { opacity: 0.4 }]}
+      >
+        {creatingCode ? (
+          <ActivityIndicator size="small" color={colors.primaryForeground} />
+        ) : (
+          <>
+            <Key size={16} color={colors.primaryForeground} />
+            <Text style={[s.generateBtnText, { color: colors.primaryForeground }]}>
+              {t('building.generateCode')}
+            </Text>
+          </>
+        )}
+      </PressableOpacity>
+
+      {/* Active codes */}
+      {activeCodes.map(code => (
+        <View key={code.id} style={[s.codeCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={s.codeTopRow}>
+            <Text style={[s.codeText, { color: colors.foreground }]}>{code.code}</Text>
+            <View style={[s.badge, { backgroundColor: colors.foreground + '15' }]}>
+              <Text style={[s.badgeText, { color: colors.foreground }]}>
+                {t('building.codeUses', { used: code.uses_count, max: code.max_uses ?? '∞' })}
+              </Text>
+            </View>
+          </View>
+
+          {code.expires_at && (
+            <Text style={[s.codeExpiry, { color: colors.tertiaryForeground }]}>
+              {t('building.codeExpires', { date: new Date(code.expires_at).toLocaleDateString() })}
+            </Text>
+          )}
+
+          <View style={s.codeActions}>
+            <PressableOpacity
+              onPress={() => onCopyCode(code.code)}
+              style={[s.codeActionBtn, { borderColor: colors.border }]}
+            >
+              <Copy size={14} color={colors.mutedForeground} />
+              <Text style={[s.codeActionText, { color: colors.mutedForeground }]}>
+                {t('building.copyCode')}
+              </Text>
+            </PressableOpacity>
+            <PressableOpacity
+              onPress={() => onDeactivateCode(code.id)}
+              style={[s.codeActionBtn, { borderColor: colors.destructive + '40' }]}
+            >
+              <Trash2 size={14} color={colors.destructive} />
+              <Text style={[s.codeActionText, { color: colors.destructive }]}>
+                {t('building.deactivateCode')}
+              </Text>
+            </PressableOpacity>
+          </View>
+        </View>
+      ))}
+
+      {activeCodes.length === 0 && (
+        <View style={s.emptyState}>
+          <Text style={[s.emptyTitle, { color: colors.mutedForeground }]}>{t('building.noInviteCodes')}</Text>
+          <Text style={[s.emptyHint, { color: colors.tertiaryForeground }]}>{t('building.noInviteCodesHint')}</Text>
+        </View>
+      )}
+
+      {/* Expired/deactivated codes */}
+      {expiredCodes.length > 0 && (
+        <>
+          <Text style={[s.adminSectionTitle, { color: colors.mutedForeground, marginTop: 24 }]}>
+            {t('building.expiredCodes')}
+          </Text>
+          {expiredCodes.map(code => (
+            <View key={code.id} style={[s.codeCard, { backgroundColor: colors.muted, borderColor: colors.border, opacity: 0.6 }]}>
+              <View style={s.codeTopRow}>
+                <Text style={[s.codeText, { color: colors.mutedForeground }]}>{code.code}</Text>
+                <Text style={[s.codeExpiry, { color: colors.tertiaryForeground }]}>
+                  {t('building.codeUses', { used: code.uses_count, max: code.max_uses ?? '∞' })}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </>
+      )}
+    </View>
+  )
+}
+
 // ── Default export with error boundary ──
 
 export default function BuildingScreen() {
@@ -1511,6 +1729,71 @@ const s = StyleSheet.create({
   categoryChipText: {
     fontFamily: fonts.body,
     ...typeScale.bodySmall,
+  },
+
+  // Admin tab
+  adminSectionTitle: {
+    fontFamily: fonts.bodySemi,
+    ...typeScale.bodyLarge,
+    marginBottom: 4,
+  },
+  adminSectionHint: {
+    fontFamily: fonts.body,
+    ...typeScale.bodySmall,
+    marginBottom: 12,
+  },
+  generateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginBottom: 16,
+  },
+  generateBtnText: {
+    fontFamily: fonts.bodySemi,
+    ...typeScale.body,
+  },
+  codeCard: {
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  codeTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  codeText: {
+    fontFamily: fonts.bodySemi,
+    ...typeScale.bodyLarge,
+    letterSpacing: 2,
+  },
+  codeExpiry: {
+    fontFamily: fonts.body,
+    ...typeScale.caption,
+    marginBottom: 8,
+  },
+  codeActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  codeActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  codeActionText: {
+    fontFamily: fonts.body,
+    ...typeScale.caption,
   },
 
   // Submit button

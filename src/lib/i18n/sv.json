@@ -2990,7 +2990,10 @@
     "done": "KLAR",
     "doNow": "Gör nu",
     "comingSoon": "Kommer snart",
-    "privacyNote": "Data lagras krypterat. TackBird delar inte den med tredje parter."
+    "privacyNote": "Data lagras krypterat. TackBird delar inte den med tredje parter.",
+    "verifyingFace": "Verifierar foto...",
+    "faceVerified": "Ansiktsverifiering klar!",
+    "noFaceDetected": "Inget ansikte hittades. Prova ett annat foto."
   },
   "addressVerification": {
     "title": "Adressverifiering",
@@ -3480,6 +3483,20 @@
     "errorAddingComment": "Kunde inte lägga till kommentar",
     "errorUpvoting": "Röstning misslyckades",
     "chatEmpty": "Börja chatta med dina grannar!",
-    "chatPlaceholder": "Skriv ett meddelande..."
+    "chatPlaceholder": "Skriv ett meddelande...",
+    "admin": "Admin",
+    "inviteCodes": "Inbjudningskoder",
+    "inviteCodesHint": "Skapa inbjudningskoder så att invånare kan gå med i husbolaget.",
+    "generateCode": "Skapa inbjudningskod",
+    "codeCreated": "Inbjudningskod skapad",
+    "codeUses": "{used}/{max} använd",
+    "codeExpires": "Utgår {date}",
+    "copyCode": "Kopiera",
+    "deactivateCode": "Inaktivera",
+    "codeDeactivated": "Inbjudningskod inaktiverad",
+    "codeCopied": "Kod kopierad till urklipp",
+    "noInviteCodes": "Inga aktiva inbjudningskoder",
+    "noInviteCodesHint": "Skapa en inbjudningskod så att invånare kan gå med.",
+    "expiredCodes": "Utgångna koder"
   }
 }

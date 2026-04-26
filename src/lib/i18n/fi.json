@@ -2990,7 +2990,10 @@
     "done": "VALMIS",
     "doNow": "Tee nyt",
     "comingSoon": "Tulossa pian",
-    "privacyNote": "Tiedot säilytetään salattuna. TackBird ei jaa niitä kolmansille osapuolille."
+    "privacyNote": "Tiedot säilytetään salattuna. TackBird ei jaa niitä kolmansille osapuolille.",
+    "verifyingFace": "Tarkistetaan kasvokuvaa...",
+    "faceVerified": "Kasvokuva vahvistettu!",
+    "noFaceDetected": "Kasvoja ei tunnistettu. Kokeile toista kuvaa."
   },
   "addressVerification": {
     "title": "Osoitevahvistus",
@@ -3480,6 +3483,20 @@
     "errorAddingComment": "Kommentin lisääminen epäonnistui",
     "errorUpvoting": "Äänestys epäonnistui",
     "chatEmpty": "Aloita keskustelu naapuriesi kanssa!",
-    "chatPlaceholder": "Kirjoita viesti..."
+    "chatPlaceholder": "Kirjoita viesti...",
+    "admin": "Hallinta",
+    "inviteCodes": "Kutsukoodit",
+    "inviteCodesHint": "Luo kutsukoodeja, joilla asukkaat voivat liittyä taloyhtiöön.",
+    "generateCode": "Luo kutsukoodi",
+    "codeCreated": "Kutsukoodi luotu",
+    "codeUses": "{used}/{max} käytetty",
+    "codeExpires": "Vanhenee {date}",
+    "copyCode": "Kopioi",
+    "deactivateCode": "Poista käytöstä",
+    "codeDeactivated": "Kutsukoodi poistettu käytöstä",
+    "codeCopied": "Koodi kopioitu leikepöydälle",
+    "noInviteCodes": "Ei aktiivisia kutsukoodeja",
+    "noInviteCodesHint": "Luo kutsukoodi, jotta asukkaat voivat liittyä.",
+    "expiredCodes": "Vanhat koodit"
   }
 }

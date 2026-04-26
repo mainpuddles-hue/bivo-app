@@ -2990,7 +2990,10 @@
     "done": "DONE",
     "doNow": "Do now",
     "comingSoon": "Coming soon",
-    "privacyNote": "Data is stored encrypted. TackBird does not share it with third parties."
+    "privacyNote": "Data is stored encrypted. TackBird does not share it with third parties.",
+    "verifyingFace": "Verifying photo...",
+    "faceVerified": "Face verified!",
+    "noFaceDetected": "No face detected. Try another photo."
   },
   "addressVerification": {
     "title": "Address verification",
@@ -3480,6 +3483,20 @@
     "errorAddingComment": "Failed to add comment",
     "errorUpvoting": "Vote failed",
     "chatEmpty": "Start chatting with your neighbors!",
-    "chatPlaceholder": "Write a message..."
+    "chatPlaceholder": "Write a message...",
+    "admin": "Admin",
+    "inviteCodes": "Invite codes",
+    "inviteCodesHint": "Create invite codes so residents can join the building.",
+    "generateCode": "Generate invite code",
+    "codeCreated": "Invite code created",
+    "codeUses": "{used}/{max} used",
+    "codeExpires": "Expires {date}",
+    "copyCode": "Copy",
+    "deactivateCode": "Deactivate",
+    "codeDeactivated": "Invite code deactivated",
+    "codeCopied": "Code copied to clipboard",
+    "noInviteCodes": "No active invite codes",
+    "noInviteCodesHint": "Generate an invite code so residents can join.",
+    "expiredCodes": "Expired codes"
   }
 }
