@@ -10,7 +10,7 @@ import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router'
 import {
   Settings, Pin, ChevronUp, Plus, Copy, Trash2, Key,
   Droplets, Zap, Flame, ArrowUpDown, Building2, Trees, Shield, HelpCircle,
-  X, AlertTriangle,
+  X, AlertTriangle, UserMinus, Save, ChevronDown,
 } from 'lucide-react-native'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
@@ -626,6 +626,11 @@ function BuildingScreenInner() {
             onGenerateCode={handleGenerateCode}
             onDeactivateCode={handleDeactivateCode}
             onCopyCode={handleCopyCode}
+            org={org}
+            members={members}
+            userId={userId}
+            supabase={supabase}
+            fetchData={fetchData}
           />
         )}
       </ScrollView>
@@ -1209,6 +1214,11 @@ function AdminTab({
   onGenerateCode,
   onDeactivateCode,
   onCopyCode,
+  org,
+  members,
+  userId,
+  supabase,
+  fetchData,
 }: {
   inviteCodes: InviteCode[]
   colors: ThemeColors
@@ -1217,9 +1227,97 @@ function AdminTab({
   onGenerateCode: () => void
   onDeactivateCode: (id: string) => void
   onCopyCode: (code: string) => void
+  org: Organization | null
+  members: OrgMember[]
+  userId: string | null
+  supabase: ReturnType<typeof import('@/hooks/useSupabase').useSupabase>
+  fetchData: () => Promise<void>
 }) {
+  const toast = useToast()
   const activeCodes = inviteCodes.filter(c => c.is_active)
   const expiredCodes = inviteCodes.filter(c => !c.is_active)
+
+  // Rules editing state
+  const [editingRules, setEditingRules] = useState(false)
+  const [rulesText, setRulesText] = useState(org?.rules_markdown ?? '')
+  const [savingRules, setSavingRules] = useState(false)
+
+  const ROLE_CYCLE: MemberRole[] = ['member', 'board', 'manager', 'admin']
+
+  const handleSaveRules = useCallback(async () => {
+    if (!org) return
+    setSavingRules(true)
+    try {
+      const { error } = await (supabase.from('organizations') as any)
+        .update({ rules_markdown: rulesText.trim() || null })
+        .eq('id', org.id)
+      if (error) throw error
+      toast.show({ message: t('building.rulesSaved'), type: 'success' })
+      setEditingRules(false)
+      await fetchData()
+    } catch {
+      if (__DEV__) console.log('[building] save rules error')
+    } finally {
+      setSavingRules(false)
+    }
+  }, [org, rulesText, supabase, fetchData, t, toast])
+
+  const handleChangeRole = useCallback(async (member: OrgMember) => {
+    if (!org || !userId) return
+    if (member.user_id === userId) {
+      Alert.alert('', t('building.cannotEditSelf'))
+      return
+    }
+    const currentIdx = ROLE_CYCLE.indexOf(member.role)
+    const nextRole = ROLE_CYCLE[(currentIdx + 1) % ROLE_CYCLE.length]
+    try {
+      const { error } = await (supabase.from('organization_members') as any)
+        .update({ role: nextRole })
+        .eq('org_id', org.id)
+        .eq('user_id', member.user_id)
+      if (error) throw error
+      toast.show({ message: t('building.roleChanged'), type: 'success' })
+      await fetchData()
+    } catch {
+      if (__DEV__) console.log('[building] change role error')
+    }
+  }, [org, userId, supabase, fetchData, t, toast, ROLE_CYCLE])
+
+  const handleRemoveMember = useCallback((member: OrgMember) => {
+    if (!org || !userId) return
+    if (member.user_id === userId) {
+      Alert.alert('', t('building.cannotEditSelf'))
+      return
+    }
+    Alert.alert(
+      t('building.removeMember'),
+      t('building.confirmRemoveMember'),
+      [
+        { text: t('building.cancel'), style: 'cancel' },
+        {
+          text: t('building.confirm'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await (supabase.from('organization_members') as any)
+                .delete()
+                .eq('org_id', org.id)
+                .eq('user_id', member.user_id)
+              if (error) throw error
+              // Update member_count
+              await (supabase.from('organizations') as any)
+                .update({ member_count: Math.max(0, (org.member_count ?? 0) - 1) })
+                .eq('id', org.id)
+              toast.show({ message: t('building.memberRemoved'), type: 'success' })
+              await fetchData()
+            } catch {
+              if (__DEV__) console.log('[building] remove member error')
+            }
+          },
+        },
+      ],
+    )
+  }, [org, userId, supabase, fetchData, t, toast])
 
   return (
     <View style={s.listContainer}>
@@ -1315,6 +1413,125 @@ function AdminTab({
           ))}
         </>
       )}
+
+      {/* Section: Rules editing */}
+      <Text style={[s.adminSectionTitle, { color: colors.foreground, marginTop: 32 }]}>
+        {t('building.editRulesTitle')}
+      </Text>
+
+      {editingRules ? (
+        <>
+          <TextInput
+            style={[s.rulesInput, {
+              color: colors.foreground,
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+            }]}
+            value={rulesText}
+            onChangeText={setRulesText}
+            placeholder={t('building.rulesPlaceholder')}
+            placeholderTextColor={colors.mutedForeground}
+            multiline
+            textAlignVertical="top"
+          />
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+            <PressableOpacity
+              onPress={() => {
+                setEditingRules(false)
+                setRulesText(org?.rules_markdown ?? '')
+              }}
+              style={[s.codeActionBtn, { flex: 1, justifyContent: 'center', borderColor: colors.border }]}
+            >
+              <Text style={[s.codeActionText, { color: colors.mutedForeground }]}>
+                {t('building.cancel')}
+              </Text>
+            </PressableOpacity>
+            <PressableOpacity
+              onPress={handleSaveRules}
+              disabled={savingRules}
+              style={[s.generateBtn, { flex: 1, marginBottom: 0, backgroundColor: colors.foreground }, savingRules && { opacity: 0.4 }]}
+            >
+              {savingRules ? (
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
+              ) : (
+                <>
+                  <Save size={14} color={colors.primaryForeground} />
+                  <Text style={[s.generateBtnText, { color: colors.primaryForeground }]}>
+                    {t('building.saveRules')}
+                  </Text>
+                </>
+              )}
+            </PressableOpacity>
+          </View>
+        </>
+      ) : (
+        <PressableOpacity
+          onPress={() => {
+            setRulesText(org?.rules_markdown ?? '')
+            setEditingRules(true)
+          }}
+          style={[s.codeActionBtn, { borderColor: colors.border, alignSelf: 'flex-start' }]}
+        >
+          <Settings size={14} color={colors.mutedForeground} />
+          <Text style={[s.codeActionText, { color: colors.mutedForeground }]}>
+            {t('building.editRules')}
+          </Text>
+        </PressableOpacity>
+      )}
+
+      {/* Section: Member management */}
+      <Text style={[s.adminSectionTitle, { color: colors.foreground, marginTop: 32 }]}>
+        {t('building.memberManagement')}
+      </Text>
+
+      {members.map(member => {
+        const isSelf = member.user_id === userId
+        const profile = member.profiles
+        const roleLabel = getRoleBadgeLabel(member.role, t) || t('building.roleMember')
+
+        return (
+          <View
+            key={member.user_id}
+            style={[s.memberManageRow, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <Avatar
+              url={profile?.avatar_url ?? null}
+              name={profile?.name ?? ''}
+              size={36}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={[s.memberName, { color: colors.foreground, textAlign: 'left', marginTop: 0 }]}>
+                {profile?.name ?? '—'}
+              </Text>
+            </View>
+            <PressableOpacity
+              onPress={() => handleChangeRole(member)}
+              disabled={isSelf}
+              style={[s.roleSelector, {
+                backgroundColor: isSelf ? colors.muted : colors.foreground + '10',
+                borderColor: colors.border,
+              }]}
+            >
+              <Text style={[s.roleBadgeText, {
+                color: isSelf ? colors.mutedForeground : colors.foreground,
+                fontSize: 11,
+                lineHeight: 15,
+              }]}>
+                {roleLabel}
+              </Text>
+              {!isSelf && <ChevronDown size={10} color={colors.foreground} />}
+            </PressableOpacity>
+            {!isSelf && (
+              <PressableOpacity
+                onPress={() => handleRemoveMember(member)}
+                style={[s.removeBtn, { backgroundColor: colors.destructive + '15' }]}
+              >
+                <UserMinus size={14} color={colors.destructive} />
+              </PressableOpacity>
+            )}
+          </View>
+        )
+      })}
     </View>
   )
 }
@@ -1794,6 +2011,45 @@ const s = StyleSheet.create({
   codeActionText: {
     fontFamily: fonts.body,
     ...typeScale.caption,
+  },
+
+  // Rules input
+  rulesInput: {
+    fontFamily: fonts.body,
+    ...typeScale.body,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 200,
+    textAlignVertical: 'top',
+  },
+
+  // Member management
+  memberManageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 6,
+  },
+  roleSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  removeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Submit button

@@ -118,7 +118,6 @@ export default function SettingsScreen() {
   const [coopCode, setCoopCode] = useState('')
   const [coopStatus, setCoopStatus] = useState<'idle' | 'checking' | 'applying' | 'applied' | 'invalid' | 'expired' | 'exhausted'>('idle')
   const [coopOrgName, setCoopOrgName] = useState<string | null>(null)
-  const [showCoopCodeInput, setShowCoopCodeInput] = useState(false)
 
   // Referral code
   const referral = useReferral(profile?.id ?? null)
@@ -352,7 +351,7 @@ export default function SettingsScreen() {
           }
         } catch {} // Building may not be linked via user_buildings
         setCoopCode('')
-        setShowCoopCodeInput(false)
+        setCoopStatus('applied')
       } else if (result === 'expired') {
         setCoopStatus('expired')
         toast.show({ message: t('settings.codeExpired'), type: 'error' })
@@ -957,79 +956,95 @@ export default function SettingsScreen() {
               />
             </>
           ) : (
-            <>
-              <Row
-                icon={<Home size={16} color={colors.foreground} strokeWidth={1.8} />}
-                label={t('settings.addAddress')}
-                meta={t('settings.addAddressHint')}
-                onPress={() => setShowBuildingModal(true)}
-                colors={colors}
-                isDark={isDark}
-              />
-              <Row
-                icon={<Key size={16} color={colors.foreground} strokeWidth={1.8} />}
-                label={t('settings.enterInviteCode')}
-                meta={t('settings.enterInviteCodeHint')}
-                onPress={() => setShowCoopCodeInput(!showCoopCodeInput)}
-                colors={colors}
-                isDark={isDark}
-              />
-              {showCoopCodeInput && (
-                <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
-                  <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                    <TextInput
-                      value={coopCode}
-                      onChangeText={(v) => setCoopCode(v.toUpperCase())}
-                      placeholder="ABCD1234"
-                      placeholderTextColor={colors.tertiaryForeground}
-                      style={{
-                        flex: 1,
-                        height: 40,
-                        borderWidth: 1,
-                        borderColor: (coopStatus === 'invalid' || coopStatus === 'expired' || coopStatus === 'exhausted') ? colors.destructive : colors.border,
-                        borderRadius: 8,
-                        paddingHorizontal: 12,
-                        fontFamily: fonts.heading,
-                        fontSize: 15,
-                        letterSpacing: 2,
-                        color: colors.foreground,
-                        backgroundColor: colors.muted,
-                      }}
-                      maxLength={12}
-                      autoCapitalize="characters"
-                      autoCorrect={false}
-                    />
-                    <PressableOpacity
-                      onPress={handleApplyCoopCode}
-                      disabled={!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying'}
-                      style={{
-                        height: 40,
-                        paddingHorizontal: 14,
-                        borderRadius: 8,
-                        backgroundColor: (!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying') ? colors.muted : colors.primary,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {coopStatus === 'checking' || coopStatus === 'applying' ? (
-                        <ActivityIndicator size="small" color={colors.foreground} />
-                      ) : (
-                        <Text style={{ fontFamily: fonts.bodyMedium, fontSize: 14, color: (!coopCode.trim()) ? colors.tertiaryForeground : '#FFFFFF' }}>
-                          {t('settings.applyCode')}
-                        </Text>
-                      )}
-                    </PressableOpacity>
-                  </View>
-                  {coopOrgName && coopStatus === 'applied' ? (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                      <CheckCircle size={14} color={colors.accent ?? colors.primary} strokeWidth={1.8} />
-                      <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.accent ?? colors.primary }}>{coopOrgName}</Text>
-                    </View>
-                  ) : null}
-                </View>
-              )}
-            </>
+            <Row
+              icon={<Home size={16} color={colors.foreground} strokeWidth={1.8} />}
+              label={t('settings.addAddress')}
+              meta={t('settings.addAddressHint')}
+              onPress={() => setShowBuildingModal(true)}
+              colors={colors}
+              isDark={isDark}
+            />
           )}
+
+          {/* Invite code entry — visible regardless of building status */}
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}>
+            <Text style={{ fontFamily: fonts.bodySemi, fontSize: 13, color: colors.mutedForeground, marginBottom: 2 }}>
+              {t('settings.enterInviteCode') ?? 'Taloyhtiön kutsukoodi'}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+              <TextInput
+                value={coopCode}
+                onChangeText={(v) => { setCoopCode(v.toUpperCase()); if (coopStatus !== 'idle' && coopStatus !== 'checking' && coopStatus !== 'applying') setCoopStatus('idle') }}
+                placeholder="ABCD1234"
+                placeholderTextColor={colors.tertiaryForeground}
+                style={{
+                  flex: 1,
+                  height: 40,
+                  borderWidth: 1,
+                  borderColor: (coopStatus === 'invalid' || coopStatus === 'expired' || coopStatus === 'exhausted') ? colors.destructive : coopStatus === 'applied' ? (colors.accent ?? colors.primary) : colors.border,
+                  borderRadius: 8,
+                  paddingHorizontal: 12,
+                  fontFamily: fonts.bodySemi,
+                  fontSize: 15,
+                  letterSpacing: 2,
+                  color: colors.foreground,
+                  backgroundColor: colors.muted,
+                }}
+                maxLength={12}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+              <PressableOpacity
+                onPress={handleApplyCoopCode}
+                disabled={!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying'}
+                style={{
+                  height: 40,
+                  paddingHorizontal: 14,
+                  borderRadius: 8,
+                  backgroundColor: (!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying') ? colors.muted : colors.primary,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                {coopStatus === 'checking' || coopStatus === 'applying' ? (
+                  <ActivityIndicator size="small" color={colors.foreground} />
+                ) : (
+                  <Text style={{ fontFamily: fonts.bodySemi, fontSize: 14, color: (!coopCode.trim()) ? colors.tertiaryForeground : '#FFFFFF' }}>
+                    {t('settings.applyCode') ?? 'Liity'}
+                  </Text>
+                )}
+              </PressableOpacity>
+            </View>
+            {coopStatus === 'applied' && coopOrgName ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <CheckCircle size={14} color={colors.accent ?? colors.primary} strokeWidth={1.8} />
+                <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.accent ?? colors.primary }}>
+                  {coopOrgName}
+                </Text>
+              </View>
+            ) : coopStatus === 'invalid' ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
+                <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
+                  {t('settings.codeInvalid') ?? 'Virheellinen koodi'}
+                </Text>
+              </View>
+            ) : coopStatus === 'expired' ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
+                <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
+                  {t('settings.codeExpired') ?? 'Koodi on vanhentunut'}
+                </Text>
+              </View>
+            ) : coopStatus === 'exhausted' ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
+                <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
+                  {t('settings.codeExhausted') ?? 'Koodi on käytetty loppuun'}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </Group>
 
         {/* ── Section: Yksityisyys (Privacy) ── */}

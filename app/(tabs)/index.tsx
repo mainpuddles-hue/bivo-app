@@ -449,6 +449,10 @@ function FeedScreenInner() {
       // Filtered: sort row + 2-column mosaic grid
       const section = categorySections.find(s => s.type === feed.activeFilter)
       const posts = section?.posts || []
+      // While loading a new filter and no posts match yet, show skeleton placeholder
+      if (feed.loading && posts.length === 0) {
+        return [{ _kind: 'sortRow', key: 'sort-row', count: 0 }]
+      }
       const items: FeedItem[] = [
         { _kind: 'sortRow', key: 'sort-row', count: posts.length },
       ]
@@ -894,7 +898,12 @@ function FeedScreenInner() {
         ) : null}
         ListFooterComponent={
           <>
-            {feed.loading && feed.posts.length > 0 && <FeedLoadMoreSkeleton />}
+            {feed.loading && feed.activeFilter && (
+              <View style={{ paddingHorizontal: 12, gap: 16, paddingTop: 16 }}>
+                {[0, 1, 2, 3].map(i => <PostCardSkeleton key={`filter-skel-${i}`} />)}
+              </View>
+            )}
+            {feed.loading && !feed.activeFilter && feed.posts.length > 0 && <FeedLoadMoreSkeleton />}
             {!feed.hasMore && feed.posts.length >= 10 && (
               <View style={styles.allLoadedWrap}>
                 <View style={[styles.allLoadedLine, { backgroundColor: `${colors.border}66` }]} />
