@@ -2,10 +2,20 @@
 
 ## What This Is
 
-TackBird Mobile is the React Native (Expo) version of the TackBird neighborhood bulletin board app. It mirrors the web app's functionality for iOS and Android via Expo Go.
+TackBird is a hyperlocal neighborhood platform for Finland. It combines a marketplace, peer lending, community events, building management (taloyhtiö), messaging, and trust-based reputation — all scoped to your naapurusto. Built Finnish-first (fi/en/sv).
 
-**Web version:** `https://github.com/mainpuddles-hue/tackbird-v2` (Next.js)
-**This project:** `https://github.com/mainpuddles-hue/tackbird-mobile` (Expo)
+**This project:** `https://github.com/mainpuddles-hue/tackbird-mobile` (Expo, private)
+**Company:** Puddles Oy (Y-tunnus 3610705-3)
+
+## Target Users
+
+| Segment | Description |
+|---------|-------------|
+| **Beachhead** | Kallio renters, 25–40yo, kerrostalo, sustainability-oriented |
+| **Residents** | Find/share/lend items, discover local events, connect with neighbors |
+| **Providers** | Earn from idle tools/items, offer services, organize events |
+| **Taloyhtiö** | Building management: announcements, maintenance requests, polls, chat |
+| **Local businesses** | Pro listings, promoted posts, hyperlocal advertising |
 
 ## Stack
 
@@ -14,13 +24,15 @@ TackBird Mobile is the React Native (Expo) version of the TackBird neighborhood 
 | Framework | Expo SDK 54 + Expo Router |
 | Language | TypeScript (strict) |
 | UI | React Native + StyleSheet.create + Lucide React Native |
-| Backend | Supabase (shared with web — same project) |
-| Auth | Supabase Auth + AsyncStorage |
+| Backend | Supabase (PostgreSQL, Auth, Storage, Realtime, Edge Functions) |
+| Auth | Supabase Auth + SecureStore (fallback AsyncStorage) |
 | Images | expo-image + expo-image-picker |
-| Navigation | Expo Router (file-based, like Next.js App Router) |
+| Navigation | Expo Router (file-based) |
 | Animations | react-native-reanimated |
-| i18n | Custom I18nProvider (fi/en/sv) — same translations as web |
-| Deploy | Expo Go (dev) / EAS Build (production) |
+| i18n | Custom I18nProvider (fi/en/sv) |
+| Typography | Bricolage Grotesque (display) + Inter (body) |
+| Deploy | EAS Build (development/production) |
+| Payments | Stripe (Connect + Checkout) — activation pending |
 
 ## Working Instructions
 
@@ -47,7 +59,7 @@ TackBird Mobile is the React Native (Expo) version of the TackBird neighborhood 
 - `/commit` — git commits (built-in skill)
 - `ui-ux-pro-max` — UI/UX design decisions, color palettes, typography, layout patterns
 - `superpowers` — brainstorming, TDD workflow, git worktrees, subagent-driven development
-- `everything-claude-code` — language-specific reviews (flutter, kotlin, rust, etc.), security scans, session management
+- `everything-claude-code` — language-specific reviews, security scans, session management
 - `obsidian-skills` — Obsidian vault/markdown file creation
 - `claude-mem` — persistent memory across sessions (automatic, no manual use needed)
 - Supabase MCP (`mcp__claude_ai_Supabase__*`) — direct database operations, migrations, Edge Functions
@@ -73,93 +85,161 @@ TackBird Mobile is the React Native (Expo) version of the TackBird neighborhood 
 ```
 Screen (app/*.tsx) → Supabase client query → useState → render
 User mutations → Supabase client → insert/update/delete → re-fetch
+Realtime → Supabase channels → postgres_changes → state update
 ```
 
 ### Supabase Client
-Single client in `src/lib/supabase/client.ts` using `@supabase/supabase-js` with `AsyncStorage` for session persistence. Same Supabase project as web — **no separate backend needed**.
+Single client in `src/lib/supabase/client.ts` using `@supabase/supabase-js` with SecureStore (fallback AsyncStorage) for session persistence.
 
 ### Key Directories
 ```
 app/                    — Expo Router screens (file-based routing)
-  (tabs)/               — Tab navigator screens (feed, events, create, messages, profile)
+  (tabs)/               — Tab bar: Feed, Explore, Create, Messages, Profile
   (auth)/               — Login/register
-  post/[id].tsx         — Post detail
+  building/             — Taloyhtiö management (announcements, maintenance, chat)
+  post/[id].tsx         — Post detail (gallery, comments, booking, offers)
+  event/[id].tsx        — Community event detail
   messages/[id].tsx     — Conversation thread
-  notifications.tsx     — Notifications
-  settings.tsx          — Settings
-  search.tsx            — Search
+  booking/[id].tsx      — Booking lifecycle (pending → active → completed → review)
 src/
-  components/           — Shared components (Header, PostCard, FilterBar, etc.)
-  hooks/                — Custom hooks (useTheme)
+  components/           — Shared components (PostCard, EmptyState, Avatar, FilterBar, etc.)
+  hooks/                — Custom hooks (useFeedData, usePresence, useStripePayment, etc.)
   lib/                  — Utilities, types, constants, Supabase client
     i18n/               — Translations (fi.json, en.json, sv.json)
     supabase/           — Supabase client
+    feedAlgorithm.ts    — Client-side feed ranking
+    linkedevents.ts     — Helsinki LinkedEvents API integration
+    ticketmaster.ts     — Ticketmaster events
+    kide.ts             — Kide.app events
+    meteli.ts           — Meteli.net events
 ```
 
-## Shared with Web App
+## Screens (48 total)
 
-These are **identical** between web and mobile:
-- **Supabase project** — same database, RLS, storage buckets, auth
-- **Types** (`src/lib/types.ts`) — same data models
-- **Constants** (`src/lib/constants.ts`) — same categories, neighborhoods
-- **Translations** (`src/lib/i18n/*.json`) — same fi/en/sv translations
-- **Format utilities** (`src/lib/format.ts`) — same time/price formatting
+### Tab Bar
+| Screen | File | Description |
+|--------|------|-------------|
+| Feed | `app/(tabs)/index.tsx` | v3 Bricolage header, filters, carousel, ranked posts, realtime |
+| Explore | `app/(tabs)/explore.tsx` | Map view + discovery, city events, nearby places |
+| Create | `app/(tabs)/create.tsx` | Post creation (2-step, images, tags, expiration) |
+| Messages | `app/(tabs)/messages.tsx` | Conversations, search, archive, online indicators |
+| Profile | `app/(tabs)/profile.tsx` | User profile, listings, reviews, settings |
 
-## Theme — Helsinki Dusk
+### Core Screens
+| Screen | File |
+|--------|------|
+| Post detail | `app/post/[id].tsx` — gallery, like, save, comments, booking, offers |
+| Conversation | `app/messages/[id].tsx` — images, typing, date separators, read receipts |
+| Event detail | `app/event/[id].tsx` — attend, participants, event chat |
+| Community events | `app/community-events.tsx` — create + browse events |
+| Search | `app/search.tsx` — full-text search |
+| Notifications | `app/notifications.tsx` — filter tabs, time groups |
+| Settings | `app/settings.tsx` — language, theme, visibility, security, GDPR |
+| Login | `app/(auth)/login.tsx` — login/register, Google placeholder |
+| Onboarding | `app/onboarding.tsx` — address-based, purpose selection, building join |
+
+### Taloyhtiö (Building Management)
+| Screen | File |
+|--------|------|
+| Building hub | `app/building/[id].tsx` — announcements, maintenance, members, rules |
+| Announcement | `app/building/announcement/[id].tsx` |
+| Maintenance | `app/building/maintenance/[id].tsx` |
+| Building chat | `app/building/chat/[id].tsx` |
+
+### Commerce & Payments
+| Screen | File |
+|--------|------|
+| Booking lifecycle | `app/booking/[id].tsx` — 6 states: pending → confirmed → active → completed → review → disputed |
+| My listings | `app/my-listings.tsx` |
+| Bookings list | `app/bookings.tsx` |
+| New listing wizard | `app/new-listing.tsx` |
+| Payment checkout | `app/payment-checkout.tsx` |
+| Payment history | `app/payment-history.tsx` |
+| Payment settings | `app/payment-settings.tsx` |
+| Payouts | `app/payouts.tsx` |
+
+### Other
+| Screen | File |
+|--------|------|
+| Create event | `app/create-event.tsx` |
+| Create poll | `app/create-poll.tsx` |
+| Event chat | `app/event-chat/[id].tsx` |
+| User profile | `app/profile/[userId].tsx` |
+| Saved items | `app/saved.tsx` |
+| Activities | `app/activities.tsx` |
+| Verification | `app/verification.tsx` — phone, address, ID |
+| OTP verify | `app/verify-otp.tsx` |
+| Admin panel | `app/admin.tsx` — content flags, user management, stats |
+| Blocked users | `app/blocked.tsx` |
+| Return item | `app/return-item.tsx` |
+| Review borrower | `app/review-borrower.tsx` |
+| Invite code | `app/invite/[code].tsx` |
+| About/Terms/Privacy/Help | `app/about.tsx`, `app/terms.tsx`, `app/privacy.tsx`, `app/help.tsx` |
+
+## Edge Functions (31)
+
+| Category | Functions |
+|----------|-----------|
+| **Auth** | auth-verify, send-otp, verify-otp-code, send-phone-otp, verify-phone-otp |
+| **Payments** | stripe-checkout, stripe-webhook, stripe-connect-onboard, pro-subscribe, verify-boost-purchase, use-boost, grant-tier-boosts |
+| **Content** | moderate-content, embed-post, semantic-search, semantic-match, price-suggestion |
+| **Events** | kide-proxy, meteli-proxy, ticketmaster-proxy |
+| **Notifications** | send-push, send-email, send-digest, match-saved-searches |
+| **Admin** | admin-api, db-backup, ads-scheduler, check-overdue-rentals, validate-business |
+| **User** | delete-account, verify-identity |
+| **Health** | health-check |
+
+## Feature Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| LENDING | true | Peer lending (lainaa) category |
+| LENDING_PAYMENTS | false | Deposit/fees for lending — hidden for pivot |
+| PAYMENTS | false | Stripe payment flows |
+| AD_CAMPAIGNS | false | Business ad system |
+| BUSINESS_ACCOUNT | false | Pro business accounts |
+| IDENTITY_VERIFICATION | false | ID verification flow |
+| EVENTS_TAPAHTUMA_TYPE | true | Event post type |
+| POLLS | true | Community polls |
+
+## Design System — Helsinki Monochrome v3
 
 | Token | Light | Dark |
 |-------|-------|------|
-| primary | #2D6B5E | #6FCF97 |
-| accent | #4CAF6A | #6FCF97 |
 | background | #F5F5F5 | #121212 |
 | foreground | #1A1A1A | #E8E6E0 |
 | card | #FFFFFF | #1E1E1E |
 | border | #E5E5E5 | #333333 |
-| muted | #F0F0F0 | #1A1A1A |
+| primary | #2D6B5E | #6FCF97 |
 | destructive | #D94F4F | #EF4444 |
-| pro | #F59E0B | #FBBF24 |
 
-Category colors: tarvitsen=#C75B3A, tarjoan=#7C5CBF, ilmaista=#3B7DD8, nappaa=#E8A050, lainaa=#C98B2E, tapahtuma=#2B8A62
+Typography: Bricolage Grotesque (headings/display), Inter (body/UI)
+Category colors: tarvitsen=#C75B3A, tarjoan=#7C5CBF, ilmaista=#3B7DD8, tapahtuma=#2B8A62, lainaa=#A97A1E
 
-## Screens
+## Trust System
 
-| Screen | File | Status |
-|--------|------|--------|
-| Feed (home) | `app/(tabs)/index.tsx` | Full — header, filters, carousel, posts, realtime |
-| Events | `app/(tabs)/events.tsx` | Full — community + city tabs, attend, save |
-| Create | `app/(tabs)/create.tsx` | Full — 2-step, images, tags, expiration |
-| Messages | `app/(tabs)/messages.tsx` | Full — search, archive, online, read receipts |
-| Profile | `app/(tabs)/profile.tsx` | Basic — needs tabs, reviews, followers |
-| Login | `app/(auth)/login.tsx` | Full — login/register, Google placeholder, forgot pw |
-| Post detail | `app/post/[id].tsx` | Full — gallery, like, save, comments, message |
-| Conversation | `app/messages/[id].tsx` | Full — images, typing, date separators, read receipts |
-| Notifications | `app/notifications.tsx` | Full — filter tabs, time groups, rich types |
-| Settings | `app/settings.tsx` | Full — language, theme, visibility, notifications, security, GDPR |
-| Search | `app/search.tsx` | Basic — text search |
-
-## Supabase Tables Used
-
-Same as web: `profiles`, `posts`, `post_images`, `events`, `event_attendees`, `city_events`, `conversations`, `messages`, `notifications`, `reviews`, `post_likes`, `post_comments`, `saved_posts`, `saved_events`, `user_follows`, `user_badges`, `notification_preferences`
+3-tier progressive trust:
+- **Tier 1** (Basic) — email verified, can lend, max daily fee 50€
+- **Tier 2** (Verified) — phone + address verified, paid services up to 200€
+- **Tier 3** (Trusted) — ID verified, unlimited, priority in feed, trusted badge
 
 ## TypeScript Pattern for Supabase
 
 Without generated types, use `as any` cast on mutations:
 ```ts
 await (supabase.from('posts') as any).insert({ ... })
-await (supabase.from('posts') as any).update({ ... }).eq('id', id)
 ```
-
-Read queries work fine without casts.
 
 ## UI Conventions
 
 - **StyleSheet.create** for all styling (no NativeWind/Tailwind)
-- **Lucide React Native** for icons (same names as web)
+- **Lucide React Native** for icons
 - **expo-image** for optimized image display
-- **expo-image-picker** for camera/gallery
 - **useTheme()** hook returns `{ colors, isDark }`
 - **useI18n()** hook returns `{ t, locale, setLocale }`
-- Colors match web's Helsinki Dusk palette exactly
+- **PressableOpacity** for all interactive elements (not Pressable/TouchableOpacity)
+- **ScreenErrorBoundary** wraps every screen
+- **Toast** (non-blocking) instead of Alert.alert for non-destructive feedback
 
 ## Environment Variables
 
@@ -168,27 +248,22 @@ EXPO_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=xxx
 ```
 
-Same Supabase project as web. Copy values from web's `.env.local` (rename NEXT_PUBLIC_ → EXPO_PUBLIC_).
-
 ## Scripts
 
 ```bash
-npx expo start              # Dev server (Expo Go)
-npx expo start --web        # Web preview
+npx expo start              # Dev server
 npx tsc --noEmit            # Type check
-npx expo export --platform ios   # iOS bundle
+npx eas-cli build:list      # List EAS builds
 ```
 
-## Known Differences from Web
+## Product Analysis
 
-1. **No server components** — all data fetching is client-side via Supabase JS client
-2. **No middleware** — auth checks happen in each screen
-3. **No rate limiting** — client-side app, rate limiting is on the API/Supabase side
-4. **No SSR/ISR** — everything is client-rendered
-5. **Google OAuth** — requires EAS native build (placeholder in Expo Go)
-6. **Maps** — not yet implemented (web uses Leaflet)
-7. **Stripe** — not yet implemented (web handles payments)
-8. **Push notifications** — not yet implemented (needs expo-notifications + EAS)
+Comprehensive analyses in `docs/product-analysis/`:
+- JTBD analysis, user personas, journey maps, empathy maps
+- Positioning canvas (Obviously Awesome), Crossing the Chasm strategy
+- Hook model, microinteractions audit, visual audit
+- Competitive analysis, metrics definition, opportunity framework
+- Mom Test plan, UX writing audit, design principles
 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
