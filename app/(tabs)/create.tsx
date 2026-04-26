@@ -1485,7 +1485,7 @@ const mk = StyleSheet.create({
   // v3 Header
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12 },
   headerCloseBtn: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 17, fontWeight: '500', letterSpacing: -0.3, fontFamily: fonts.displayMedium },
+  headerTitle: { fontSize: 18, fontWeight: '500', letterSpacing: -0.3, fontFamily: fonts.displayMedium },
   headerDraft: { width: 56, fontSize: 14, fontWeight: '600', textAlign: 'right', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
 
   // Step indicator
@@ -1494,7 +1494,7 @@ const mk = StyleSheet.create({
   stepLabel: { fontSize: 12, fontWeight: '500' as const, marginLeft: 4, fontFamily: fonts.bodyMedium },
 
   // v3 Section label — uppercase, bold, wide tracking
-  sectionLabel: { fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '700', fontFamily: fonts.bodySemi, marginBottom: 12 },
+  sectionLabel: { fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: '700', fontFamily: fonts.bodySemi, marginBottom: 12 },
 
   // Scroll
   scrollPad: { paddingBottom: 32 },
@@ -1513,14 +1513,14 @@ const mk = StyleSheet.create({
   catIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   lockBadge: { position: 'absolute', top: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   catName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18, textAlign: 'center', letterSpacing: -0.1 },
-  catSub: { fontSize: 11, fontFamily: fonts.body, lineHeight: 14, textAlign: 'center' },
+  catSub: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16, textAlign: 'center' },
 
   // v3 Photo uploader
   photoWrap: { paddingHorizontal: 20, paddingTop: 12 },
   photoDashed: { aspectRatio: 1.25, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
   photoCircle: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   photoMainText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
-  photoSubText: { fontSize: 10, fontFamily: fonts.body },
+  photoSubText: { fontSize: 12, fontFamily: fonts.body },
   imgRow: { flexDirection: 'row', gap: 8 },
   imgThumb: { width: 100, height: 100, borderRadius: 20, overflow: 'hidden', position: 'relative', borderWidth: 1 },
   imgThumbImg: { width: '100%', height: '100%' },
@@ -1540,7 +1540,7 @@ const mk = StyleSheet.create({
   fieldWrap: { gap: 4, paddingHorizontal: 20, paddingTop: 14 },
   input: { minHeight: 52, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, fontSize: 16, fontWeight: '500', fontFamily: fonts.bodyMedium, letterSpacing: -0.2 },
   textarea: { minHeight: 110, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 22, fontFamily: fonts.body, textAlignVertical: 'top' },
-  charCount: { fontSize: 11, textAlign: 'right', fontFamily: fonts.body },
+  charCount: { fontSize: 12, textAlign: 'right', fontFamily: fonts.body },
 
   // 2-column
   twoCol: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 14 },
@@ -1581,7 +1581,7 @@ const mk = StyleSheet.create({
   stickyWrap: { position: 'absolute', left: 14, right: 14 },
   formError: { fontSize: 13, fontFamily: fonts.bodyMedium, textAlign: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, marginBottom: 8, overflow: 'hidden' },
   publishBtn: { flex: 1, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
-  publishText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
+  publishText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
   publishLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
   // Pro banner

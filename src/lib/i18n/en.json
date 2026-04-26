@@ -1629,7 +1629,7 @@
     "title": "Create post",
     "newPost": "New post",
     "draft": "Draft",
-    "iWant": "I want to...",
+    "iWant": "Type",
     "addTag": "Add tag",
     "mainImageHint": "First image will be shown as the main image",
     "timing": "Timing",
@@ -3023,7 +3023,7 @@
   "urgency": {
     "juuriNyt": "Right now",
     "toggle": "Right now — urgent",
-    "toggleHint": "Your neighbors get a push notification and the post disappears when time runs out",
+    "toggleHint": "Sends a push notification to your neighbors",
     "2hours": "2 hours",
     "4hours": "4 hours",
     "8hours": "8 hours",
