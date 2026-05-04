@@ -95,7 +95,15 @@ export default function MessagesScreen() {
     setFetchError(false)
     try {
     const { getCachedUserId } = await import('@/lib/authCache')
-    const uid = await getCachedUserId()
+    let uid = await getCachedUserId()
+    // getSession() can return null even when logged in (stale in-memory session).
+    // Fall back to getUser() (network call) which is authoritative.
+    if (!uid) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        uid = user?.id ?? null
+      } catch {} // network error — uid stays null
+    }
     if (!mountedRef.current) return
     if (!uid) { setLoading(false); setRefreshing(false); return }
     setUserId(uid)

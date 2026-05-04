@@ -14,9 +14,17 @@ export async function getCachedUserId(): Promise<string | null> {
   _inflight = (async () => {
     try {
       const supabase = createClient()
-      // Use getSession (faster, cached by GoTrue) instead of getUser (network call)
+      // Try getSession first (fast, cached by GoTrue)
       const { data: { session } } = await supabase.auth.getSession()
-      _cachedUserId = session?.user?.id ?? null
+      if (session?.user?.id) {
+        _cachedUserId = session.user.id
+        _cacheTime = Date.now()
+        return _cachedUserId
+      }
+      // getSession can return null even when logged in (stale in-memory state).
+      // Fall back to getUser (network call) which is authoritative.
+      const { data: { user } } = await supabase.auth.getUser()
+      _cachedUserId = user?.id ?? null
       _cacheTime = Date.now()
       return _cachedUserId
     } catch {
