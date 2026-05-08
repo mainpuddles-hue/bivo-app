@@ -815,51 +815,47 @@ function PostDetailScreenInner() {
     return () => { mounted = false }
   }, [bookingModalVisible, id, supabase])
 
+  const isFreeRental = !post?.daily_fee || post.daily_fee === 0
+
   const handlePayAndBook = useCallback(async () => {
     if (!userId) { router.push('/(auth)/login'); return }
-    if (!post || sendingBooking || paymentLoading) return
+    if (!post || sendingBooking) return
     if (post.user_id === userId) { toast.show({ message: t('post.cannotMessageSelf'), type: 'error' }); return }
     if (bookingDays <= 0 || !bookingStartDate || !bookingEndDate) { toast.show({ message: t('rental.endDateAfterStart'), type: 'error' }); return }
-    // Trust tier enforcement on buyer side
-    if (trust.permissions.maxDailyFee !== null && post.daily_fee && post.daily_fee > trust.permissions.maxDailyFee) {
+    // Trust tier enforcement on buyer side — skip for free lending
+    if (!isFreeRental && trust.permissions.maxDailyFee !== null && post.daily_fee && post.daily_fee > trust.permissions.maxDailyFee) {
       toast.show({ message: t('trust.maxDailyFeeExceeded', { max: trust.permissions.maxDailyFee }), type: 'error' })
       return
     }
     setSendingBooking(true)
-    let createdBookingId: string | null = null
     try {
+      const bookingStatus = isFreeRental ? 'confirmed' : 'pending'
       const { data: booking, error: bookingError } = await (supabase.from('rental_bookings') as any)
-        .insert({ post_id: id, borrower_id: userId, lender_id: post.user_id, start_date: bookingStartDate, end_date: bookingEndDate, daily_fee: post.daily_fee, service_fee: serviceFee, total_amount: bookingTotal, deposit_amount: depositAmount, deposit_status: 'authorized', status: 'pending' })
+        .insert({ post_id: id, borrower_id: userId, lender_id: post.user_id, start_date: bookingStartDate, end_date: bookingEndDate, daily_fee: post.daily_fee ?? 0, service_fee: isFreeRental ? 0 : serviceFee, total_amount: isFreeRental ? 0 : bookingTotal, deposit_amount: isFreeRental ? 0 : depositAmount, deposit_status: isFreeRental ? null : 'authorized', status: bookingStatus })
         .select('id').single()
       if (bookingError || !booking) { toast.show({ message: t('rental.bookingFailed'), type: 'error' }); setSendingBooking(false); return }
-      createdBookingId = booking.id
-      const amountCents = Math.round(bookingTotal * 100)
-      const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate, booking_days: String(bookingDays) } })
-      if (sessionId) {
-        const { error: updateError } = await (supabase.from('rental_bookings') as any).update({ stripe_session_id: sessionId }).eq('id', booking.id)
-        if (updateError && __DEV__) console.error('[bookings] CRITICAL: failed to link Stripe session to booking:', updateError.message)
-      }
-      setBookingModalVisible(false); setBookingStartDate(null); setBookingEndDate(null)
-      if (!sessionId) {
-        // TODO: UX — Stripe payment not yet implemented in Expo Go. Booking is created with status='pending'.
-        // When Stripe is available, the user will be redirected to Stripe Checkout.
-        // If payment is not completed, the booking stays 'pending' — add a timeout/cleanup job
-        // and a "Retry payment" or "Cancel booking" button in /bookings screen.
-        toast.show({ message: t('rental.bookingCreated'), type: 'success' })
+
+      if (!isFreeRental && FEATURES.PAYMENTS) {
+        // Paid rental: create Stripe Checkout session
+        const amountCents = Math.round(bookingTotal * 100)
+        const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate, booking_days: String(bookingDays) } })
+        if (sessionId) {
+          const { error: updateError } = await (supabase.from('rental_bookings') as any).update({ stripe_session_id: sessionId }).eq('id', booking.id)
+          if (updateError && __DEV__) console.error('[bookings] CRITICAL: failed to link Stripe session to booking:', updateError.message)
+        }
+        setBookingModalVisible(false); setBookingStartDate(null); setBookingEndDate(null)
+        toast.show({ message: sessionId ? t('rental.bookingCreatedPaymentPending') : t('rental.bookingCreated'), type: sessionId ? 'info' : 'success' })
       } else {
-        toast.show({ message: t('rental.bookingCreatedPaymentPending'), type: 'info' })
+        // Free lending: booking confirmed immediately, no payment needed
+        setBookingModalVisible(false); setBookingStartDate(null); setBookingEndDate(null)
+        toast.show({ message: t('rental.bookingCreated'), type: 'success' })
+        router.push(`/booking/${booking.id}`)
       }
     } catch {
-      // Roll back the booking row if Stripe session creation threw — otherwise
-      // zombie pending bookings accumulate and block future reservations
-      if (createdBookingId) {
-        const { error: rollbackErr } = await (supabase.from('rental_bookings') as any).delete().eq('id', createdBookingId)
-        if (rollbackErr && __DEV__) console.error('[post] booking rollback failed — zombie booking may block future reservations:', rollbackErr.message)
-      }
       toast.show({ message: t('rental.bookingFailed'), type: 'error' })
     }
     finally { setSendingBooking(false) }
-  }, [userId, post, sendingBooking, paymentLoading, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, id, supabase, router, t, toast, createPayment, trust])
+  }, [userId, post, sendingBooking, bookingDays, bookingStartDate, bookingEndDate, bookingTotal, serviceFee, isFreeRental, id, supabase, router, t, toast, createPayment, trust])
 
   // Service pricing
   const svcFee = useMemo(() => {
@@ -1120,7 +1116,7 @@ function PostDetailScreenInner() {
               <View style={[styles.pricePill, { backgroundColor: colors.foreground }]}>
                 <Text style={[styles.pricePillText, { color: colors.background }]}>
                   {post.daily_fee !== null
-                    ? `${formatPrice(post.daily_fee, locale)} / ${t('common.daysShort')}`
+                    ? (post.daily_fee > 0 ? `${formatPrice(post.daily_fee, locale)} / ${t('common.daysShort')}` : t('common.free'))
                     : formatPrice(post.service_price!, locale)}
                 </Text>
               </View>
@@ -1310,7 +1306,7 @@ function PostDetailScreenInner() {
           )}
 
           {/* Booking / service CTA buttons */}
-          {FEATURES.PAYMENTS && post.type === 'lainaa' && post.daily_fee !== null && !isAuthor && (
+          {FEATURES.LENDING && post.type === 'lainaa' && !isAuthor && (
             <PressableOpacity onPress={() => { if (!userId) { router.push('/(auth)/login'); return } Keyboard.dismiss(); setBookingModalVisible(true) }} style={[styles.bookingBtn, { backgroundColor: colors.foreground }]} accessibilityRole="button" accessibilityLabel={t('post.booking')}>
               <Calendar size={16} color={colors.primaryForeground} />
               <Text style={[styles.bookingBtnText, { color: colors.primaryForeground }]}>{t('post.booking')}</Text>
@@ -1518,8 +1514,9 @@ function PostDetailScreenInner() {
                 <View style={{ flex: 1, height: 3, borderRadius: 1.5, backgroundColor: bookingDays > 0 ? colors.foreground : colors.muted }} />
               </View>
               <Text style={[styles.bookingPostTitle, { color: colors.foreground }]} numberOfLines={2}>{post?.title ?? ''}</Text>
-              {post?.daily_fee !== null && (<Text style={[styles.bookingFee, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
-              <Text style={[styles.modalLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>{bookingDays > 0 ? t('rental.pricingBreakdown') : t('rental.selectDates')}</Text>
+              {post?.daily_fee !== null && post.daily_fee > 0 && (<Text style={[styles.bookingFee, { color: category?.color ?? colors.foreground }]}>{formatPrice(post.daily_fee, locale)} / {t('common.daysShort')}</Text>)}
+              {post?.daily_fee !== null && post.daily_fee === 0 && (<Text style={[styles.bookingFee, { color: colors.primary }]}>{t('common.free')}</Text>)}
+              <Text style={[styles.modalLabel, { color: colors.mutedForeground, marginBottom: 8 }]}>{bookingDays > 0 ? (isFreeRental ? t('rental.confirmDates') : t('rental.pricingBreakdown')) : t('rental.selectDates')}</Text>
               <DateRangePicker startDate={bookingStartDate} endDate={bookingEndDate} onSelect={(start, end) => { setBookingStartDate(start); setBookingEndDate(end) }} blockedDates={blockedDates} />
               {bookingStartDate && (
                 <View style={[styles.datesSummary, { backgroundColor: colors.muted }]}>
@@ -1527,7 +1524,7 @@ function PostDetailScreenInner() {
                   {bookingEndDate && (<View style={styles.datesSummaryItem}><Text style={[styles.datesSummaryLabel, { color: colors.mutedForeground }]}>{t('rental.endDate')}</Text><Text style={[styles.datesSummaryValue, { color: colors.foreground }]}>{bookingEndDate}</Text></View>)}
                 </View>
               )}
-              {bookingDays > 0 && post?.daily_fee !== null && (
+              {bookingDays > 0 && !isFreeRental && post?.daily_fee !== null && (
                 <View style={[styles.pricingBreakdown, { borderColor: colors.border }]}>
                   <Text style={[styles.pricingTitle, { color: colors.foreground }]}>{t('rental.pricingBreakdown')}</Text>
                   <View style={styles.pricingRow}><Text style={[styles.pricingLabel, { color: colors.mutedForeground }]}>{formatPrice(post.daily_fee, locale)} x {bookingDays} {t('rental.daysAbbr')}</Text><Text style={[styles.pricingValue, { color: colors.foreground }]}>{formatPrice(rentalFee, locale)}</Text></View>
@@ -1555,12 +1552,18 @@ function PostDetailScreenInner() {
                   <View style={[styles.pricingRow, styles.pricingTotalRow, { borderTopColor: colors.border }]}><Text style={[styles.pricingTotalLabel, { color: colors.foreground }]}>{t('rental.total')}</Text><Text style={[styles.bookingTotalPrice, { color: colors.foreground }]}>{formatPrice(bookingTotal, locale)}</Text></View>
                 </View>
               )}
+              {bookingDays > 0 && isFreeRental && (
+                <View style={[styles.pricingBreakdown, { borderColor: colors.border }]}>
+                  <Text style={[styles.pricingTitle, { color: colors.foreground }]}>{t('rental.freeLending')}</Text>
+                  <Text style={{ fontSize: 13, fontFamily: fonts.body, color: colors.mutedForeground, lineHeight: 18 }}>{bookingDays} {t('rental.daysAbbr')}</Text>
+                </View>
+              )}
               {bookingDays > 0 && (<Text style={[styles.confirmNote, { color: colors.mutedForeground }]}>{t('rental.confirmationNote')}</Text>)}
               {paymentError && (<Text style={[styles.errorText, { color: colors.destructive }]}>{paymentError}</Text>)}
-              <Text style={{ fontSize: 12, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>
-              <PressableOpacity onPress={handlePayAndBook} disabled={sendingBooking || paymentLoading || bookingDays <= 0}
-                style={[styles.payBookBtn, { backgroundColor: sendingBooking || paymentLoading || bookingDays <= 0 ? colors.muted : colors.foreground, marginTop: 16, marginBottom: 8 }]}>
-                {sendingBooking || paymentLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{t('rental.payAndBook')}</Text></>)}
+              {!isFreeRental && (<Text style={{ fontSize: 12, color: colors.mutedForeground, textAlign: 'center', lineHeight: 16, fontFamily: fonts.body }}>{t('payment.opensInBrowser')}</Text>)}
+              <PressableOpacity onPress={handlePayAndBook} disabled={sendingBooking || bookingDays <= 0}
+                style={[styles.payBookBtn, { backgroundColor: sendingBooking || bookingDays <= 0 ? colors.muted : colors.foreground, marginTop: 16, marginBottom: 8 }]}>
+                {sendingBooking ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (<><Calendar size={16} color={colors.primaryForeground} /><Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>{isFreeRental ? t('rental.reserve') : t('rental.payAndBook')}</Text></>)}
               </PressableOpacity>
             </ScrollView>
           </Pressable>

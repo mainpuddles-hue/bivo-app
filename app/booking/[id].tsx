@@ -118,9 +118,9 @@ function BookingDetailScreenInner() {
   const [reviewTags, setReviewTags] = useState<Set<string>>(new Set())
   const [reviewComment, setReviewComment] = useState('')
 
-  // Feature flag gate
+  // Feature flag gate — allow lending bookings even when PAYMENTS is off
   useEffect(() => {
-    if (!FEATURES.PAYMENTS) {
+    if (!FEATURES.PAYMENTS && !FEATURES.LENDING) {
       router.replace('/(tabs)')
     }
   }, [router])

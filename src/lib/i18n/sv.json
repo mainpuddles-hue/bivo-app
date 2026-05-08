@@ -54,7 +54,8 @@
     "show": "Visa",
     "showAll": "Visa alla",
     "showLess": "Visa mindre",
-    "image": "Bild"
+    "image": "Bild",
+    "free": "Gratis"
   },
   "gallery": {
     "gestureHint": "Dubbeltryck för att zooma, nyp för att ändra storlek"
@@ -1331,6 +1332,9 @@
     "returnItem": "Markera som returnerad",
     "leaveReview": "Lämna recension",
     "payAndBook": "Betala och boka",
+    "reserve": "Reservera",
+    "freeLending": "Gratis utlåning",
+    "confirmDates": "Bekräfta datum",
     "bookingCreated": "Bokning skapad! Uthyraren meddelas.",
     "bookingCreatedPaymentPending": "Bokning skapad - betalning väntar. Slutför den på Mina bokningar.",
     "blockedDate": "Datum är bokat",

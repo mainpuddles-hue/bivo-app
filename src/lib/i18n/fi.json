@@ -54,7 +54,8 @@
     "show": "Näytä",
     "showAll": "Näytä kaikki",
     "showLess": "Näytä vähemmän",
-    "image": "Kuva"
+    "image": "Kuva",
+    "free": "Ilmainen"
   },
   "gallery": {
     "gestureHint": "Kaksoisnapauta zoomataksesi, nipistä suurentaaksesi"
@@ -1331,7 +1332,10 @@
     "returnItem": "Merkitse palautetuksi",
     "leaveReview": "Arvostele",
     "payAndBook": "Maksa ja varaa",
-    "bookingCreated": "Varaus luotu! Vuokraaja saa ilmoituksen.",
+    "reserve": "Varaa",
+    "freeLending": "Ilmainen lainaus",
+    "confirmDates": "Vahvista päivät",
+    "bookingCreated": "Varaus luotu! Lainaaja saa ilmoituksen.",
     "bookingCreatedPaymentPending": "Varaus luotu — maksu on kesken. Suorita maksu loppuun Varaukseni-sivulla.",
     "blockedDate": "Päivä on varattu",
     "selectDates": "Valitse päivät",

@@ -157,7 +157,7 @@ function BookingsScreenInner() {
 
   // Feature flag gate
   useEffect(() => {
-    if (!FEATURES.PAYMENTS) { router.replace('/(tabs)') }
+    if (!FEATURES.PAYMENTS && !FEATURES.LENDING) { router.replace('/(tabs)') }
   }, [router])
 
   // Auth gate

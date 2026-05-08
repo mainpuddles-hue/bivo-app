@@ -54,7 +54,8 @@
     "show": "Show",
     "showAll": "Show all",
     "showLess": "Show less",
-    "image": "Image"
+    "image": "Image",
+    "free": "Free"
   },
   "gallery": {
     "gestureHint": "Double-tap to zoom, pinch to resize"
@@ -1331,6 +1332,9 @@
     "returnItem": "Mark as returned",
     "leaveReview": "Leave review",
     "payAndBook": "Pay & Book",
+    "reserve": "Reserve",
+    "freeLending": "Free lending",
+    "confirmDates": "Confirm dates",
     "bookingCreated": "Booking created! The lender will be notified.",
     "bookingCreatedPaymentPending": "Booking created - payment is pending. Complete it on the My Bookings page.",
     "blockedDate": "Date is booked",
