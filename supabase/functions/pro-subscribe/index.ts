@@ -18,7 +18,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const PRICES = {
+// Use Stripe Price IDs from env vars (created in Stripe Dashboard)
+// Fallback to inline price_data if not set
+const STRIPE_PRICES: Record<string, string | undefined> = {
+  monthly: Deno.env.get('STRIPE_PRICE_PRO_MONTHLY'),
+  yearly: Deno.env.get('STRIPE_PRICE_PRO_YEARLY'),
+  business_monthly: Deno.env.get('STRIPE_PRICE_BUSINESS_MONTHLY'),
+}
+
+const PRICE_FALLBACKS = {
   monthly: { amount: 499, interval: 'month' as const, name: 'TackBird Pro Monthly' },
   yearly: { amount: 3999, interval: 'year' as const, name: 'TackBird Pro Yearly' },
   business_monthly: { amount: 2999, interval: 'month' as const, name: 'TackBird Business Monthly' },
@@ -67,7 +75,8 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
-    const price = PRICES[plan as keyof typeof PRICES]
+    const stripePriceId = STRIPE_PRICES[plan as string]
+    const fallback = PRICE_FALLBACKS[plan as keyof typeof PRICE_FALLBACKS]
 
     // Get or create Stripe customer
     const { data: profile } = await supabase
@@ -115,18 +124,23 @@ serve(async (req) => {
     }
 
     // Create Checkout session for subscription
+    // Use Stripe Price ID if available, otherwise inline price_data
+    const lineItem = stripePriceId
+      ? { price: stripePriceId, quantity: 1 }
+      : {
+          price_data: {
+            currency: 'eur',
+            unit_amount: fallback.amount,
+            recurring: { interval: fallback.interval },
+            product_data: { name: fallback.name },
+          },
+          quantity: 1,
+        }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
-      line_items: [{
-        price_data: {
-          currency: 'eur',
-          unit_amount: price.amount,
-          recurring: { interval: price.interval },
-          product_data: { name: price.name },
-        },
-        quantity: 1,
-      }],
+      line_items: [lineItem],
       metadata: { user_id: user.id, plan: plan ?? 'monthly' },
       subscription_data: {
         metadata: { user_id: user.id, plan: plan ?? 'monthly' },
