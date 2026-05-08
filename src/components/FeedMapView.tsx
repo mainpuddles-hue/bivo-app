@@ -6,7 +6,7 @@
  */
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { View, Text, StyleSheet, Pressable } from 'react-native'
-import MapView, { Marker, Circle, PROVIDER_DEFAULT } from 'react-native-maps'
+import MapView, { Marker, Circle, PROVIDER_DEFAULT, type MapMarkerProps } from 'react-native-maps'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
@@ -99,15 +99,29 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
     return HELSINKI_CENTER
   }, [validLocation, mappablePosts])
 
-  const handlePostPress = useCallback((post: Post) => {
-    try { Haptics.selectionAsync() } catch {}
-    setSelected({ kind: 'post', data: post })
-  }, [])
+  // Build lookup maps for marker press handler
+  const postMap = useMemo(() => {
+    const map = new Map<string, Post>()
+    mappablePosts.forEach(p => map.set(`post-${p.id}`, p))
+    return map
+  }, [mappablePosts])
 
-  const handleEventPress = useCallback((event: CityEvent) => {
+  const eventMap = useMemo(() => {
+    const map = new Map<string, CityEvent>()
+    mappableEvents.forEach(e => map.set(`event-${e.id}`, e))
+    return map
+  }, [mappableEvents])
+
+  // Handle marker press via MapView callback (more reliable than Marker.onPress on iOS)
+  const handleMarkerPress = useCallback((e: any) => {
+    const id = e?.nativeEvent?.id
+    if (!id) return
     try { Haptics.selectionAsync() } catch {}
-    setSelected({ kind: 'event', data: event })
-  }, [])
+    const post = postMap.get(id)
+    if (post) { setSelected({ kind: 'post', data: post }); return }
+    const event = eventMap.get(id)
+    if (event) { setSelected({ kind: 'event', data: event }) }
+  }, [postMap, eventMap])
 
   const handleCardPress = useCallback(() => {
     if (!selected) return
@@ -131,6 +145,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         showsMyLocationButton={false}
         customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
         onPress={() => setSelected(null)}
+        onMarkerPress={handleMarkerPress}
       >
         {/* 10km radius circle */}
         {validLocation && (
@@ -147,15 +162,11 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         {mappablePosts.map(post => (
           <Marker
             key={`post-${post.id}`}
+            identifier={`post-${post.id}`}
             coordinate={{ latitude: post.latitude!, longitude: post.longitude! }}
-            onPress={() => handlePostPress(post)}
             tracksViewChanges={false}
           >
-            <View
-              style={[styles.pin, { backgroundColor: PIN_COLORS[post.type] ?? colors.foreground }]}
-              accessibilityLabel={`${CATEGORIES[post.type as PostType]?.label ?? post.type}: ${post.title}`}
-              accessibilityRole="button"
-            >
+            <View style={[styles.pin, { backgroundColor: PIN_COLORS[post.type] ?? colors.foreground }]}>
               <MapPin size={12} color="#fff" fill="#fff" />
             </View>
           </Marker>
@@ -165,15 +176,11 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         {mappableEvents.map(event => (
           <Marker
             key={`event-${event.id}`}
+            identifier={`event-${event.id}`}
             coordinate={{ latitude: event.latitude!, longitude: event.longitude! }}
-            onPress={() => handleEventPress(event)}
             tracksViewChanges={false}
           >
-            <View
-              style={[styles.pin, { backgroundColor: EVENT_PIN_COLOR }]}
-              accessibilityLabel={`${t('common.event')}: ${event.name_fi}`}
-              accessibilityRole="button"
-            >
+            <View style={[styles.pin, { backgroundColor: EVENT_PIN_COLOR }]}>
               <Calendar size={12} color="#fff" />
             </View>
           </Marker>
