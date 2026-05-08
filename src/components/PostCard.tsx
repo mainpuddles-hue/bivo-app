@@ -61,6 +61,9 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   const likingRef = useRef(false)
   const savingRef = useRef(false)
 
+  // Use post.image_url first, fall back to first image from post_images relation
+  const effectiveImageUrl = post.image_url || (post.images && post.images.length > 0 ? post.images[0].image_url : null)
+
   // Animated like heart
   const likeAnim = useRef(new Animated.Value(1)).current
 
@@ -68,7 +71,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   const [imgLoaded, setImgLoaded] = useState(false)
   const shimmerAnim = useRef(new Animated.Value(0.4)).current
   useEffect(() => {
-    if (imgLoaded || imgError || !post.image_url) return
+    if (imgLoaded || imgError || !effectiveImageUrl) return
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(shimmerAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
@@ -77,7 +80,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
     )
     loop.start()
     return () => loop.stop()
-  }, [imgLoaded, imgError, post.image_url, shimmerAnim])
+  }, [imgLoaded, imgError, effectiveImageUrl, shimmerAnim])
 
   // Sync state when post prop changes (e.g., feed refresh)
   useEffect(() => {
@@ -115,7 +118,8 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   const category = CATEGORIES[post.type as PostType]
   const isPro = post.is_pro_listing
   const user = post.user
-  const hasImage = post.image_url && !imgError
+  const hasImage = !!effectiveImageUrl && !imgError
+  const imageCount = post.images?.length ?? (effectiveImageUrl ? 1 : 0)
   const CategoryIcon = category ? ICON_MAP[category.icon] : null
 
   const isAnonymous = post.is_anonymous === true
@@ -343,7 +347,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.muted, opacity: shimmerAnim }]} />
             )}
             <Image
-              source={{ uri: getImageUrl(post.image_url, 'medium')! }}
+              source={{ uri: getImageUrl(effectiveImageUrl, 'medium')! }}
               style={[styles.image, !imgLoaded && { backgroundColor: 'transparent' }]}
               contentFit="cover"
               transition={200}
@@ -351,15 +355,15 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               onError={() => setImgError(true)}
               accessibilityLabel={post.title}
               cachePolicy="memory-disk"
-              recyclingKey={post.image_url!}
+              recyclingKey={effectiveImageUrl!}
             />
             {/* Subtle bottom overlay for depth */}
             <View style={[styles.imageGradient, { pointerEvents: 'none' }]} />
             {/* Multi-image badge */}
-            {post.images && post.images.length > 1 && (
+            {imageCount > 1 && (
               <View style={styles.multiImageBadge}>
                 <ImageIcon size={12} color="#FFFFFF" />
-                <Text style={styles.multiImageText}>{post.images.length}</Text>
+                <Text style={styles.multiImageText}>{imageCount}</Text>
               </View>
             )}
             {/* Pro crown */}
@@ -369,7 +373,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
               </View>
             )}
           </View>
-        ) : post.image_url && imgError ? (
+        ) : effectiveImageUrl && imgError ? (
           <View style={[styles.imageFallback, { backgroundColor: colors.muted }]}>
             <ImageOff size={32} color={colors.mutedForeground} />
           </View>
@@ -615,10 +619,10 @@ const styles = StyleSheet.create({
   },
   categoryBadgeText: { fontSize: 13, fontFamily: fonts.heading, letterSpacing: 0.2, lineHeight: 16 },
 
-  // Image — full width, inline
-  imageContainer: { borderRadius: 16, overflow: 'hidden', maxHeight: 200, marginTop: 4 },
-  image: { width: '100%', height: 200 },
-  imageFallback: { width: '100%', height: 200, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
+  // Image — full width, 16:10 aspect ratio for content-first feed
+  imageContainer: { borderRadius: 16, overflow: 'hidden', marginTop: 4 },
+  image: { width: '100%', aspectRatio: 16 / 10 },
+  imageFallback: { width: '100%', aspectRatio: 16 / 10, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   imageGradient: {
     position: 'absolute',
     left: 0,
