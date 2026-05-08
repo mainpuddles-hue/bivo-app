@@ -604,6 +604,7 @@ function FeedScreenInner() {
           </View>
           <FeedMapView
             posts={visiblePosts}
+            cityEvents={feed.cityEvents}
             userLocation={feed.userLocation}
             activeFilter={feed.activeFilter}
           />

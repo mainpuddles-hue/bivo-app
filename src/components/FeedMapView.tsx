@@ -1,41 +1,32 @@
 /**
- * FeedMapView — Inline map showing feed posts with color-coded pins.
+ * FeedMapView — Map showing feed posts and city events with color-coded pins.
  *
- * Used in feed screen when user toggles to map view.
- * Lightweight — no events, places, or bottom sheet. Just posts on a map.
+ * Shows a 10km radius circle around the user's location to visualize
+ * the feed filtering area. Posts and events outside this area are excluded.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native'
-import MapView, { Marker, PROVIDER_DEFAULT, type Region } from 'react-native-maps'
-import ClusteredMapView from 'react-native-map-clustering'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { View, Text, StyleSheet, Pressable } from 'react-native'
+import MapView, { Marker, Circle, PROVIDER_DEFAULT } from 'react-native-maps'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { MapPin, X, Home } from 'lucide-react-native'
+import { MapPin, X, Calendar } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
-import type { PostType } from '@/lib/types'
+import type { PostType, CityEvent } from '@/lib/types'
 import { formatPrice, formatTimeAgo } from '@/lib/format'
 import { getImageUrl } from '@/lib/imageUtils'
 import { DARK_MAP_STYLE } from '@/components/map/useMapData'
 import { PressableOpacity } from '@/components/ui'
-import { useSupabase } from '@/hooks/useSupabase'
 import type { Post } from '@/lib/types'
 
-interface Building {
-  id: string
-  street_address: string
-  lat: number
-  lng: number
-  member_count: number
-}
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window')
-
 // Helsinki center fallback
-const HELSINKI_CENTER = { latitude: 60.1699, longitude: 24.9384, latitudeDelta: 0.05, longitudeDelta: 0.05 }
+const HELSINKI_CENTER = { latitude: 60.1699, longitude: 24.9384, latitudeDelta: 0.06, longitudeDelta: 0.06 }
+
+const FEED_RADIUS_KM = 10
+const FEED_RADIUS_M = FEED_RADIUS_KM * 1000
 
 // Category pin colors
 const PIN_COLORS: Record<string, string> = {
@@ -47,96 +38,117 @@ const PIN_COLORS: Record<string, string> = {
   tapahtuma: '#2B8A62',
 }
 
+const EVENT_PIN_COLOR = '#2B8A62'
+
+/** Check if coordinates are within Finland */
+function isInFinland(lat: number, lng: number): boolean {
+  return lat >= 59 && lat <= 71 && lng >= 19 && lng <= 32
+}
+
+type SelectedItem =
+  | { kind: 'post'; data: Post }
+  | { kind: 'event'; data: CityEvent }
+
 interface FeedMapViewProps {
   posts: Post[]
+  cityEvents?: CityEvent[]
   userLocation?: { latitude: number; longitude: number } | null
   activeFilter?: string | null
 }
 
-export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewProps) {
+export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter }: FeedMapViewProps) {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const router = useRouter()
-  const supabase = useSupabase()
   const mapRef = useRef<MapView | null>(null)
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
-  const [buildings, setBuildings] = useState<Building[]>([])
+  const [selected, setSelected] = useState<SelectedItem | null>(null)
 
-  // Fetch nearby buildings with members
-  useEffect(() => {
-    Promise.resolve(
-      supabase
-        .from('buildings')
-        .select('id, street_address, lat, lng, member_count')
-        .gt('member_count', 0)
-        .not('lat', 'is', null)
-        .limit(100)
-    ).then(({ data }) => {
-      if (data) setBuildings(data as Building[])
-    }).catch(() => {})
-  }, [supabase])
+  // Valid user location within Finland
+  const validLocation = useMemo(() => {
+    if (userLocation && isInFinland(userLocation.latitude, userLocation.longitude)) {
+      return userLocation
+    }
+    return null
+  }, [userLocation])
 
   // Filter posts with valid coordinates
   const mappablePosts = useMemo(() =>
     posts.filter(p => {
-      const lat = (p as any).latitude
-      const lng = (p as any).longitude
-      return lat && lng && lat > 59 && lat < 61 && lng > 24 && lng < 26
+      const lat = p.latitude
+      const lng = p.longitude
+      return lat != null && lng != null && lat !== 0 && lng !== 0
     }),
   [posts])
 
+  // Filter events with valid coordinates
+  const mappableEvents = useMemo(() =>
+    cityEvents.filter(e =>
+      e.latitude != null && e.longitude != null &&
+      e.latitude !== 0 && e.longitude !== 0
+    ),
+  [cityEvents])
+
   const initialRegion = useMemo(() => {
-    // Only use userLocation if it's within Finland bounds
-    if (userLocation && userLocation.latitude >= 59 && userLocation.latitude <= 71 && userLocation.longitude >= 19 && userLocation.longitude <= 32) {
-      return { ...userLocation, latitudeDelta: 0.03, longitudeDelta: 0.03 }
+    if (validLocation) {
+      return { ...validLocation, latitudeDelta: 0.06, longitudeDelta: 0.06 }
     }
     if (mappablePosts.length > 0) {
       const first = mappablePosts[0]
-      return { latitude: (first as any).latitude, longitude: (first as any).longitude, latitudeDelta: 0.04, longitudeDelta: 0.04 }
+      return { latitude: first.latitude!, longitude: first.longitude!, latitudeDelta: 0.06, longitudeDelta: 0.06 }
     }
     return HELSINKI_CENTER
-  }, [userLocation, mappablePosts])
+  }, [validLocation, mappablePosts])
 
-  const handleMarkerPress = useCallback((post: Post) => {
+  const handlePostPress = useCallback((post: Post) => {
     try { Haptics.selectionAsync() } catch {}
-    setSelectedPost(post)
+    setSelected({ kind: 'post', data: post })
   }, [])
 
-  const handleBuildingPress = useCallback((b: Building) => {
+  const handleEventPress = useCallback((event: CityEvent) => {
     try { Haptics.selectionAsync() } catch {}
-    router.push(`/community-events` as any)
-  }, [router])
+    setSelected({ kind: 'event', data: event })
+  }, [])
 
   const handleCardPress = useCallback(() => {
-    if (selectedPost) {
-      router.push(`/post/${selectedPost.id}`)
+    if (!selected) return
+    if (selected.kind === 'post') {
+      router.push(`/post/${selected.data.id}`)
+    } else {
+      router.push(`/event/${selected.data.id}` as any)
     }
-  }, [selectedPost, router])
+  }, [selected, router])
+
+  const totalCount = mappablePosts.length + mappableEvents.length
 
   return (
     <View style={styles.container}>
-      <ClusteredMapView
-        ref={mapRef as any}
+      <MapView
+        ref={mapRef}
         style={styles.map}
         provider={PROVIDER_DEFAULT}
         initialRegion={initialRegion}
-        showsUserLocation={!!userLocation}
+        showsUserLocation={!!validLocation}
         showsMyLocationButton={false}
         customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
-        onPress={() => setSelectedPost(null)}
-        clusterColor={colors.primary}
-        clusterTextColor="#fff"
-        clusterFontFamily={fonts.bodySemi}
-        radius={50}
-        minZoomLevel={0}
-        maxZoom={15}
-        spiralEnabled={false}
+        onPress={() => setSelected(null)}
       >
+        {/* 10km radius circle */}
+        {validLocation && (
+          <Circle
+            center={validLocation}
+            radius={FEED_RADIUS_M}
+            strokeColor={isDark ? 'rgba(111,207,151,0.35)' : 'rgba(45,107,94,0.3)'}
+            fillColor={isDark ? 'rgba(111,207,151,0.06)' : 'rgba(45,107,94,0.05)'}
+            strokeWidth={1.5}
+          />
+        )}
+
+        {/* Post markers */}
         {mappablePosts.map(post => (
           <Marker
-            key={post.id}
-            coordinate={{ latitude: (post as any).latitude, longitude: (post as any).longitude }}
-            onPress={() => handleMarkerPress(post)}
+            key={`post-${post.id}`}
+            coordinate={{ latitude: post.latitude!, longitude: post.longitude! }}
+            onPress={() => handlePostPress(post)}
             tracksViewChanges={false}
           >
             <View
@@ -148,37 +160,41 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
             </View>
           </Marker>
         ))}
-        {buildings.map(b => (
+
+        {/* Event markers */}
+        {mappableEvents.map(event => (
           <Marker
-            key={`bldg-${b.id}`}
-            coordinate={{ latitude: b.lat, longitude: b.lng }}
+            key={`event-${event.id}`}
+            coordinate={{ latitude: event.latitude!, longitude: event.longitude! }}
+            onPress={() => handleEventPress(event)}
             tracksViewChanges={false}
-            zIndex={-1}
-            onPress={() => handleBuildingPress(b)}
           >
             <View
-              style={[styles.buildingPin, { backgroundColor: colors.card, borderColor: colors.border }]}
-              accessibilityLabel={`${b.street_address}, ${b.member_count} ${t('common.members') ?? 'members'}`}
+              style={[styles.pin, { backgroundColor: EVENT_PIN_COLOR }]}
+              accessibilityLabel={`${t('common.event')}: ${event.name_fi}`}
               accessibilityRole="button"
             >
-              <Home size={10} color={colors.foreground} />
-              {b.member_count > 1 && (
-                <Text style={[styles.buildingCount, { color: colors.foreground }]}>
-                  {b.member_count}
-                </Text>
-              )}
+              <Calendar size={12} color="#fff" />
             </View>
           </Marker>
         ))}
-      </ClusteredMapView>
+      </MapView>
 
-      {/* Post preview card */}
-      {selectedPost && (
+      {/* Preview card */}
+      {selected && (
         <View style={[styles.previewCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Pressable onPress={handleCardPress} style={styles.previewContent}>
-            {selectedPost.image_url && (
+            {selected.kind === 'post' && selected.data.image_url && (
               <Image
-                source={{ uri: getImageUrl(selectedPost.image_url, 'thumbnail')! }}
+                source={{ uri: getImageUrl(selected.data.image_url, 'thumbnail')! }}
+                style={styles.previewImage}
+                contentFit="cover"
+                cachePolicy="memory-disk"
+              />
+            )}
+            {selected.kind === 'event' && selected.data.image_url && (
+              <Image
+                source={{ uri: selected.data.image_url }}
                 style={styles.previewImage}
                 contentFit="cover"
                 cachePolicy="memory-disk"
@@ -186,22 +202,29 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
             )}
             <View style={styles.previewText}>
               <View style={styles.previewCategoryRow}>
-                <View style={[styles.previewCategoryDot, { backgroundColor: PIN_COLORS[selectedPost.type] ?? colors.foreground }]} />
+                <View style={[styles.previewCategoryDot, {
+                  backgroundColor: selected.kind === 'post'
+                    ? (PIN_COLORS[selected.data.type] ?? colors.foreground)
+                    : EVENT_PIN_COLOR,
+                }]} />
                 <Text style={[styles.previewCategory, { color: colors.mutedForeground }]}>
-                  {t(CATEGORIES[selectedPost.type as PostType]?.label ?? '')}
+                  {selected.kind === 'post'
+                    ? t(CATEGORIES[selected.data.type as PostType]?.label ?? '')
+                    : (t('common.event') ?? 'Tapahtuma')}
                 </Text>
               </View>
               <Text style={[styles.previewTitle, { color: colors.foreground }]} numberOfLines={2}>
-                {selectedPost.title}
+                {selected.kind === 'post' ? selected.data.title : selected.data.name_fi}
               </Text>
               <Text style={[styles.previewMeta, { color: colors.mutedForeground }]} numberOfLines={1}>
-                {selectedPost.location ?? ''}{selectedPost.created_at ? ` · ${formatTimeAgo(selectedPost.created_at, t, locale)}` : ''}
-                {selectedPost.service_price != null && selectedPost.service_price > 0 ? ` · ${formatPrice(selectedPost.service_price, locale)}` : ''}
+                {selected.kind === 'post'
+                  ? `${selected.data.location ?? ''}${selected.data.created_at ? ` · ${formatTimeAgo(selected.data.created_at, t, locale)}` : ''}${selected.data.service_price != null && selected.data.service_price > 0 ? ` · ${formatPrice(selected.data.service_price, locale)}` : ''}`
+                  : `${selected.data.location_name ?? ''}${selected.data.start_time ? ` · ${new Date(selected.data.start_time).toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US', { day: 'numeric', month: 'short' })}` : ''}`}
               </Text>
             </View>
           </Pressable>
           <PressableOpacity
-            onPress={() => setSelectedPost(null)}
+            onPress={() => setSelected(null)}
             hitSlop={8}
             style={styles.previewClose}
             accessibilityLabel={t('common.close')}
@@ -214,7 +237,7 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
       {/* Count badge */}
       <View style={[styles.countBadge, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[styles.countText, { color: colors.foreground }]}>
-          {mappablePosts.length} {t('feed.postsOnMap')}
+          {totalCount} {t('feed.postsOnMap')}
         </Text>
       </View>
     </View>
@@ -249,10 +272,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1,
   },
   countText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
-  buildingPin: {
-    flexDirection: 'row', alignItems: 'center', gap: 2,
-    paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10,
-    borderWidth: 1, opacity: 0.85,
-  },
-  buildingCount: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
 })
