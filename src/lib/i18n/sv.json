@@ -159,6 +159,7 @@
     "mapView": "Kartvy",
     "listView": "Listvy",
     "postsOnMap": "annonser på kartan",
+    "tapToOpen": "Öppna annons →",
     "neighborsInBuilding": "{count} grannar i ditt hus",
     "weeklyPopular": "Populärt denna vecka",
     "weeklyPopularSub": "Evenemang i ditt område",

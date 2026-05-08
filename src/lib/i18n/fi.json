@@ -159,6 +159,7 @@
     "mapView": "Karttanäkymä",
     "listView": "Listanäkymä",
     "postsOnMap": "ilmoitusta kartalla",
+    "tapToOpen": "Avaa ilmoitus →",
     "neighborsInBuilding": "{count} naapuria talossasi",
     "weeklyPopular": "Viikon suosituimmat",
     "weeklyPopularSub": "Tapahtumat lähialueellasi",

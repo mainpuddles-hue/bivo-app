@@ -159,6 +159,7 @@
     "mapView": "Map view",
     "listView": "List view",
     "postsOnMap": "posts on map",
+    "tapToOpen": "Open post →",
     "neighborsInBuilding": "{count} neighbors in your building",
     "weeklyPopular": "Popular this week",
     "weeklyPopularSub": "Events in your area",
