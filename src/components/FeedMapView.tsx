@@ -113,6 +113,9 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
   const router = useRouter()
   const mapRef = useRef<MapView | null>(null)
   const [selected, setSelected] = useState<SelectedItem | null>(null)
+  // Guard: on iOS, MapView.onPress fires AFTER Marker.onPress,
+  // which would immediately clear the selection we just set.
+  const markerJustPressedRef = useRef(false)
 
   // Valid user location within Finland
   const validLocation = useMemo(() => {
@@ -157,13 +160,23 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
   }, [validLocation])
 
   const handleSelectPost = useCallback((post: Post) => {
+    markerJustPressedRef.current = true
+    setTimeout(() => { markerJustPressedRef.current = false }, 300)
     try { Haptics.selectionAsync() } catch {}
     setSelected({ kind: 'post', data: post })
   }, [])
 
   const handleSelectEvent = useCallback((event: CityEvent) => {
+    markerJustPressedRef.current = true
+    setTimeout(() => { markerJustPressedRef.current = false }, 300)
     try { Haptics.selectionAsync() } catch {}
     setSelected({ kind: 'event', data: event })
+  }, [])
+
+  const handleMapPress = useCallback(() => {
+    // Don't clear selection if a marker was just tapped (iOS fires both events)
+    if (markerJustPressedRef.current) return
+    setSelected(null)
   }, [])
 
   const handleCardPress = useCallback(() => {
@@ -187,7 +200,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         showsUserLocation={!!validLocation}
         showsMyLocationButton={false}
         customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
-        onPress={() => setSelected(null)}
+        onPress={handleMapPress}
       >
         {/* 10km radius circle */}
         {validLocation && (
@@ -206,7 +219,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
             key={`post-${mp.post.id}`}
             identifier={`post-${mp.post.id}`}
             coordinate={{ latitude: mp.latitude, longitude: mp.longitude }}
-            tracksViewChanges={false}
+            tracksViewChanges={Platform.OS === 'ios'}
             opacity={mp.approximate ? 0.7 : 1}
             onPress={() => handleSelectPost(mp.post)}
           >
@@ -231,7 +244,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
             key={`event-${event.id}`}
             identifier={`event-${event.id}`}
             coordinate={{ latitude: event.latitude!, longitude: event.longitude! }}
-            tracksViewChanges={false}
+            tracksViewChanges={Platform.OS === 'ios'}
             onPress={() => handleSelectEvent(event)}
           >
             <View style={styles.pinWrapper}>
