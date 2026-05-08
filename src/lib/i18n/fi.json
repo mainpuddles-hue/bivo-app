@@ -286,7 +286,11 @@
       "moderate": "Vastaa yleensä päivässä",
       "slow": "Vastausaika vaihtelee"
     },
-    "distanceFromYou": "~{distance} sinusta"
+    "distanceFromYou": "~{distance} sinusta",
+    "distance": "Etäisyys",
+    "category": "Kategoria",
+    "responseTime": "Vastausaika",
+    "deposit": "Vakuus"
   },
   "offer": {
     "title": "Tee tarjous",
@@ -1699,6 +1703,8 @@
     "expires7": "7 päivää",
     "expires14": "14 päivää",
     "expires30": "30 päivää",
+    "expires60": "60 päivää",
+    "expires90": "90 päivää",
     "weeklyHint": "7 pv = {weeklyPrice} €",
     "nappaaExpires24h": "Nappaa-ilmoitukset vanhenevat aina 24 tunnissa",
     "maxAttendees": "Osallistujaraja",
@@ -2995,6 +3001,7 @@
     "stepIdentity": "Henkilöllisyys",
     "stepIdentitySub": "Passi tai ajokortti",
     "stepPhone": "Puhelinnumero",
+    "stepPhoneSub": "Vahvista suomalainen puhelinnumero",
     "stepAddress": "Osoite",
     "stepAddressSub": "Naapurusto",
     "stepPhoto": "Kasvokuva",

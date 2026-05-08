@@ -286,7 +286,11 @@
       "moderate": "Usually responds within a day",
       "slow": "Response time varies"
     },
-    "distanceFromYou": "~{distance} from you"
+    "distanceFromYou": "~{distance} from you",
+    "distance": "Distance",
+    "category": "Category",
+    "responseTime": "Response time",
+    "deposit": "Deposit"
   },
   "offer": {
     "title": "Make an Offer",
@@ -1720,6 +1724,8 @@
     "expires7": "7 days",
     "expires14": "14 days",
     "expires30": "30 days",
+    "expires60": "60 days",
+    "expires90": "90 days",
     "priceSuggestion": "In your area {min}–{max}€ ({count} services)",
     "priceSuggestionDaily": "In your area {min}–{max}€/day ({count} listings)",
     "noExternalLinks": "External links are not allowed",
@@ -2995,6 +3001,7 @@
     "stepIdentity": "Identity",
     "stepIdentitySub": "Passport or driver's license",
     "stepPhone": "Phone number",
+    "stepPhoneSub": "Verify a Finnish phone number",
     "stepAddress": "Address",
     "stepAddressSub": "Neighborhood",
     "stepPhoto": "Profile photo",

@@ -286,7 +286,11 @@
       "moderate": "Svarar vanligtvis inom en dag",
       "slow": "Svarstiden varierar"
     },
-    "distanceFromYou": "~{distance} från dig"
+    "distanceFromYou": "~{distance} från dig",
+    "distance": "Avstånd",
+    "category": "Kategori",
+    "responseTime": "Svarstid",
+    "deposit": "Deposition"
   },
   "offer": {
     "title": "Ge ett bud",
@@ -1720,6 +1724,8 @@
     "expires7": "7 dagar",
     "expires14": "14 dagar",
     "expires30": "30 dagar",
+    "expires60": "60 dagar",
+    "expires90": "90 dagar",
     "priceSuggestion": "I ditt område {min}–{max}€ ({count} tjänster)",
     "priceSuggestionDaily": "I ditt område {min}–{max}€/dag ({count} annonser)",
     "noExternalLinks": "Externa länkar är inte tillåtna",
@@ -2995,6 +3001,7 @@
     "stepIdentity": "Identitet",
     "stepIdentitySub": "Pass eller körkort",
     "stepPhone": "Telefonnummer",
+    "stepPhoneSub": "Verifiera ett finskt telefonnummer",
     "stepAddress": "Adress",
     "stepAddressSub": "Grannskap",
     "stepPhoto": "Ansiktsfoto",

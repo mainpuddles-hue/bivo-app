@@ -14,8 +14,9 @@ import { PressableOpacity } from '@/components/ui'
 import { haversineKm } from '@/lib/geo'
 import { fonts } from '@/lib/fonts'
 
-/** Maximum distance (km) between GPS and claimed address to pass verification */
-const MAX_DISTANCE_KM = 0.5
+/** Maximum distance (km) between GPS and claimed address to pass verification.
+ * 1.5km accounts for GPS inaccuracy, indoor positioning errors, and nearby addresses. */
+const MAX_DISTANCE_KM = 1.5
 
 interface Props {
   visible: boolean

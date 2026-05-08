@@ -5,11 +5,9 @@ import { View, Text, ScrollView, ActivityIndicator, StyleSheet, RefreshControl }
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Shield, Check, Plus, ChevronLeft } from 'lucide-react-native'
-import * as ImagePicker from 'expo-image-picker'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
-import { useToast } from '@/components/Toast'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -22,6 +20,7 @@ import { AddressVerificationModal } from '@/components/AddressVerificationModal'
 interface VerificationProfile {
   id: string
   name: string | null
+  phone: string | null
   phone_verified: boolean | null
   naapurusto: string | null
   avatar_url: string | null
@@ -50,95 +49,6 @@ function VerificationScreenInner() {
   const [loading, setLoading] = useState(true)
   const [phoneModalVisible, setPhoneModalVisible] = useState(false)
   const [addressModalVisible, setAddressModalVisible] = useState(false)
-  const toast = useToast()
-
-  const handleAvatarUpload = useCallback(async () => {
-    if (!profile) return
-    let result: ImagePicker.ImagePickerResult
-    try {
-      result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 })
-    } catch {
-      toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return
-    }
-    if (result.canceled || !result.assets[0]) return
-    try {
-      const uri = result.assets[0].uri
-      const response = await fetch(uri)
-      const blob = await response.blob()
-      const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp']
-      const mimeType = blob.type && ALLOWED_MIMES.includes(blob.type) ? blob.type : null
-      if (!mimeType) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
-      const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : mimeType.split('/')[1]
-      const path = `${profile.id}/avatar.${ext}`
-
-      const { data: sessionData } = await supabase.auth.getSession()
-      const token = sessionData?.session?.access_token
-      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
-      const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? ''
-
-      const uploadOk = await new Promise<boolean>((resolve) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('POST', `${supabaseUrl}/storage/v1/object/avatars/${path}`, true)
-        xhr.setRequestHeader('Content-Type', mimeType!)
-        xhr.setRequestHeader('apikey', supabaseAnonKey)
-        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-        xhr.setRequestHeader('x-upsert', 'true')
-        xhr.timeout = 30000
-        xhr.onload = () => resolve(xhr.status >= 200 && xhr.status < 300)
-        xhr.onerror = () => resolve(false)
-        xhr.ontimeout = () => resolve(false)
-        xhr.send(blob)
-      })
-      if (!uploadOk) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
-
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
-      if (!urlData?.publicUrl) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
-      const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`
-      const { error } = await (supabase.from('profiles') as any).update({ avatar_url: avatarUrl }).eq('id', profile.id)
-      if (error) { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }); return }
-      setProfile(prev => prev ? { ...prev, avatar_url: avatarUrl } : null)
-
-      // Call face verification Edge Function
-      toast.show({ message: t('verification.verifyingFace'), type: 'info' })
-      try {
-        const verifyRes = await fetch(`${supabaseUrl}/functions/v1/verify-face`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabaseAnonKey,
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-        })
-        const verifyData = await verifyRes.json()
-        if (verifyData.verified) {
-          toast.show({ message: t('verification.faceVerified'), type: 'success' })
-        } else if (verifyData.retry) {
-          // Model loading — retry once after 3s
-          await new Promise(r => setTimeout(r, 3000))
-          const retryRes = await fetch(`${supabaseUrl}/functions/v1/verify-face`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': supabaseAnonKey,
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
-          })
-          const retryData = await retryRes.json()
-          if (retryData.verified) {
-            toast.show({ message: t('verification.faceVerified'), type: 'success' })
-          } else {
-            toast.show({ message: t('verification.noFaceDetected'), type: 'error' })
-          }
-        } else {
-          toast.show({ message: t('verification.noFaceDetected'), type: 'error' })
-        }
-      } catch {
-        // Face verification failed but avatar was uploaded — not critical
-        toast.show({ message: t('profile.avatarUpdated'), type: 'success' })
-      }
-    } catch { toast.show({ message: t('profile.avatarUploadFailed'), type: 'error' }) }
-  }, [profile, supabase, t, toast])
-
   const fetchProfile = useCallback(async () => {
     try {
       const userId = await getCachedUserId()
@@ -146,7 +56,7 @@ function VerificationScreenInner() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('id, name, phone_verified, naapurusto, avatar_url, id_verified, address_verified, verified_address')
+        .select('id, name, phone, phone_verified, naapurusto, avatar_url, id_verified, address_verified, verified_address')
         .eq('id', userId)
         .single()
 
@@ -162,7 +72,10 @@ function VerificationScreenInner() {
     fetchProfile()
   }, [fetchProfile])
 
-  // Build verification steps
+  // Build verification steps (identity coming soon, phone + address active)
+  const maskedPhone = profile?.phone
+    ? profile.phone.replace(/(\+358\d{2})\d+(\d{2})$/, '$1***$2')
+    : ''
   const steps: VerificationStep[] = [
     {
       key: 'identity',
@@ -173,7 +86,7 @@ function VerificationScreenInner() {
     {
       key: 'phone',
       title: t('verification.stepPhone'),
-      subtitle: profile?.phone_verified ? '+358 40 ***1234' : '+358 40 ***1234',
+      subtitle: profile?.phone_verified && maskedPhone ? maskedPhone : t('verification.stepPhoneSub'),
       done: profile?.phone_verified === true,
     },
     {
@@ -181,12 +94,6 @@ function VerificationScreenInner() {
       title: t('verification.stepAddress'),
       subtitle: profile?.address_verified ? (profile.verified_address || profile.naapurusto || t('verification.stepAddressSub')) : t('verification.stepAddressSub'),
       done: profile?.address_verified === true,
-    },
-    {
-      key: 'photo',
-      title: t('verification.stepPhoto'),
-      subtitle: t('verification.stepPhotoSub'),
-      done: !!profile?.avatar_url,
     },
   ]
 
@@ -282,17 +189,6 @@ function VerificationScreenInner() {
                 ) : step.key === 'phone' ? (
                   <PressableOpacity
                     onPress={() => setPhoneModalVisible(true)}
-                    style={[s.stepActionPill, { backgroundColor: colors.foreground }]}
-                    accessibilityLabel={`${t('verification.doNow')} ${step.title}`}
-                    accessibilityRole="button"
-                  >
-                    <Text style={[s.stepActionText, { color: colors.primaryForeground }]}>
-                      {t('verification.doNow')}
-                    </Text>
-                  </PressableOpacity>
-                ) : step.key === 'photo' ? (
-                  <PressableOpacity
-                    onPress={handleAvatarUpload}
                     style={[s.stepActionPill, { backgroundColor: colors.foreground }]}
                     accessibilityLabel={`${t('verification.doNow')} ${step.title}`}
                     accessibilityRole="button"

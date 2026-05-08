@@ -1,17 +1,20 @@
 /**
- * FeedMapView — Map showing feed posts and city events with color-coded pins.
+ * FeedMapView — Map showing feed posts and city events with labeled pins.
  *
  * Shows a 10km radius circle around the user's location to visualize
  * the feed filtering area. Posts without coordinates are placed near
  * the user's location with deterministic offsets.
+ *
+ * Each pin shows a category-specific icon and a short label so users
+ * can identify what each marker represents at a glance.
  */
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { View, Text, StyleSheet, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native'
 import MapView, { Marker, Circle, PROVIDER_DEFAULT } from 'react-native-maps'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { MapPin, X, Calendar } from 'lucide-react-native'
+import { Heart, Wrench, Gift, Grab, BookOpen, Calendar, X } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -41,6 +44,29 @@ const PIN_COLORS: Record<string, string> = {
 
 const EVENT_PIN_COLOR = '#2B8A62'
 
+// Short category labels for pins (Finnish)
+const PIN_LABELS: Record<string, string> = {
+  tarvitsen: 'Tarve',
+  tarjoan: 'Tarjous',
+  ilmaista: 'Ilmainen',
+  nappaa: 'Nappaa',
+  lainaa: 'Lainaa',
+  tapahtuma: 'Event',
+}
+
+/** Category-specific icon component */
+function CategoryIcon({ type, size = 14 }: { type: string; size?: number }) {
+  const color = '#fff'
+  switch (type) {
+    case 'tarvitsen': return <Wrench size={size} color={color} />
+    case 'tarjoan': return <Grab size={size} color={color} />
+    case 'ilmaista': return <Heart size={size} color={color} />
+    case 'lainaa': return <BookOpen size={size} color={color} />
+    case 'tapahtuma': return <Calendar size={size} color={color} />
+    default: return <Gift size={size} color={color} />
+  }
+}
+
 /** Check if coordinates are within Finland */
 function isInFinland(lat: number, lng: number): boolean {
   return lat >= 59 && lat <= 71 && lng >= 19 && lng <= 32
@@ -55,12 +81,11 @@ function deterministicOffset(id: string): { dLat: number; dLng: number } {
   for (let i = 0; i < id.length; i++) {
     hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0
   }
-  // Use different bits for lat and lng
   const angle = ((hash & 0xffff) / 0xffff) * Math.PI * 2
-  const radius = 0.005 + ((hash >>> 16) & 0xfff) / 0xfff * 0.012 // ~0.5-1.8km spread
+  const radius = 0.005 + ((hash >>> 16) & 0xfff) / 0xfff * 0.012
   return {
     dLat: Math.sin(angle) * radius,
-    dLng: Math.cos(angle) * radius * 1.8, // lng degrees are narrower at 60°N
+    dLng: Math.cos(angle) * radius * 1.8,
   }
 }
 
@@ -106,7 +131,6 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
       if (p.latitude != null && p.longitude != null && p.latitude !== 0 && p.longitude !== 0) {
         return { post: p, latitude: p.latitude, longitude: p.longitude, approximate: false }
       }
-      // No coordinates — place near center with deterministic offset
       const offset = deterministicOffset(p.id)
       return {
         post: p,
@@ -132,29 +156,15 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
     return HELSINKI_CENTER
   }, [validLocation])
 
-  // Build lookup maps for marker press handler
-  const postMap = useMemo(() => {
-    const map = new Map<string, Post>()
-    mappablePosts.forEach(mp => map.set(`post-${mp.post.id}`, mp.post))
-    return map
-  }, [mappablePosts])
-
-  const eventMap = useMemo(() => {
-    const map = new Map<string, CityEvent>()
-    mappableEvents.forEach(e => map.set(`event-${e.id}`, e))
-    return map
-  }, [mappableEvents])
-
-  // Handle marker press via MapView callback (reliable on iOS)
-  const handleMarkerPress = useCallback((e: any) => {
-    const id = e?.nativeEvent?.id
-    if (!id) return
+  const handleSelectPost = useCallback((post: Post) => {
     try { Haptics.selectionAsync() } catch {}
-    const post = postMap.get(id)
-    if (post) { setSelected({ kind: 'post', data: post }); return }
-    const event = eventMap.get(id)
-    if (event) { setSelected({ kind: 'event', data: event }) }
-  }, [postMap, eventMap])
+    setSelected({ kind: 'post', data: post })
+  }, [])
+
+  const handleSelectEvent = useCallback((event: CityEvent) => {
+    try { Haptics.selectionAsync() } catch {}
+    setSelected({ kind: 'event', data: event })
+  }, [])
 
   const handleCardPress = useCallback(() => {
     if (!selected) return
@@ -178,7 +188,6 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         showsMyLocationButton={false}
         customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
         onPress={() => setSelected(null)}
-        onMarkerPress={handleMarkerPress}
       >
         {/* 10km radius circle */}
         {validLocation && (
@@ -191,7 +200,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
           />
         )}
 
-        {/* Post markers */}
+        {/* Post markers — each with its own onPress */}
         {mappablePosts.map(mp => (
           <Marker
             key={`post-${mp.post.id}`}
@@ -199,13 +208,19 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
             coordinate={{ latitude: mp.latitude, longitude: mp.longitude }}
             tracksViewChanges={false}
             opacity={mp.approximate ? 0.7 : 1}
+            onPress={() => handleSelectPost(mp.post)}
           >
-            <View style={[
-              styles.pin,
-              { backgroundColor: PIN_COLORS[mp.post.type] ?? colors.foreground },
-              mp.approximate && styles.pinApproximate,
-            ]}>
-              <MapPin size={12} color="#fff" fill="#fff" />
+            <View style={styles.pinWrapper}>
+              <View style={[
+                styles.pin,
+                { backgroundColor: PIN_COLORS[mp.post.type] ?? colors.foreground },
+                mp.approximate && styles.pinApproximate,
+              ]}>
+                <CategoryIcon type={mp.post.type} size={14} />
+              </View>
+              <Text style={[styles.pinLabel, { color: isDark ? '#ccc' : '#555' }]} numberOfLines={1}>
+                {mp.post.title?.slice(0, 12) ?? PIN_LABELS[mp.post.type] ?? ''}
+              </Text>
             </View>
           </Marker>
         ))}
@@ -217,9 +232,15 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
             identifier={`event-${event.id}`}
             coordinate={{ latitude: event.latitude!, longitude: event.longitude! }}
             tracksViewChanges={false}
+            onPress={() => handleSelectEvent(event)}
           >
-            <View style={[styles.pin, { backgroundColor: EVENT_PIN_COLOR }]}>
-              <Calendar size={12} color="#fff" />
+            <View style={styles.pinWrapper}>
+              <View style={[styles.pin, { backgroundColor: EVENT_PIN_COLOR }]}>
+                <Calendar size={14} color="#fff" />
+              </View>
+              <Text style={[styles.pinLabel, { color: isDark ? '#ccc' : '#555' }]} numberOfLines={1}>
+                {event.name_fi?.slice(0, 12) ?? 'Tapahtuma'}
+              </Text>
             </View>
           </Marker>
         ))}
@@ -292,15 +313,30 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
 const styles = StyleSheet.create({
   container: { flex: 1, position: 'relative' },
   map: { flex: 1 },
+  pinWrapper: {
+    alignItems: 'center',
+    width: 80,
+  },
   pin: {
-    width: 32, height: 32, borderRadius: 16,
+    width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: '#fff',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
+    borderWidth: 2.5, borderColor: '#fff',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 4,
   },
   pinApproximate: {
-    width: 26, height: 26, borderRadius: 13,
+    width: 30, height: 30, borderRadius: 15,
     borderStyle: 'dashed' as any,
+    opacity: 0.8,
+  },
+  pinLabel: {
+    fontSize: 10,
+    fontFamily: fonts.bodySemi,
+    fontWeight: '600',
+    marginTop: 2,
+    textAlign: 'center',
+    textShadowColor: 'rgba(255,255,255,0.8)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 3,
   },
   previewCard: {
     position: 'absolute', bottom: 16, left: 16, right: 16,
