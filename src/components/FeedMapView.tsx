@@ -86,7 +86,8 @@ export function FeedMapView({ posts, userLocation, activeFilter }: FeedMapViewPr
   [posts])
 
   const initialRegion = useMemo(() => {
-    if (userLocation) {
+    // Only use userLocation if it's within Finland bounds
+    if (userLocation && userLocation.latitude >= 59 && userLocation.latitude <= 71 && userLocation.longitude >= 19 && userLocation.longitude <= 32) {
       return { ...userLocation, latitudeDelta: 0.03, longitudeDelta: 0.03 }
     }
     if (mappablePosts.length > 0) {

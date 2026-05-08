@@ -30,19 +30,24 @@ export function useFeedLocation(): FeedLocation | null {
     let cancelled = false
 
     async function getLocation() {
-      // 1. Try GPS first
+      // 1. Try GPS first — but only use it if the position is in Finland
       try {
         const { status } = await Location.requestForegroundPermissionsAsync()
         if (status === 'granted' && !cancelled) {
           const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-          if (!cancelled) {
+          const lat = loc.coords.latitude
+          const lng = loc.coords.longitude
+          // Finland bounds: lat ~59–71, lng ~19–32
+          const inFinland = lat >= 59 && lat <= 71 && lng >= 19 && lng <= 32
+          if (!cancelled && inFinland) {
             setUserLocation({
-              latitude: loc.coords.latitude,
-              longitude: loc.coords.longitude,
+              latitude: lat,
+              longitude: lng,
               source: 'gps',
             })
-            return // GPS succeeded, done
+            return // GPS succeeded and is in Finland, done
           }
+          // GPS outside Finland (e.g. simulator) — fall through to address
         }
       } catch {
         // GPS failed — fall through to address
