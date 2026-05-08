@@ -21,9 +21,17 @@ export function useNetworkStatus(): NetworkStatus {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
+      // NetInfo often reports false negatives in iOS Simulator.
+      // Only mark as disconnected when isConnected is explicitly false
+      // AND isInternetReachable confirms it (not just null/unknown).
+      const connected =
+        state.isConnected === false && state.isInternetReachable === false
+          ? false
+          : true
+
       setStatus({
-        isConnected: state.isConnected,
-        isInternetReachable: state.isInternetReachable,
+        isConnected: connected,
+        isInternetReachable: connected ? state.isInternetReachable : false,
         type: state.type,
       })
     })
