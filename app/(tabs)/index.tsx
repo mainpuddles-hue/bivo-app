@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ScrollView, ActionShe
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, Home, ChevronRight, ArrowUpRight } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, ChevronRight } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity, MagneticPressable } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -192,34 +192,8 @@ function FeedScreenInner() {
     return () => { mounted = false }
   }, [supabase])
 
-  // Fetch user's building info for community card
-  const [userBuilding, setUserBuilding] = useState<{ street_address: string; member_count: number; org_id: string | null } | null>(null)
-  useEffect(() => {
-    if (!feed.currentUserId) return
-    let mounted = true
-    Promise.resolve(
-      supabase
-        .from('user_buildings')
-        .select('building:buildings(id, street_address, member_count)')
-        .eq('user_id', feed.currentUserId)
-        .single()
-    ).then(async ({ data, error }: any) => {
-      if (!mounted) return
-      if (error && error.code !== 'PGRST116') { if (__DEV__) console.warn('[feed] user building failed:', error.message) }
-      if (data?.building) {
-        const bld = data.building
-        // Get org for this building
-        const { data: orgData } = await (supabase
-          .from('organizations') as any)
-          .select('id')
-          .eq('building_id', bld.id)
-          .eq('type', 'building')
-          .single()
-        if (mounted) setUserBuilding({ street_address: bld.street_address, member_count: bld.member_count, org_id: (orgData as any)?.id ?? null })
-      }
-    }).catch((err: any) => { if (__DEV__) console.warn('[feed] user building error:', err) })
-    return () => { mounted = false }
-  }, [feed.currentUserId, supabase])
+  // Building card removed — TackBird is neighborhood-based, not building-based.
+  // Geographic feed filtering is handled by useFeedData (bounding box around user location).
 
   // Fetch active polls for feed display
   const [feedPolls, setFeedPolls] = useState<Poll[]>([])
@@ -777,47 +751,6 @@ function FeedScreenInner() {
               ) : null}
             </View>
 
-            {/* ── Building card (v3 ink-fill) ── */}
-            {userBuilding && (
-              <PressableOpacity
-                onPress={() => {
-                  try { Haptics.selectionAsync() } catch {}
-                  if (userBuilding.org_id) {
-                    router.push(`/building/${userBuilding.org_id}`)
-                  } else {
-                    toast.show({ message: t('feed.buildingNotReady'), type: 'info' })
-                  }
-                }}
-                style={[styles.bldCard, { backgroundColor: colors.foreground }]}
-                accessibilityLabel={`${userBuilding.street_address} — ${userBuilding.member_count - 1} ${t('feed.neighbors') ?? 'naapuria'}`}
-              >
-                <View style={[styles.bldIconWrap, { backgroundColor: `${colors.background}1A`, borderColor: `${colors.background}14` }]}>
-                  <Home size={20} color={colors.background} strokeWidth={1.8} />
-                </View>
-                <View style={styles.bldText}>
-                  <Text style={[styles.bldLabel, { color: colors.onInkMuted }]}>
-                    {t('feed.yourBuilding') ?? 'Taloyhtiösi'}
-                  </Text>
-                  <Text style={[styles.bldName, { color: colors.background }]}>
-                    {userBuilding.street_address}
-                  </Text>
-                  <Text style={[styles.bldStats, { color: colors.onInkMuted }]}>
-                    {userBuilding.member_count > 1 ? (
-                      <>
-                        <Text style={[styles.bldStatsStrong, { color: colors.background }]}>{userBuilding.member_count - 1}</Text>
-                        {' '}{t('feed.neighbors') ?? 'naapuria'}
-                      </>
-                    ) : (
-                      <>{t('feed.inviteNeighbors')}</>
-                    )}
-                  </Text>
-                </View>
-                <View style={[styles.bldArrow, { backgroundColor: colors.background }]}>
-                  <ArrowUpRight size={16} color={colors.foreground} strokeWidth={2} />
-                </View>
-              </PressableOpacity>
-            )}
-
             {/* ── Active polls ── */}
             {FEATURES.POLLS && feedPolls.length > 0 && (
               <View style={{ paddingHorizontal: 20, gap: 10, marginTop: 8 }}>
@@ -1181,74 +1114,6 @@ const styles = StyleSheet.create({
   coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
   coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999, marginTop: 8, minHeight: 48 },
   coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
-
-  // ── Building card (v3 ink-fill) ──
-  bldCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    marginHorizontal: 20,
-    marginTop: 12,
-    marginBottom: 4,
-    padding: 16,
-    borderRadius: 20,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  bldDecor: {
-    position: 'absolute',
-    right: -30,
-    top: -40,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    // backgroundColor set dynamically via inline style (`${colors.foreground}0F`)
-  },
-  bldIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    // backgroundColor and borderColor set dynamically via inline style
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  bldText: {
-    flex: 1,
-  },
-  bldLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-    lineHeight: 14,
-  },
-  bldName: {
-    fontSize: 18,
-    fontWeight: '500',
-    fontFamily: fonts.displayMedium,
-    letterSpacing: -0.4,
-    lineHeight: 20,
-    marginTop: 2,
-  },
-  bldStats: {
-    fontSize: 12,
-    fontFamily: fonts.body,
-    lineHeight: 16,
-    marginTop: 4,
-  },
-  bldStatsStrong: {
-    fontWeight: '600',
-    fontFamily: fonts.bodySemi,
-  },
-  bldArrow: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 
   // ── Footer ──
   allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },

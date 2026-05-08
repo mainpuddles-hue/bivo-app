@@ -18,7 +18,7 @@ import { getSeedPosts } from '@/lib/seedContent'
 import { rankFeed } from '@/lib/feedAlgorithm'
 import { getCachedUserId } from '@/lib/authCache'
 import { FEATURES } from '@/lib/featureFlags'
-import { haversineKm } from '@/lib/geo'
+import { haversineKm, boundingBox } from '@/lib/geo'
 import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 
 export type FeedSortBy = 'recommended' | 'newest' | 'popular' | 'nearest' | 'cheapest'
@@ -285,6 +285,18 @@ export function useFeedData() {
       if (!FEATURES.LENDING) hiddenTypes.push('lainaa')
       if (hiddenTypes.length > 0 && !activeFilter) {
         query = query.not('type', 'in', `(${hiddenTypes.join(',')})`)
+      }
+
+      // ── Geographic filter: only show posts within FEED_RADIUS_KM of user ──
+      // Uses a bounding box for efficient server-side filtering.
+      // Posts without coordinates are included (they match by naapurusto text).
+      if (userLocation) {
+        const FEED_RADIUS_KM = 10
+        const box = boundingBox(userLocation.latitude, userLocation.longitude, FEED_RADIUS_KM)
+        // Include posts within bounding box OR posts without coordinates (text-based location)
+        query = query.or(
+          `and(latitude.gte.${box.minLat},latitude.lte.${box.maxLat},longitude.gte.${box.minLng},longitude.lte.${box.maxLng}),latitude.is.null`
+        )
       }
 
       const { data, error: fetchError } = await query

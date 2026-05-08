@@ -9,6 +9,28 @@ export function isInCityBounds(
   return lat >= bounds.south && lat <= bounds.north && lng >= bounds.west && lng <= bounds.east
 }
 
+/**
+ * Compute a lat/lng bounding box around a center point.
+ * Used for geographic feed filtering — posts outside the box are excluded.
+ *
+ * @param lat Center latitude
+ * @param lng Center longitude
+ * @param radiusKm Radius in kilometers
+ * @returns Bounding box { minLat, maxLat, minLng, maxLng }
+ */
+export function boundingBox(lat: number, lng: number, radiusKm: number) {
+  // 1° latitude ≈ 111 km everywhere
+  const dLat = radiusKm / 111
+  // 1° longitude ≈ 111 * cos(latitude) km
+  const dLng = radiusKm / (111 * Math.cos(lat * Math.PI / 180))
+  return {
+    minLat: lat - dLat,
+    maxLat: lat + dLat,
+    minLng: lng - dLng,
+    maxLng: lng + dLng,
+  }
+}
+
 export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   if ([lat1, lon1, lat2, lon2].some(v => v == null || isNaN(v))) return 0
   const R = 6371
