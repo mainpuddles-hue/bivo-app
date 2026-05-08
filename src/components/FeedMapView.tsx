@@ -2,11 +2,12 @@
  * FeedMapView — Map showing feed posts and city events with color-coded pins.
  *
  * Shows a 10km radius circle around the user's location to visualize
- * the feed filtering area. Posts and events outside this area are excluded.
+ * the feed filtering area. Posts without coordinates are placed near
+ * the user's location with deterministic offsets.
  */
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { View, Text, StyleSheet, Pressable } from 'react-native'
-import MapView, { Marker, Circle, PROVIDER_DEFAULT, type MapMarkerProps } from 'react-native-maps'
+import MapView, { Marker, Circle, PROVIDER_DEFAULT } from 'react-native-maps'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
@@ -45,6 +46,31 @@ function isInFinland(lat: number, lng: number): boolean {
   return lat >= 59 && lat <= 71 && lng >= 19 && lng <= 32
 }
 
+/**
+ * Generate a deterministic offset from a string ID.
+ * Same ID always produces the same position, spread ~0.5-2km from center.
+ */
+function deterministicOffset(id: string): { dLat: number; dLng: number } {
+  let hash = 0
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0
+  }
+  // Use different bits for lat and lng
+  const angle = ((hash & 0xffff) / 0xffff) * Math.PI * 2
+  const radius = 0.005 + ((hash >>> 16) & 0xfff) / 0xfff * 0.012 // ~0.5-1.8km spread
+  return {
+    dLat: Math.sin(angle) * radius,
+    dLng: Math.cos(angle) * radius * 1.8, // lng degrees are narrower at 60°N
+  }
+}
+
+interface MappablePost {
+  post: Post
+  latitude: number
+  longitude: number
+  approximate: boolean
+}
+
 type SelectedItem =
   | { kind: 'post'; data: Post }
   | { kind: 'event'; data: CityEvent }
@@ -71,14 +97,25 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
     return null
   }, [userLocation])
 
-  // Filter posts with valid coordinates
-  const mappablePosts = useMemo(() =>
-    posts.filter(p => {
-      const lat = p.latitude
-      const lng = p.longitude
-      return lat != null && lng != null && lat !== 0 && lng !== 0
-    }),
-  [posts])
+  const centerLat = validLocation?.latitude ?? HELSINKI_CENTER.latitude
+  const centerLng = validLocation?.longitude ?? HELSINKI_CENTER.longitude
+
+  // ALL posts get mapped — those without coordinates get placed near user
+  const mappablePosts = useMemo(() => {
+    return posts.map((p): MappablePost => {
+      if (p.latitude != null && p.longitude != null && p.latitude !== 0 && p.longitude !== 0) {
+        return { post: p, latitude: p.latitude, longitude: p.longitude, approximate: false }
+      }
+      // No coordinates — place near center with deterministic offset
+      const offset = deterministicOffset(p.id)
+      return {
+        post: p,
+        latitude: centerLat + offset.dLat,
+        longitude: centerLng + offset.dLng,
+        approximate: true,
+      }
+    })
+  }, [posts, centerLat, centerLng])
 
   // Filter events with valid coordinates
   const mappableEvents = useMemo(() =>
@@ -90,19 +127,15 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
 
   const initialRegion = useMemo(() => {
     if (validLocation) {
-      return { ...validLocation, latitudeDelta: 0.06, longitudeDelta: 0.06 }
-    }
-    if (mappablePosts.length > 0) {
-      const first = mappablePosts[0]
-      return { latitude: first.latitude!, longitude: first.longitude!, latitudeDelta: 0.06, longitudeDelta: 0.06 }
+      return { ...validLocation, latitudeDelta: 0.04, longitudeDelta: 0.04 }
     }
     return HELSINKI_CENTER
-  }, [validLocation, mappablePosts])
+  }, [validLocation])
 
   // Build lookup maps for marker press handler
   const postMap = useMemo(() => {
     const map = new Map<string, Post>()
-    mappablePosts.forEach(p => map.set(`post-${p.id}`, p))
+    mappablePosts.forEach(mp => map.set(`post-${mp.post.id}`, mp.post))
     return map
   }, [mappablePosts])
 
@@ -112,7 +145,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
     return map
   }, [mappableEvents])
 
-  // Handle marker press via MapView callback (more reliable than Marker.onPress on iOS)
+  // Handle marker press via MapView callback (reliable on iOS)
   const handleMarkerPress = useCallback((e: any) => {
     const id = e?.nativeEvent?.id
     if (!id) return
@@ -159,14 +192,19 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         )}
 
         {/* Post markers */}
-        {mappablePosts.map(post => (
+        {mappablePosts.map(mp => (
           <Marker
-            key={`post-${post.id}`}
-            identifier={`post-${post.id}`}
-            coordinate={{ latitude: post.latitude!, longitude: post.longitude! }}
+            key={`post-${mp.post.id}`}
+            identifier={`post-${mp.post.id}`}
+            coordinate={{ latitude: mp.latitude, longitude: mp.longitude }}
             tracksViewChanges={false}
+            opacity={mp.approximate ? 0.7 : 1}
           >
-            <View style={[styles.pin, { backgroundColor: PIN_COLORS[post.type] ?? colors.foreground }]}>
+            <View style={[
+              styles.pin,
+              { backgroundColor: PIN_COLORS[mp.post.type] ?? colors.foreground },
+              mp.approximate && styles.pinApproximate,
+            ]}>
               <MapPin size={12} color="#fff" fill="#fff" />
             </View>
           </Marker>
@@ -255,10 +293,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, position: 'relative' },
   map: { flex: 1 },
   pin: {
-    width: 28, height: 28, borderRadius: 14,
+    width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: '#fff',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
+  },
+  pinApproximate: {
+    width: 26, height: 26, borderRadius: 13,
+    borderStyle: 'dashed' as any,
   },
   previewCard: {
     position: 'absolute', bottom: 16, left: 16, right: 16,
