@@ -414,7 +414,11 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
+    // 24px corners read as "modern soft card" without sliding into the
+    // 32px rounded-3xl territory that starts to feel toy-like for content
+    // density we have. Matches the inspiration shot while preserving the
+    // monochrome restraint of the brand.
+    borderRadius: 24,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
   },
