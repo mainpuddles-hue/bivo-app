@@ -70,3 +70,16 @@ here.
   `realtime.setAuth` mirroring change in `src/lib/supabase/client.ts`
   (commit 0fcac7f), Realtime channels now subscribe cleanly on app
   launch. **Applied to v1 only.**
+
+- **`2026-05-09_disable_ad_campaigns_flag_v1.sql`** — Flipped the
+  remote `AD_CAMPAIGNS` row in `feature_flags` from `true` to `false`.
+  v1 has no `advertisements` table, but the flag was on, so every
+  feed mount issued a query that returned `PGRST205` and surfaced as
+  `[feed] ads fetch failed: Could not find the table` in dev. Pairs
+  with the silent-skip in `app/(tabs)/index.tsx` (commit 671807f) —
+  the flag flip stops the query from being issued at all, the silent
+  skip is the safety net for if the flag ever drifts back on before
+  the table is deployed. Note: clients cache flags for 5 min
+  (`CACHE_TTL` in `src/lib/featureFlags.ts`), so a running app needs
+  to wait out that window or restart to pick up the new value.
+  **Applied to v1 only.**

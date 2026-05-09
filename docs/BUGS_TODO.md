@@ -98,6 +98,14 @@ For posterity, so the same items don't get re-flagged next session:
 Not applied because they touch the live DB. SQL drafts go in
 `supabase/manual-fixes/` for review when we sit down together.
 
+### Done — `AD_CAMPAIGNS` remote flag flipped to `false`
+Applied 2026-05-09 17:17 UTC via
+`supabase/manual-fixes/2026-05-09_disable_ad_campaigns_flag_v1.sql`.
+Flag had drifted on but `advertisements` is not deployed on v1, so
+the feed was issuing a doomed query on every mount. Flag flip + the
+client-side silent-skip in 671807f together remove the noise without
+needing a code-side feature gate.
+
 ### Possibly worth doing — backfill `messages` bucket migration
 **Where:** Supabase v1 storage. `messages` bucket (private) holds 3
 historical chat images that fail to load via `getPublicUrl`. New
