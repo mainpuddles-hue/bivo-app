@@ -703,6 +703,15 @@ export default function CreateScreen() {
         finalTags.push(tarjoanType === 'item' ? 'tarjoan_item' : 'tarjoan_service')
         if (tarjoanType === 'item' && itemCondition) { finalTags.push(itemCondition) }
       }
+      if (__DEV__) {
+        const { data: { session: dbgSession } } = await supabase.auth.getSession()
+        console.warn('[create] auth context:', {
+          userId: user.id?.substring(0, 8),
+          sessionUserId: dbgSession?.user?.id?.substring(0, 8),
+          jwtSub: dbgSession?.access_token ? JSON.parse(atob(dbgSession.access_token.split('.')[1])).sub?.substring(0, 8) : 'none',
+          jwtRole: dbgSession?.access_token ? JSON.parse(atob(dbgSession.access_token.split('.')[1])).role : 'none',
+        })
+      }
       const { data: post, error } = await (supabase.from('posts') as any).insert({
         user_id: user.id, type: selectedType, title: title.trim(), description: description.trim(),
         location: location.trim() || null, latitude: latitude ?? null, longitude: longitude ?? null,
