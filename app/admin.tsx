@@ -228,7 +228,7 @@ function AdminScreenInner() {
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.header, { borderBottomColor: colors.border }]}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/(tabs)')}
             hitSlop={12}
             style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
@@ -256,7 +256,7 @@ function AdminScreenInner() {
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => safeBack(router, '/(tabs)')}
           hitSlop={12}
           style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
         >

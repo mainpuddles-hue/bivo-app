@@ -16,6 +16,7 @@ import { PressableOpacity } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
 import { formatPrice } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
+import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
 
 type PaymentMethod = 'card' | 'mobilepay' | 'new'
@@ -119,7 +120,7 @@ function PaymentCheckoutScreenInner() {
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 16 }]}>
         <PressableOpacity
-          onPress={() => router.back()}
+          onPress={() => safeBack(router, '/(tabs)')}
           hitSlop={12}
           style={[s.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
           accessibilityRole="button"

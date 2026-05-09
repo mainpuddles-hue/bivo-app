@@ -17,6 +17,7 @@ import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useToast } from '@/components/Toast'
 import { formatTimeAgo } from '@/lib/format'
+import { safeBack } from '@/lib/navigation'
 
 type Tab = 'neighborhoods' | 'announcements' | 'events'
 
@@ -233,7 +234,7 @@ function CityAdminScreenInner() {
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.header, { borderBottomColor: colors.border }]}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/(tabs)')}
             hitSlop={12}
             style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
@@ -261,7 +262,7 @@ function CityAdminScreenInner() {
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => safeBack(router, '/(tabs)')}
           hitSlop={12}
           style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
         >

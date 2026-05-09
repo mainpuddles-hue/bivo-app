@@ -16,6 +16,7 @@ import { PressableOpacity } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
 import { formatPrice, resolveLocale } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
+import { safeBack } from '@/lib/navigation'
 
 interface PayoutTransaction {
   id: string
@@ -31,6 +32,13 @@ interface MonthlyBar {
   label: string
   amount: number
 }
+
+// Module-level so the array references are stable across renders. Defining
+// these inside the component caused loadData's useCallback to be re-created
+// every render → useFocusEffect re-fired → infinite re-fetch loop while
+// the screen is focused.
+const MONTH_LABELS_FI = ['T', 'H', 'M', 'H', 'T', 'K', 'H', 'E', 'S', 'L', 'M', 'J']
+const MONTH_LABELS_EN = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
 
 function PayoutsScreenInner() {
   const { colors } = useTheme()
@@ -49,8 +57,6 @@ function PayoutsScreenInner() {
   const [nextPayout, setNextPayout] = useState(0)
   const [nextPayoutDate, setNextPayoutDate] = useState('')
 
-  const MONTH_LABELS_FI = ['T', 'H', 'M', 'H', 'T', 'K', 'H', 'E', 'S', 'L', 'M', 'J']
-  const MONTH_LABELS_EN = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
   const monthLabels = locale === 'fi' ? MONTH_LABELS_FI : MONTH_LABELS_EN
 
   const loadData = useCallback(async () => {
@@ -140,7 +146,7 @@ function PayoutsScreenInner() {
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 16 }]}>
         <PressableOpacity
-          onPress={() => router.back()}
+          onPress={() => safeBack(router, '/(tabs)/profile')}
           hitSlop={12}
           style={[s.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
           accessibilityRole="button"

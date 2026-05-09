@@ -47,6 +47,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { trackEvent } from '@/lib/analytics'
 import { useToast } from '@/components/Toast'
 import { uriToArrayBuffer } from '@/lib/uploadHelpers'
+import { safeBack } from '@/lib/navigation'
 
 const TOTAL_STEPS = 7
 
@@ -343,7 +344,7 @@ function NewListingScreenInner() {
           </PressableOpacity>
         ) : (
           <PressableOpacity
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/(tabs)/create')}
             style={[s.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
             hitSlop={8}
             accessibilityLabel={t('common.close')}

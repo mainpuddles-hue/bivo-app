@@ -10,6 +10,7 @@ import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
+import { safeBack } from '@/lib/navigation'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { EmptyState } from '@/components/EmptyState'
@@ -435,7 +436,7 @@ function Header({ colors, router }: { colors: any; router: any }) {
     <View style={s.header}>
       {/* Back button */}
       <PressableOpacity
-        onPress={() => router.back()}
+        onPress={() => safeBack(router, '/(tabs)/profile')}
         style={[s.headerCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
         accessibilityRole="button"
         accessibilityLabel={t('common.back')}
