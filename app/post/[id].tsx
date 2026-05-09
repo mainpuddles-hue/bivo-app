@@ -169,18 +169,23 @@ function PostDetailScreenInner() {
       setLikeCount(p.like_count ?? 0)
       trackEvent('post_viewed', { post_id: id as string, type: p.type })
 
+      // Auxiliary fetches use allSettled so a missing table (post_likes,
+      // post_comments) in a pivoted schema does not collapse the whole detail
+      // screen into an error state. Defaults stay in effect when a fetch fails.
       if (cachedId) {
-        const [likeRes, saveRes] = await Promise.all([
+        const [likeRes, saveRes] = await Promise.allSettled([
           supabase.from('post_likes').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
           supabase.from('saved_posts').select('id').eq('post_id', id).eq('user_id', cachedId).maybeSingle(),
         ])
         if (!mountedRef.current) return
-        setIsLiked(!!likeRes.data)
-        setIsSaved(!!saveRes.data)
+        if (likeRes.status === 'fulfilled') setIsLiked(!!likeRes.value.data)
+        else if (__DEV__) console.warn('[post] like check skipped:', (likeRes.reason as any)?.message)
+        if (saveRes.status === 'fulfilled') setIsSaved(!!saveRes.value.data)
+        else if (__DEV__) console.warn('[post] save check skipped:', (saveRes.reason as any)?.message)
       }
 
-      // Fetch comments + related posts in parallel
-      const [cmtsRes, relatedRes] = await Promise.all([
+      // Fetch comments + related posts in parallel, also tolerant of missing infra
+      const [cmtsRes, relatedRes] = await Promise.allSettled([
         supabase
           .from('post_comments')
           .select('*, user:profiles!post_comments_user_id_fkey(id, name, avatar_url)')
@@ -199,8 +204,11 @@ function PostDetailScreenInner() {
           : Promise.resolve({ data: null }),
       ])
       if (!mountedRef.current) return
-      setComments((cmtsRes.data ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
-      if (relatedRes.data) setRelatedPosts(relatedRes.data as any[])
+      if (cmtsRes.status === 'fulfilled') {
+        setComments((cmtsRes.value.data ?? []).map((c: any) => ({ ...c, parent_id: c.parent_id ?? null })) as unknown as PostComment[])
+      } else if (__DEV__) console.warn('[post] comments skipped:', (cmtsRes.reason as any)?.message)
+      if (relatedRes.status === 'fulfilled' && relatedRes.value.data) setRelatedPosts(relatedRes.value.data as any[])
+      else if (relatedRes.status === 'rejected' && __DEV__) console.warn('[post] related posts skipped:', (relatedRes.reason as any)?.message)
     } catch (err: any) {
       if (__DEV__) console.error('[PostDetail] loadPost error:', err)
       if (!mountedRef.current) return

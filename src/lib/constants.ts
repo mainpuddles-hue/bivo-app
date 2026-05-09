@@ -1,11 +1,12 @@
 import type { PostType } from './types'
 
+// Use `*` so PostgREST returns whatever columns the live schema actually has —
+// avoids "column not found" 400s when the pivoted DB lacks newer fields like
+// service_price, is_urgent, urgency_hours, is_anonymous, is_seed, tags,
+// like_count, or comment_count. Components must already tolerate missing
+// fields via optional chaining + sensible defaults.
 export const POST_SELECT = `
-  id, user_id, type, title, description, location, image_url,
-  hub_pickup_id, expires_at, daily_fee, service_price, event_date,
-  latitude, longitude, is_pro_listing, is_active, is_urgent, urgency_hours, is_anonymous, is_seed, tags,
-  like_count, comment_count,
-  created_at, updated_at,
+  *,
   user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto, is_pro, is_hub, location_accuracy, user_badges(badge_type)),
   images:post_images(id, image_url, sort_order)
 `
