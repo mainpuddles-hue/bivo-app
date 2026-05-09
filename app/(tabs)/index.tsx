@@ -609,10 +609,12 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
-              {/* Top bar: bell (→ notifications) right-aligned. Avatar was
-                  previously here but removed per user feedback — profile is
-                  reachable from the bottom tab bar already. */}
-              <View style={styles.topBarRow}>
+              {/* Notification bell positioned absolutely in the top-right
+                  corner so it doesn't claim its own row above the header.
+                  pointerEvents box-none on the wrapper lets taps pass through
+                  to the neighborhood picker beneath everywhere except the
+                  bell itself. */}
+              <View pointerEvents="box-none" style={styles.topBarFloat}>
                 <PressableOpacity
                   onPress={() => router.push('/notifications')}
                   hitSlop={10}
@@ -894,12 +896,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  // ── Top bar (bell only — avatar removed per user feedback) ──
-  topBarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    marginBottom: 12,
+  // ── Notification bell — floats top-right of the header, no layout space ──
+  // Absolute positioning inside topArea (which has paddingHorizontal: 20) so
+  // right: 0 aligns the bell with the same content gutter as the rest of the
+  // feed. The header text starts on the left, no visual collision.
+  topBarFloat: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 10,
   },
   topBarBell: {
     width: 36,
