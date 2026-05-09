@@ -25,18 +25,6 @@ interface LockerRow {
   lng: number | null
 }
 
-// Mock-only PIN generator for slice 3. Plaintext, stored on rental_bookings
-// columns. Slice 3.5 will replace this with a server-side locker-assign
-// Edge Function that bcrypt-hashes the PIN, writes a locker_assignments
-// row, and returns the plaintext exactly once. Until then this lives on
-// the picker so a borrower confirming a Gardi locker leaves with a
-// usable LockerPinCard preview.
-function generateMockPin(): string {
-  let n = Math.floor(Math.random() * 10000)
-  if (n === 0 || n === 1234 || n === 4321) n = 4821 // fallback to the brief's example
-  return n.toString().padStart(4, '0')
-}
-
 const SIZE_LABELS: Record<string, string> = {
   s: 'S · pieni',
   m: 'M · keskikoko',
@@ -99,28 +87,44 @@ function LockerPickerScreenInner() {
     setSubmitting(true)
     try {
       const lockerRow = lockers.find(l => l.id === selected)
-      const update: Record<string, any> = {
-        locker_id: selected,
-        locker_provider: lockerRow?.provider ?? 'mock',
-        pickup_method: 'gardi',
-      }
-      // For mock provider, pre-generate the dropoff + pickup PINs at picker
-      // time so LockerPinCard has something to show as soon as the lender
-      // confirms the booking. Slice 3.5 will move this to a server-side
-      // locker-assign Edge Function (with bcrypt-hashed storage and audit
-      // rows in locker_assignments). For now: plaintext columns, 48-hour
-      // validity each, clearly marked as mock.
-      if ((lockerRow?.provider ?? 'mock') === 'mock') {
-        const ttlMs = 48 * 60 * 60 * 1000
-        update.locker_dropoff_pin = generateMockPin()
-        update.locker_dropoff_pin_expires_at = new Date(Date.now() + ttlMs).toISOString()
-        update.locker_pickup_pin = generateMockPin()
-        update.locker_pickup_pin_expires_at = new Date(Date.now() + ttlMs).toISOString()
-      }
-      const { error } = await (supabase.from('rental_bookings') as any)
-        .update(update)
+      const provider = lockerRow?.provider ?? 'mock'
+
+      // First write the locker selection so the locker-assign Edge Function
+      // can find pickup_method='gardi' + locker_id on the booking row.
+      const { error: bkError } = await (supabase.from('rental_bookings') as any)
+        .update({
+          locker_id: selected,
+          locker_provider: provider,
+          pickup_method: 'gardi',
+        })
         .eq('id', params.bookingId)
-      if (error) throw error
+      if (bkError) throw bkError
+
+      // Then ask the Edge Function to issue both PINs. The function hashes
+      // them at rest (locker_assignments.pin_hash via PBKDF2), and mirrors
+      // the plaintext + expiry onto rental_bookings so LockerPinCard can
+      // render them on subsequent loads. Two parallel calls — pickup is
+      // for the borrower, dropoff is for the lender.
+      const issuePin = async (direction: 'pickup' | 'dropoff') => {
+        const { error } = await supabase.functions.invoke('locker-assign', {
+          body: { booking_id: params.bookingId, direction },
+        })
+        if (error) throw error
+      }
+      const results = await Promise.allSettled([issuePin('pickup'), issuePin('dropoff')])
+      const failures = results.filter(r => r.status === 'rejected') as PromiseRejectedResult[]
+      if (failures.length > 0) {
+        // PIN issuance is best-effort here — the booking row is already
+        // written with locker_id, so the user can still complete checkout.
+        // The booking-detail screen will re-issue PINs on demand when the
+        // lender confirms (slice 4). Log the failure, surface a non-fatal
+        // toast, and proceed.
+        if (__DEV__) {
+          for (const f of failures) console.warn('[locker-picker] PIN issue failed:', (f.reason as Error)?.message ?? f.reason)
+        }
+        toast.show({ message: t('locker.pinDelayed') ?? 'PIN-koodit luodaan kun lainanantaja vahvistaa varauksen', type: 'info' })
+      }
+
       router.replace({ pathname: '/payment-checkout', params: { bookingId: params.bookingId } } as any)
     } catch (e) {
       if (__DEV__) console.warn('[locker-picker] save failed:', (e as Error)?.message)
