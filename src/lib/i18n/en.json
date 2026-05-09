@@ -1024,6 +1024,7 @@
     "anonymousNeighbor": "Anonymous neighbor",
     "images": "images",
     "perDay": "{price}/day",
+    "perDayUnit": "PER DAY",
     "expiresIn": "{count}d left",
     "expiresTomorrow": "Expires tomorrow",
     "expiresToday": "Expires today",
@@ -2963,6 +2964,7 @@
     "nextTierRequirements": "To reach the next level:"
   },
   "service": {
+    "perTaskUnit": "PER TASK",
     "price": "Service price (€)",
     "pricePlaceholder": "e.g. 30 (leave empty if free)",
     "priceHint": "Leave empty to negotiate price via messages",

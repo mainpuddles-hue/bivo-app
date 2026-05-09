@@ -1024,6 +1024,7 @@
     "anonymousNeighbor": "Anonym granne",
     "images": "bilder",
     "perDay": "{price}/dag",
+    "perDayUnit": "PER DAG",
     "expiresIn": "{count}d kvar",
     "expiresTomorrow": "Går ut imorgon",
     "expiresToday": "Går ut idag",
@@ -2963,6 +2964,7 @@
     "nextTierRequirements": "För att nå nästa nivå:"
   },
   "service": {
+    "perTaskUnit": "PER UPPGIFT",
     "price": "Tjänstens pris (€)",
     "pricePlaceholder": "t.ex. 30 (lämna tomt om gratis)",
     "priceHint": "Lämna tomt för att förhandla pris via meddelanden",

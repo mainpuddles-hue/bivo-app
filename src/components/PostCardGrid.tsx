@@ -282,16 +282,31 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
                 <LikeChip />
               )}
             </View>
-            {/* Bottom row: price pill */}
+            {/* Bottom row: price pill — Wolt-grade 2-line stack so the
+                price reads as the focal element of the card, not as
+                metadata. Free items collapse to a single ILMAISTA label. */}
             {(post.daily_fee != null || (post.service_price != null && post.service_price > 0)) && (
               <View style={styles.imgBottomRow}>
-                <View style={[styles.pricePill, isDark && styles.pricePillDark]}>
-                  <Text style={[styles.pricePillText, isDark && styles.pricePillTextDark]}>
-                    {post.daily_fee != null
-                      ? (post.daily_fee > 0 ? t('rental.perDay', { price: formatPrice(post.daily_fee, locale) }) : t('common.free'))
-                      : formatPrice(post.service_price, locale)}
-                  </Text>
-                </View>
+                {post.daily_fee != null && post.daily_fee === 0 ? (
+                  <View style={[styles.pricePillFree, isDark && styles.pricePillDark]}>
+                    <Text style={[styles.pricePillFreeText, isDark && styles.pricePillTextDark]}>
+                      {t('common.free')}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={[styles.pricePillStack, isDark && styles.pricePillDark]}>
+                    <Text style={[styles.pricePillAmount, isDark && styles.pricePillTextDark]}>
+                      {post.daily_fee != null
+                        ? formatPrice(post.daily_fee, locale)
+                        : formatPrice(post.service_price ?? 0, locale)}
+                    </Text>
+                    <Text style={[styles.pricePillUnit, { color: isDark ? '#9AA0A6' : '#535A60' }]}>
+                      {post.daily_fee != null
+                        ? (t('rental.perDayUnit') ?? 'PER PÄIVÄ')
+                        : (t('service.perTaskUnit') ?? 'PER TYÖ')}
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -520,8 +535,46 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.94)',
   },
+  pricePillStack: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    alignItems: 'flex-start',
+  },
+  pricePillFree: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+  },
   pricePillDark: {
     backgroundColor: 'rgba(30,30,30,0.92)',
+  },
+  pricePillAmount: {
+    fontSize: 17,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.3,
+    lineHeight: 19,
+    color: '#1A1D1F',
+    fontVariant: ['tabular-nums'],
+  },
+  pricePillUnit: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginTop: 1,
+  },
+  pricePillFreeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: '#1A1D1F',
   },
   pricePillText: {
     fontSize: 13,

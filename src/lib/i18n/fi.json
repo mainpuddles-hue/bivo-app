@@ -1024,6 +1024,7 @@
     "anonymousNeighbor": "Nimetön naapuri",
     "images": "kuvaa",
     "perDay": "{price}/pv",
+    "perDayUnit": "PER PÄIVÄ",
     "expiresIn": "{count} pv jäljellä",
     "expiresTomorrow": "Vanhenee huomenna",
     "expiresToday": "Vanhenee tänään",
@@ -2963,6 +2964,7 @@
     "nextTierRequirements": "Seuraavalle tasolle tarvitset:"
   },
   "service": {
+    "perTaskUnit": "PER TYÖ",
     "price": "Palvelun hinta (€)",
     "pricePlaceholder": "esim. 30 (jätä tyhjäksi jos ilmainen)",
     "priceHint": "Jätä tyhjäksi, jos haluat sopia hinnasta viestissä",
