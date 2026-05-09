@@ -806,7 +806,11 @@ export default function CreateScreen() {
         successTimeoutRef.current = null; setShowSuccess(false); router.replace(`/post/${createdPostId}`)
       }, 2000)
     } catch (err: any) {
-      if (__DEV__) console.log('[create] error:', JSON.stringify(err))
+      if (__DEV__) {
+        console.warn('[create] publish failed:', err?.message ?? err)
+        console.warn('[create] error code/status:', err?.code, err?.status, err?.details, err?.hint)
+        console.warn('[create] cleanup id:', createdPostIdForCleanup)
+      }
       if (createdPostIdForCleanup) {
         try { await (supabase.from('posts') as any).delete().eq('id', createdPostIdForCleanup) } catch (e) { if (__DEV__) console.warn('Post cleanup after error failed:', e) }
       }
