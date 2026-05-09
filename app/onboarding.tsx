@@ -147,7 +147,9 @@ function OnboardingScreenInner() {
             : selectedAddress.street)
         : (selectedAddress.name || t('onboarding.unknownAddress'))
 
-      // Resolve building — atomically creates or finds building + links user
+      // Resolve building — atomically creates or finds building + links user.
+      // Tolerates missing RPC: in pivoted schemas the building infra may not be
+      // present, in which case onboarding still completes without the building link.
       const { error: rpcError } = await (supabase as any).rpc('resolve_building', {
         p_street_address: streetAddress,
         p_postal_code: selectedAddress.postalCode ?? null,
@@ -157,22 +159,53 @@ function OnboardingScreenInner() {
         p_lng: selectedAddress.lng,
       })
 
-      if (rpcError) {
+      // The building link is best-effort — when the RPC is absent (live schema
+      // pivoted away from buildings), onboarding still completes. We only treat
+      // truly unexpected RPC failures as fatal.
+      const rpcMissing =
+        !!rpcError && (
+          (rpcError as any).code === '42883' ||
+          (rpcError as any).code === 'PGRST202' ||
+          /function .* does not exist/i.test(rpcError.message ?? '') ||
+          /Could not find the function .* in the schema cache/i.test(rpcError.message ?? '')
+        )
+      if (rpcError && !rpcMissing) {
+        if (__DEV__) console.warn('[onboarding] resolve_building failed:', rpcError.message)
         toast.show({ message: t('onboarding.saveFailed'), type: 'error' })
         setSaving(false)
         return
+      } else if (rpcMissing && __DEV__) {
+        console.warn('[onboarding] resolve_building RPC missing — skipping building link')
       }
 
-      // Update profile: mark onboarding complete + save neighborhood for feed filtering
-      const updateData: Record<string, any> = {
+      // Update profile: mark onboarding complete + save neighborhood for feed filtering.
+      // Try the full update first; if it fails because of a missing column, retry
+      // with a smaller payload so onboarding never gets permanently stuck.
+      const fullUpdate: Record<string, any> = {
         naapurusto: selectedAddress.neighborhood ?? selectedAddress.city ?? 'Helsinki',
         city_id: selectedCity,
         onboarding_completed: true,
       }
-      const { error: updateError } = await (supabase.from('profiles') as any)
-        .update(updateData)
-        .eq('id', user.id)
+      let updateError: any = null
+      const fullRes = await (supabase.from('profiles') as any).update(fullUpdate).eq('id', user.id)
+      updateError = fullRes.error
+      if (updateError && ((updateError as any).code === 'PGRST204' || /column .* does not exist/i.test(updateError.message ?? ''))) {
+        if (__DEV__) console.warn('[onboarding] some profile columns missing, retrying minimal update:', updateError.message)
+        // Drop city_id and naapurusto if the live schema doesn't have them
+        const minimalUpdate: Record<string, any> = { onboarding_completed: true }
+        if (selectedAddress.neighborhood || selectedAddress.city) {
+          minimalUpdate.naapurusto = selectedAddress.neighborhood ?? selectedAddress.city ?? 'Helsinki'
+        }
+        const retryRes = await (supabase.from('profiles') as any).update(minimalUpdate).eq('id', user.id)
+        updateError = retryRes.error
+        if (updateError && /column "naapurusto" does not exist/i.test(updateError.message ?? '')) {
+          // Last resort: only the boolean flag
+          const flagOnly = await (supabase.from('profiles') as any).update({ onboarding_completed: true }).eq('id', user.id)
+          updateError = flagOnly.error
+        }
+      }
       if (updateError) {
+        if (__DEV__) console.warn('[onboarding] profile update failed:', updateError.message)
         toast.show({ message: t('onboarding.saveFailed'), type: 'error' })
         setSaving(false)
         return
