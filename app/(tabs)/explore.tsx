@@ -36,6 +36,7 @@ import { haversineKm, isInCityBounds } from '@/lib/geo'
 const HKI_BOUNDS = { south: 60.14, north: 60.27, west: 24.83, east: 25.20 } as const
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { OutOfAreaBanner } from '@/components/OutOfAreaBanner'
+import { SectionEyebrow } from '@/components/SectionEyebrow'
 import { rankEvents } from '@/lib/eventAlgorithm'
 import { trackEventClick, getClickHistory } from '@/lib/eventInteractions'
 import { useEventInterests } from '@/hooks/useEventInterests'
@@ -640,9 +641,11 @@ function ExploreScreenInner() {
         {/* Eyebrow + title + action circles */}
         <View style={s.headerRow}>
           <View style={s.headerLeft}>
-            <Text style={[s.locationEyebrow, { color: colors.mutedForeground }]}>
-              {t('explore.discoverLabel') ?? 'TUTUSTU ALUEESEEN'}
-            </Text>
+            <SectionEyebrow
+              label={t('explore.discoverLabel') ?? 'TUTUSTU ALUEESEEN'}
+              dotColor={colors.success}
+              style={{ marginBottom: 4 }}
+            />
             <Text style={[s.screenTitle, { color: colors.foreground }]} accessibilityRole="header">
               {t('explore.title') ?? 'Tutustu'}
             </Text>
@@ -762,7 +765,10 @@ function ExploreScreenInner() {
             {/* Community Events carousel */}
             <View style={s.sectionWrap}>
               <View style={s.sectionHeaderRow}>
-                <Text style={[s.sectionHeading, { color: colors.mutedForeground }]}>{t('events.communityEventsTitle')}</Text>
+                <SectionEyebrow
+                  label={t('events.communityEventsTitle') ?? 'YHTEISÖTAPAHTUMAT'}
+                  dotColor={colors.success}
+                />
                 <PressableOpacity
                   onPress={() => router.push('/community-events' as any)}
                   accessibilityRole="link"

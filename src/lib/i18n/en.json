@@ -2235,6 +2235,7 @@
     "allHelsinki": "Area",
     "resetFiltersHint": "Try removing filters or expanding the radius.",
     "outOfArea": "You're outside the area",
+    "outOfAreaLabel": "OUTSIDE AREA",
     "outOfAreaDesc": "Events and places are only shown in {city}",
     "changeCity": "Change city",
     "businesses": "Businesses",

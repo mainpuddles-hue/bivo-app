@@ -2235,6 +2235,7 @@
     "allHelsinki": "Område",
     "resetFiltersHint": "Prova att ta bort filter eller utöka radien.",
     "outOfArea": "Du är utanför området",
+    "outOfAreaLabel": "UTANFÖR OMRÅDET",
     "outOfAreaDesc": "Evenemang och platser visas bara i {city}",
     "changeCity": "Byt stad",
     "businesses": "Företag",

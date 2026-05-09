@@ -2235,6 +2235,7 @@
     "nearbyEvents": "Lähellä olevia tapahtumia",
     "showAllPlaces": "Näytä kaikki {count} paikkaa",
     "outOfArea": "Olet alueen ulkopuolella",
+    "outOfAreaLabel": "ALUEEN ULKOPUOLELLA",
     "outOfAreaDesc": "Tapahtumat ja paikat näkyvät vain kaupungissa {city}",
     "changeCity": "Vaihda kaupunki",
     "businesses": "Yritykset",
