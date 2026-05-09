@@ -32,12 +32,23 @@ import { LogBox } from 'react-native'
 
 // Suppress auth network errors from showing red LogBox screen
 // These occur when session refresh fails due to connectivity and are
-// retried automatically by GoTrueClient — not actionable by users
+// retried automatically by GoTrueClient — not actionable by users.
+//
+// getRegistrationInfoAsync: expo-notifications fires
+// ServerRegistrationModule.getRegistrationInfoAsync() at module-load
+// time with no .catch(). On the iOS Simulator (and on devices without
+// the Keychain Sharing entitlement) it rejects with 'Keychain access
+// failed' and surfaces as an unhandled-promise red box on every
+// launch. The push-token sync path that actually matters is wrapped
+// in try/catch in src/hooks/usePushNotifications.ts, so silencing the
+// auto-registration noise has no functional impact.
 LogBox.ignoreLogs([
   'AuthRetryableFetchError',
   'TypeError: Network request failed',
   'AbortError: Aborted',
   'AbortError',
+  /getRegistrationInfoAsync/,
+  /Keychain access failed/,
 ])
 
 // Initialize Sentry error reporting (no-op in __DEV__)

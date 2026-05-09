@@ -273,7 +273,14 @@ function FeedScreenInner() {
         .limit(3)
     ).then(({ data, error }: any) => {
       if (!mounted) return
-      if (error) { if (__DEV__) console.warn('[feed] ads fetch failed:', error.message); return }
+      if (error) {
+        // Schema cache miss = table not deployed on this project — happens
+        // on v1 which doesn't have the ads tables yet. Skip silently; the
+        // remote AD_CAMPAIGNS flag may be true regardless of deploy state.
+        const isMissingTable = error.code === 'PGRST205' || /could not find the table/i.test(error.message ?? '')
+        if (!isMissingTable && __DEV__) console.warn('[feed] ads fetch failed:', error.message)
+        return
+      }
       if (!data || data.length === 0) return
       const nh = feed.userNeighborhood
       const filtered = nh
