@@ -43,6 +43,20 @@ import { ModalCloseButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DON
 import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType, PostComment, PostStatus } from '@/lib/types'
 
+// Module-level latches: once we learn that the live schema is missing the
+// post_views table or the get_post_view_count RPC, stop trying. Detail screen
+// remounts repeatedly during normal browsing — without this gate every open
+// fires a guaranteed 404 and a Metro warning.
+let postViewsTableMissing = false
+let getPostViewCountRpcMissing = false
+
+const isMissingRelation = (err: any): boolean => {
+  if (!err) return false
+  const code = err.code
+  if (code === 'PGRST205' || code === '42P01' || code === 'PGRST202' || code === '42883') return true
+  return /Could not find the (table|function) .* in the schema cache/i.test(err.message ?? '')
+}
+
 function PostDetailScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -231,15 +245,33 @@ function PostDetailScreenInner() {
   useEffect(() => {
     if (!post?.id) return
     let mounted = true
-    // Fetch view count (distinct viewers in last 7 days)
-    ;(supabase.rpc as any)('get_post_view_count', { p_post_id: post.id }).then(({ data }: { data: number | null }) => {
-      if (mounted && typeof data === 'number') setViewCount(data)
-    }).catch((e: any) => { if (__DEV__) console.warn('[post] view count fetch failed:', e) })
-    // Record view (fire-and-forget)
-    if (userId) {
+    // Fetch view count (distinct viewers in last 7 days). Skip if we have already
+    // learned the RPC is missing in the live schema — otherwise every detail open
+    // hits the network for a guaranteed 404.
+    if (!getPostViewCountRpcMissing) {
+      ;(supabase.rpc as any)('get_post_view_count', { p_post_id: post.id }).then(({ data, error }: { data: number | null, error: any }) => {
+        if (error) {
+          if (isMissingRelation(error)) {
+            getPostViewCountRpcMissing = true
+            if (__DEV__) console.warn('[post] get_post_view_count RPC missing — skipping for this session')
+          } else if (__DEV__) console.warn('[post] view count fetch failed:', error.message)
+          return
+        }
+        if (mounted && typeof data === 'number') setViewCount(data)
+      }).catch((e: any) => { if (__DEV__) console.warn('[post] view count fetch failed:', e) })
+    }
+    // Record view (fire-and-forget). Skip once we know post_views does not exist.
+    if (userId && !postViewsTableMissing) {
       ;(supabase.from('post_views') as any)
         .upsert({ post_id: post.id, user_id: userId }, { onConflict: 'post_id,user_id' })
-        .then(() => {}, (e: any) => { if (__DEV__) console.warn('[post] view tracking failed:', e) })
+        .then(({ error }: { error: any }) => {
+          if (error) {
+            if (isMissingRelation(error)) {
+              postViewsTableMissing = true
+              if (__DEV__) console.warn('[post] post_views table missing — skipping for this session')
+            } else if (__DEV__) console.warn('[post] view tracking failed:', error.message)
+          }
+        }, (e: any) => { if (__DEV__) console.warn('[post] view tracking failed:', e) })
     }
     return () => { mounted = false }
   }, [post?.id, userId, supabase])
