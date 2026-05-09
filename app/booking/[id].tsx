@@ -23,7 +23,18 @@ import { isValidUUID } from '@/lib/validation'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
-import { StatusBanner, DepositChip, PreReturnChecklist, type ChecklistItem } from '@/components/lending'
+import { StatusBanner, DepositChip, PreReturnChecklist, HubHandoffCard, type ChecklistItem } from '@/components/lending'
+
+type PickupMethodValue = 'address' | 'hub' | 'gardi'
+
+interface HubInfo {
+  id: string
+  name: string
+  address: string | null
+  type: string | null
+  lat: number | null
+  lng: number | null
+}
 
 type BookingStatus = 'pending' | 'paid' | 'confirmed' | 'in_progress' | 'active' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
 
@@ -55,6 +66,9 @@ interface BookingData {
   // is applied. All optional so unmigrated DBs / partial selects still type-check.
   deposit_amount?: number | null
   deposit_status?: 'authorized' | 'captured' | 'released' | 'partial_captured' | 'none' | null
+  pickup_method?: PickupMethodValue | null
+  pickup_state?: string | null
+  hub_id?: string | null
   deposit_captured_amount?: number | null
   return_record?: {
     photos?: string[]
@@ -117,6 +131,49 @@ function formatShortDate(dateStr: string, locale: string): string {
   }
 }
 
+// Hub-handoff eyebrow + caption mapping. pickup_state drives "what should
+// happen next" for the physical handoff; my_role decides whose turn it is.
+// Keys map to the pickup_state CHECK constraint added by the slice 2 SQL.
+function hubEyebrowFor(pickupState: string | null | undefined, myRole: string, t: (k: string) => string): string {
+  switch (pickupState) {
+    case 'awaiting_lender_dropoff':
+      return myRole === 'lender' ? (t('hub.dropoff') ?? 'JÄTÄ HUBIIN') : (t('hub.waitingDropoff') ?? 'ODOTTAA TOIMITUSTA')
+    case 'awaiting_borrower_pickup':
+      return myRole === 'borrower' ? (t('hub.pickup') ?? 'NOUDA HUBISTA') : (t('hub.waitingPickup') ?? 'ODOTTAA NOUTOA')
+    case 'in_use':
+      return t('hub.atBorrower') ?? 'LAINASSA'
+    case 'awaiting_borrower_return':
+      return myRole === 'borrower' ? (t('hub.return') ?? 'PALAUTA HUBIIN') : (t('hub.waitingReturn') ?? 'ODOTTAA PALAUTUSTA')
+    case 'awaiting_lender_collection':
+      return myRole === 'lender' ? (t('hub.collect') ?? 'NOUDA HUBISTA') : (t('hub.returned') ?? 'PALAUTETTU')
+    default:
+      return t('hub.handoffPoint') ?? 'NOUTOPISTE'
+  }
+}
+
+function hubCaptionFor(pickupState: string | null | undefined, myRole: string, t: (k: string) => string): string | undefined {
+  switch (pickupState) {
+    case 'awaiting_lender_dropoff':
+      return myRole === 'lender'
+        ? (t('hub.dropoffCaption') ?? 'Jätä laite hubiin niin lainaaja saa ilmoituksen.')
+        : (t('hub.waitingDropoffCaption') ?? 'Saat ilmoituksen kun laite on hubissa noudettavissa.')
+    case 'awaiting_borrower_pickup':
+      return myRole === 'borrower'
+        ? (t('hub.pickupCaption') ?? 'Käy noutamassa laite hubista milloin sinulle sopii.')
+        : (t('hub.waitingPickupCaption') ?? 'Lainaaja saa ilmoituksen ja käy hakemassa.')
+    case 'awaiting_borrower_return':
+      return myRole === 'borrower'
+        ? (t('hub.returnCaption') ?? 'Palauta laite hubiin loppukauden mennessä.')
+        : (t('hub.waitingReturnCaption') ?? 'Saat ilmoituksen kun laite on hubissa.')
+    case 'awaiting_lender_collection':
+      return myRole === 'lender'
+        ? (t('hub.collectCaption') ?? 'Lainaaja palautti — käy noutamassa.')
+        : (t('hub.returnedCaption') ?? 'Lainaus on päätössä — kiitos.')
+    default:
+      return undefined
+  }
+}
+
 function BookingDetailScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
@@ -147,6 +204,28 @@ function BookingDetailScreenInner() {
     setPreReturnChecks(booking?.return_record?.checks ?? {})
   }, [booking?.return_record])
 
+  // Hub details for pickup_method='hub' bookings. Fetched lazily so the
+  // hub join doesn't bloat the main booking query for the 99% address
+  // case. Falls back gracefully if the hub_id column or hubs row doesn't
+  // exist yet (slice 2 SQL not applied).
+  const [hub, setHub] = useState<HubInfo | null>(null)
+  useEffect(() => {
+    const hubId = booking?.hub_id
+    if (!hubId) { setHub(null); return }
+    let mounted = true
+    supabase
+      .from('hubs')
+      .select('id, name, address, type, lat, lng')
+      .eq('id', hubId)
+      .maybeSingle()
+      .then(({ data, error }: { data: any; error: any }) => {
+        if (!mounted) return
+        if (error) { if (__DEV__) console.warn('[booking] hub fetch failed:', error.message); return }
+        if (data) setHub(data as HubInfo)
+      })
+    return () => { mounted = false }
+  }, [booking?.hub_id, supabase])
+
   // Feature flag gate — allow lending bookings even when PAYMENTS is off
   useEffect(() => {
     if (!FEATURES.PAYMENTS && !FEATURES.LENDING) {
@@ -170,6 +249,7 @@ function BookingDetailScreenInner() {
             daily_fee, service_fee, total_amount, status, created_at,
             deposit_amount, deposit_status, deposit_captured_amount,
             return_record, lender_review_at, borrower_review_at,
+            pickup_method, pickup_state, hub_id,
             post:posts!rental_bookings_post_id_fkey(id, title, image_url, pre_return_checklist),
             borrower:profiles!rental_bookings_borrower_id_fkey(id, name, avatar_url),
             lender:profiles!rental_bookings_lender_id_fkey(id, name, avatar_url)
@@ -193,6 +273,9 @@ function BookingDetailScreenInner() {
             post: r.post,
             deposit_amount: r.deposit_amount ?? null,
             deposit_status: r.deposit_status ?? null,
+            pickup_method: r.pickup_method ?? null,
+            pickup_state: r.pickup_state ?? null,
+            hub_id: r.hub_id ?? null,
             deposit_captured_amount: r.deposit_captured_amount ?? null,
             return_record: r.return_record ?? null,
             lender_review_at: r.lender_review_at ?? null,
@@ -579,6 +662,21 @@ function BookingDetailScreenInner() {
             amount={booking.deposit_amount ?? null}
             capturedAmount={booking.deposit_captured_amount ?? null}
           />
+
+          {/* Hub handoff card — only when pickup_method='hub'. The eyebrow
+              follows pickup_state + the viewer's role so each side sees the
+              right call-to-action. Address bookings render nothing here. */}
+          {booking.pickup_method === 'hub' && hub && (
+            <HubHandoffCard
+              name={hub.name}
+              address={hub.address ?? undefined}
+              hours={hub.type ?? undefined}
+              eyebrow={hubEyebrowFor(booking.pickup_state, booking.my_role, t)}
+              caption={hubCaptionFor(booking.pickup_state, booking.my_role, t)}
+              lat={hub.lat}
+              lng={hub.lng}
+            />
+          )}
 
           {/* Item snapshot */}
           <ItemSummaryCard booking={booking} colors={colors} t={t} locale={locale} router={router} compact />
