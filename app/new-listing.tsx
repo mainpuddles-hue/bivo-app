@@ -297,6 +297,17 @@ function NewListingScreenInner() {
         is_pro_listing: false,
       }
 
+      // Pre-return checklist drives the LoanActive + Return screens for
+      // borrowers of this item. Only set when the lender authored items
+      // in the step-6 'return' tab — empty array is fine but writing
+      // nothing avoids hitting a missing column on unmigrated DBs.
+      if (checklists.return.length > 0) {
+        postData.pre_return_checklist = checklists.return.map((item, idx) => ({
+          key: item.id || `step_${idx}`,
+          label: item.text,
+        }))
+      }
+
       const { data: post, error } = await (supabase.from('posts') as any)
         .insert(postData)
         .select('id')
