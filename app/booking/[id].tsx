@@ -21,6 +21,7 @@ import { fonts } from '@/lib/fonts'
 import { formatPrice, formatDateRange } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
+import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
 
 type BookingStatus = 'pending' | 'paid' | 'confirmed' | 'in_progress' | 'active' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
@@ -291,7 +292,7 @@ function BookingDetailScreenInner() {
       })
       if (revError) throw revError
       toast.show({ message: t('reviews.submitted') ?? t('common.success'), type: 'success' })
-      router.back()
+      safeBack(router, '/bookings')
     } catch {
       toast.show({ message: t('common.error'), type: 'error' })
     } finally {

@@ -15,6 +15,7 @@ import { Avatar } from '@/components/Avatar'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
+import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
 
 const TAGS_FI = [
@@ -83,7 +84,7 @@ function ReviewBorrowerScreenInner() {
       if (reviewError) throw reviewError
 
       toast.show({ message: t('reviewBorrower.reviewPublished'), type: 'success' })
-      router.back()
+      safeBack(router, '/bookings')
     } catch (err) {
       if (__DEV__) console.warn('[review-borrower] submit failed:', err)
       toast.show({ message: t('common.error'), type: 'error' })

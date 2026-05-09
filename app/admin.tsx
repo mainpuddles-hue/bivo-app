@@ -15,6 +15,7 @@ import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useToast } from '@/components/Toast'
 import { formatTimeAgo } from '@/lib/format'
+import { safeBack } from '@/lib/navigation'
 
 type Tab = 'flags' | 'users' | 'stats'
 
@@ -89,7 +90,7 @@ function AdminScreenInner() {
         .eq('id', user.id)
         .maybeSingle()
       const admin = !!(data as any)?.is_admin
-      if (!admin) { router.back(); return }
+      if (!admin) { safeBack(router, '/(tabs)'); return }
       setIsAdmin(true)
       setLoading(false)
     }

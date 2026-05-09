@@ -11,6 +11,7 @@ import { fonts } from '@/lib/fonts'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
+import { safeBack } from '@/lib/navigation'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useToast } from '@/components/Toast'
 
@@ -98,7 +99,7 @@ function CreatePollInner() {
     }
 
     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-    router.back()
+    safeBack(router, '/community-events')
   }, [canSubmit, submitting, question, options, expiresIn, supabase, t, toast, router])
 
   const DURATION_OPTIONS: { key: typeof expiresIn; label: string }[] = [

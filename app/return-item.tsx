@@ -20,6 +20,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
 import { getCachedUserId } from '@/lib/authCache'
+import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
 
 interface ChecklistItem {
@@ -117,7 +118,7 @@ function ReturnItemScreenInner() {
       if (returnError) throw returnError
 
       toast.show({ message: t('returnItem.returnConfirmed'), type: 'success' })
-      router.back()
+      safeBack(router, '/bookings')
     } catch (err) {
       if (__DEV__) console.warn('[return-item] submit failed:', err)
       toast.show({ message: t('common.error'), type: 'error' })

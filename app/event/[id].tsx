@@ -18,6 +18,7 @@ import { shareContent } from '@/lib/share'
 import { Avatar } from '@/components/Avatar'
 import { ReportModal } from '@/components/ReportModal'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { safeBack } from '@/lib/navigation'
 import { PressableOpacity } from '@/components/ui'
 import { formatEventDate } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
@@ -260,7 +261,7 @@ function EventDetailScreenInner() {
                 toast.show({ message: t('events.cancelFailed'), type: 'error' })
               } else {
                 toast.show({ message: t('events.eventCancelled'), type: 'success' })
-                router.back()
+                safeBack(router, '/community-events')
               }
             } catch {
               toast.show({ message: t('events.cancelFailed'), type: 'error' })
