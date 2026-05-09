@@ -30,4 +30,15 @@ here.
   `supabase_realtime` publication. The publication was empty in the
   pivoted DB, so every `.on('postgres_changes')` subscription failed
   with `CHANNEL_ERROR` (chat realtime, unread badge, feed live
-  updates).
+  updates). **Applied to v2 only** — v1 already had the four core
+  tables in its publication.
+
+- **`2026-05-09_post_images_storage_rls_v1.sql`** — Added INSERT and
+  UPDATE policies on `storage.objects` for `bucket_id = 'post-images'`
+  scoped to the user's own folder (`auth.uid()/<temp_id>/...`). The
+  v1 schema already had the matching SELECT (public read) and DELETE
+  (owner) policies for `post-images`, but the only existing INSERT
+  policy was for the legacy `posts` bucket. Result: every image upload
+  via `app/new-listing.tsx` and `app/(tabs)/create.tsx` was silently
+  RLS-denied — `posts.image_url` and `post_images` rows were empty
+  for all user-created posts. **Applied to v1 only.**
