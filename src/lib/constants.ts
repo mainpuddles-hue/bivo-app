@@ -5,9 +5,16 @@ import type { PostType } from './types'
 // service_price, is_urgent, urgency_hours, is_anonymous, is_seed, tags,
 // like_count, or comment_count. Components must already tolerate missing
 // fields via optional chaining + sensible defaults.
+//
+// The user-profile embed lists explicit columns (vs `*`) because PostgREST
+// does not automatically include nested relationships when the parent uses `*`.
+// `user_badges` is NOT embedded here: the row-level join causes the entire
+// posts query to fail (400) when the pivoted profiles table is missing the
+// supporting indices for that FK. Badges are fetched separately on screens
+// that actually render them.
 export const POST_SELECT = `
   *,
-  user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto, is_pro, is_hub, location_accuracy, user_badges(badge_type)),
+  user:profiles!posts_user_id_fkey(id, name, avatar_url, naapurusto, is_pro, is_hub, location_accuracy),
   images:post_images(id, image_url, sort_order)
 `
 
