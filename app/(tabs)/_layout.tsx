@@ -6,7 +6,9 @@ import * as Notifications from 'expo-notifications'
 import * as Haptics from 'expo-haptics'
 import { BlurView } from 'expo-blur'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import Animated, { runOnJS } from 'react-native-reanimated'
+import Animated, { runOnJS, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 // Freeze inactive screens to save memory and CPU
 enableFreeze(true)
@@ -24,9 +26,96 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 
 const TAB_ICONS = [Newspaper, Compass, Plus, MessageCircle, User] as const
 
+// Spring tuning for press feedback. 280/22 lands on the iOS-native "snappy
+// but not bouncy" feel — close enough to UIKit's UIView.spring(.snappy)
+// without bringing in a native bridge. Scale 0.92 gives clear tactile
+// feedback without making the icon look broken at rest.
+const PRESS_SCALE = 0.92
+const PRESS_SPRING = { damping: 18, stiffness: 300, mass: 0.6 }
+const RELEASE_SPRING = { damping: 14, stiffness: 220, mass: 0.6 }
+const FOCUS_TIMING = { duration: 220 }
+
 // --- Floating Glass Nav ---
 // Apple-style "liquid glass" pill: blurred backdrop + subtle tint + bright rim.
 // Horizontal pan gesture switches tabs without requiring a tap on the icon.
+
+interface TabItemProps {
+  focused: boolean
+  Icon: typeof Newspaper
+  activeBg: string
+  activeIconColor: string
+  idleIconColor: string
+  destructiveColor: string
+  primaryForegroundColor: string
+  badge: number | undefined
+  accessibilityLabel: string | undefined
+  onPress: () => void
+  onLongPress: () => void
+}
+
+// One tab button. Owns its own press-spring (UI-thread worklet) and a
+// smooth fade for the active background pill — without the worklet the
+// whole tab cluster re-renders on every focus change, which is fine but
+// loses the "soft slide" between tabs.
+function TabItem({
+  focused, Icon, activeBg, activeIconColor, idleIconColor,
+  destructiveColor, primaryForegroundColor,
+  badge, accessibilityLabel, onPress, onLongPress,
+}: TabItemProps) {
+  const pressScale = useSharedValue(1)
+  const focusProgress = useSharedValue(focused ? 1 : 0)
+
+  useEffect(() => {
+    focusProgress.value = withTiming(focused ? 1 : 0, FOCUS_TIMING)
+  }, [focused, focusProgress])
+
+  const itemStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pressScale.value }],
+  }))
+  const focusBgStyle = useAnimatedStyle(() => ({
+    opacity: focusProgress.value,
+  }))
+
+  const iconColor = focused ? activeIconColor : idleIconColor
+
+  return (
+    <AnimatedPressable
+      onPressIn={() => { pressScale.value = withSpring(PRESS_SCALE, PRESS_SPRING) }}
+      onPressOut={() => { pressScale.value = withSpring(1, RELEASE_SPRING) }}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={accessibilityLabel}
+      style={[s.pillItem, itemStyle]}
+    >
+      {/* Animated active-state pill background — fades in/out as the focused
+          tab changes, instead of an instant color switch. */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFillObject,
+          { backgroundColor: activeBg, borderRadius: 999 },
+          focusBgStyle,
+        ]}
+      />
+      <Icon
+        size={20}
+        color={iconColor}
+        strokeWidth={focused ? 2 : 1.6}
+      />
+      {badge != null && badge > 0 && (
+        <View
+          style={[s.badge, { backgroundColor: destructiveColor }]}
+          accessibilityLabel={`${badge}`}
+          accessibilityRole="text"
+        >
+          <Text style={[s.badgeText, { color: primaryForegroundColor }]}>{badge > 99 ? '99+' : badge}</Text>
+        </View>
+      )}
+    </AnimatedPressable>
+  )
+}
 
 const SWIPE_THRESHOLD = 40
 
@@ -102,7 +191,6 @@ function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBa
               const focused = state.index === index
               const Icon = TAB_ICONS[index]
               const badge = options.tabBarBadge as number | undefined
-              const iconColor = focused ? activeIconColor : idleIconColor
 
               const onPress = () => {
                 try { Haptics.selectionAsync() } catch {}
@@ -124,37 +212,20 @@ function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBa
               }
 
               return (
-                <Pressable
+                <TabItem
                   key={route.key}
+                  focused={focused}
+                  Icon={Icon}
+                  activeBg={activeBg}
+                  activeIconColor={activeIconColor}
+                  idleIconColor={idleIconColor}
+                  destructiveColor={colors.destructive}
+                  primaryForegroundColor={colors.primaryForeground}
+                  badge={badge}
+                  accessibilityLabel={options.tabBarAccessibilityLabel}
                   onPress={onPress}
                   onLongPress={onLongPress}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: focused }}
-                  accessibilityLabel={options.tabBarAccessibilityLabel}
-                  style={({ pressed }) => [
-                    s.pillItem,
-                    {
-                      backgroundColor: focused ? activeBg : 'transparent',
-                      opacity: pressed ? 0.7 : 1,
-                      transform: [{ scale: pressed ? 0.95 : 1 }],
-                    },
-                  ]}
-                >
-                  <Icon
-                    size={20}
-                    color={iconColor}
-                    strokeWidth={focused ? 2 : 1.6}
-                  />
-                  {badge != null && badge > 0 && (
-                    <View
-                      style={[s.badge, { backgroundColor: colors.destructive }]}
-                      accessibilityLabel={`${badge}`}
-                      accessibilityRole="text"
-                    >
-                      <Text style={[s.badgeText, { color: colors.primaryForeground }]}>{badge > 99 ? '99+' : badge}</Text>
-                    </View>
-                  )}
-                </Pressable>
+                />
               )
             })}
           </Animated.View>
