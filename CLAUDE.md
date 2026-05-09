@@ -2,7 +2,7 @@
 
 ## What This Is
 
-TackBird is a hyperlocal neighborhood platform for Finland. It combines a marketplace, peer lending, community events, building management (taloyhtiö), messaging, and trust-based reputation — all scoped to your naapurusto. Built Finnish-first (fi/en/sv).
+TackBird on Suomen hyperlokaali naapuruston käyttöjärjestelmä — the operating system of your naapurusto. It combines a marketplace, peer lending, community events, community tools (yhteisöt, naapurustot), messaging, and trust-based reputation. Built Finnish-first (fi/en/sv).
 
 **This project:** `https://github.com/mainpuddles-hue/tackbird-mobile` (Expo, private)
 **Company:** Puddles Oy (Y-tunnus 3610705-3)
@@ -14,7 +14,7 @@ TackBird is a hyperlocal neighborhood platform for Finland. It combines a market
 | **Beachhead** | Kallio renters, 25–40yo, kerrostalo, sustainability-oriented |
 | **Residents** | Find/share/lend items, discover local events, connect with neighbors |
 | **Providers** | Earn from idle tools/items, offer services, organize events |
-| **Taloyhtiö** | Building management: announcements, maintenance requests, polls, chat |
+| **Yhteisöoperaattorit** | Manage a community (taloyhtiö, kortteli, harrastusryhmä): announcements, maintenance, polls, group chat |
 | **Local businesses** | Pro listings, promoted posts, hyperlocal advertising |
 
 ## Stack
@@ -138,7 +138,7 @@ src/
 | Login | `app/(auth)/login.tsx` — login/register, Google placeholder |
 | Onboarding | `app/onboarding.tsx` — address-based, purpose selection, building join |
 
-### Taloyhtiö (Building Management)
+### Community / Building Management
 | Screen | File |
 |--------|------|
 | Building hub | `app/building/[id].tsx` — announcements, maintenance, members, rules |
