@@ -32,6 +32,7 @@ import { PollCard, type Poll } from '@/components/PollCard'
 import type { Post, PostType, CommunityEvent } from '@/lib/types'
 import { CATEGORIES } from '@/lib/constants'
 import { STORAGE_KEYS } from '@/lib/storageKeys'
+import { SectionEyebrow } from '@/components/SectionEyebrow'
 
 type FeedItem =
   | { _kind: 'section'; key: string; categoryType: PostType; posts: Post[] }
@@ -522,11 +523,17 @@ function FeedScreenInner() {
       <View style={styles.categorySection}>
         <View style={styles.sectionHead}>
           <View style={styles.sectionTitleWrap}>
+            {/* Slice 1 vocabulary on the feed: 8px category-colored dot
+                + uppercase count line above the section title. Single
+                rhythmic motif across feed sections (matches StatusBanner
+                eyebrowRow + the slice 1/2/3 lending screens). */}
+            <SectionEyebrow
+              label={`${item.posts.length} ${t('feed.nearby') ?? 'lähellä'}`}
+              dotColor={category.color}
+              style={{ marginBottom: 4 }}
+            />
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
               {t(category.label)}
-            </Text>
-            <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>
-              {item.posts.length} {t('feed.nearby') ?? 'lähellä'}
             </Text>
           </View>
           <PressableOpacity
