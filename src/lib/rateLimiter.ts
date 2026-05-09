@@ -23,7 +23,16 @@ const storageKey = (action: string) => `rate_limit_${action}`
 
 async function readTimestamps(action: string, now: number, windowMs: number): Promise<number[]> {
   const stored = await AsyncStorage.getItem(storageKey(action))
-  const timestamps: number[] = stored ? JSON.parse(stored) : []
+  if (!stored) return []
+  let timestamps: number[]
+  try {
+    const parsed = JSON.parse(stored)
+    timestamps = Array.isArray(parsed) ? parsed.filter((n): n is number => typeof n === 'number') : []
+  } catch {
+    // Corrupted storage — clear it so the corruption doesn't persist
+    AsyncStorage.removeItem(storageKey(action)).catch(() => {})
+    return []
+  }
   return timestamps.filter(t => now - t < windowMs)
 }
 
