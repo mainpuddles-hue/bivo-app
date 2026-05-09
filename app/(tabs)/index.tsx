@@ -139,36 +139,46 @@ function FeedScreenInner() {
     Promise.resolve(
       supabase
         .from('community_events')
-        .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)')
+        .select('*')
         .eq('is_active', true)
         .gte('event_date', now)
         .order('event_date', { ascending: true })
         .limit(20)
-    ).then(({ data, error }: any) => {
+    ).then(async ({ data, error }: any) => {
       if (!mounted) return
       if (error) { if (__DEV__) console.warn('[feed] community events failed:', error.message); return }
       if (!data) return
-      // Enrich with participant count
-      const eventIds = (data as any[]).map((e: any) => e.id)
-      if (eventIds.length === 0) { setHeroCommunityEvents(data); return }
-      Promise.resolve(
+      const events = data as any[]
+      const eventIds = events.map(e => e.id)
+      if (eventIds.length === 0) { setHeroCommunityEvents(events); return }
+      // FK community_events.creator_id → auth.users (not profiles), so PostgREST cannot embed
+      // creator profiles via select(). Fetch creators separately by id.
+      const creatorIds = Array.from(new Set(events.map(e => e.creator_id).filter(Boolean)))
+      const [participantsRes, creatorsRes] = await Promise.all([
         supabase
           .from('community_event_participants')
           .select('event_id')
           .in('event_id', eventIds)
-          .eq('status', 'joined')
-      ).then(({ data: participants }: any) => {
-        if (!mounted) return
-        const counts: Record<string, number> = {}
-        if (participants) for (const p of participants as any[]) {
-          counts[p.event_id] = (counts[p.event_id] || 0) + 1
-        }
-        const enriched = (data as any[]).map((e: any) => ({
-          ...e,
-          participant_count: counts[e.id] || 0,
-        }))
-        setHeroCommunityEvents(enriched)
-      }).catch(() => { if (mounted) setHeroCommunityEvents(data) })
+          .eq('status', 'joined'),
+        creatorIds.length > 0
+          ? supabase.from('profiles').select('id, name, avatar_url').in('id', creatorIds)
+          : Promise.resolve({ data: [] as any[] }),
+      ])
+      if (!mounted) return
+      const counts: Record<string, number> = {}
+      const participants = (participantsRes as any).data as any[] | null
+      if (participants) for (const p of participants) {
+        counts[p.event_id] = (counts[p.event_id] || 0) + 1
+      }
+      const creatorMap: Record<string, { id: string; name: string; avatar_url: string | null }> = {}
+      const creators = (creatorsRes as any).data as any[] | null
+      if (creators) for (const c of creators) creatorMap[c.id] = c
+      const enriched = events.map(e => ({
+        ...e,
+        participant_count: counts[e.id] || 0,
+        creator: e.creator_id ? creatorMap[e.creator_id] ?? null : null,
+      }))
+      setHeroCommunityEvents(enriched)
     }).catch((err: any) => { if (__DEV__) console.warn('[feed] community events error:', err) })
     return () => { mounted = false }
   }, [supabase])

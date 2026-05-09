@@ -53,9 +53,9 @@ function CommunityEventsScreenInner() {
   const fetchEvents = useCallback(async () => {
     setFetchError(false)
     try {
-      const { data, error } = await (supabase
+      const { data: rawData, error } = await (supabase
         .from('community_events')
-        .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)') as any)
+        .select('*') as any)
         .eq('is_active', true)
         .order('event_date', { ascending: true })
         .limit(150)
@@ -67,7 +67,26 @@ function CommunityEventsScreenInner() {
         setFetchError(true)
         return
       }
-      let events = (data ?? []) as CommunityEvent[]
+      // FK community_events.creator_id → auth.users (not profiles), so embed via select() fails.
+      // Fetch creators separately and merge in app code.
+      const rows = (rawData ?? []) as any[]
+      let events: CommunityEvent[] = rows as CommunityEvent[]
+      if (rows.length > 0) {
+        const creatorIds = Array.from(new Set(rows.map(e => e.creator_id).filter(Boolean)))
+        if (creatorIds.length > 0) {
+          const { data: creators } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url')
+            .in('id', creatorIds as string[])
+          if (!mountedRef.current) return
+          const creatorMap: Record<string, any> = {}
+          if (creators) for (const c of creators as any[]) creatorMap[c.id] = c
+          events = rows.map(e => ({
+            ...e,
+            creator: e.creator_id ? creatorMap[e.creator_id] ?? null : null,
+          })) as CommunityEvent[]
+        }
+      }
       // Filter out events from blocked users
       const { getCachedUserId } = await import('@/lib/authCache')
       const cachedId = await getCachedUserId()

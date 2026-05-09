@@ -78,7 +78,7 @@ function EventDetailScreenInner() {
       const [eventResult, partsResult] = await Promise.all([
         (supabase
           .from('community_events')
-          .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)') as any)
+          .select('*') as any)
           .eq('id', id)
           .maybeSingle(),
         (supabase
@@ -93,7 +93,19 @@ function EventDetailScreenInner() {
         if (eventResult.error) setFetchError(true)
         return
       }
-      setEvent(eventResult.data as CommunityEvent)
+      // FK community_events.creator_id → auth.users (not profiles), so embed via select() fails.
+      // Fetch creator profile separately.
+      const eventData = eventResult.data as any
+      if (eventData.creator_id) {
+        const { data: creator } = await supabase
+          .from('profiles')
+          .select('id, name, avatar_url')
+          .eq('id', eventData.creator_id)
+          .maybeSingle()
+        if (!mountedRef.current) return
+        eventData.creator = creator ?? null
+      }
+      setEvent(eventData as CommunityEvent)
       setParticipants((partsResult.data ?? []) as EventParticipant[])
     } catch (err) {
       if (__DEV__) console.log('[event-detail] error:', err)
