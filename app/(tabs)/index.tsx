@@ -3,7 +3,8 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ScrollView, ActionShe
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, ChevronRight } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, ChevronRight, Bell } from 'lucide-react-native'
+import { Avatar } from '@/components/Avatar'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity, MagneticPressable } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -66,6 +67,22 @@ function FeedScreenInner() {
       if (!overlayFlag && !layoutFlag) setShowOnboarding(true)
     }).catch((e) => { if (__DEV__) console.warn('Onboarding flag check failed:', e) })
   }, [])
+
+  // Current user's avatar + name for the new top bar (left side). Fetched
+  // once per user-id change. Falls back gracefully if profiles read fails.
+  const [meAvatar, setMeAvatar] = useState<{ url: string | null; name: string | null }>({ url: null, name: null })
+  useEffect(() => {
+    if (!feed.currentUserId) return
+    let mounted = true
+    Promise.resolve(
+      supabase.from('profiles').select('avatar_url, name').eq('id', feed.currentUserId).maybeSingle()
+    ).then(({ data, error }: any) => {
+      if (!mounted) return
+      if (error) { if (__DEV__) console.warn('[feed] top-bar profile fetch failed:', error.message); return }
+      if (data) setMeAvatar({ url: data.avatar_url ?? null, name: data.name ?? null })
+    }).catch((e: any) => { if (__DEV__) console.warn('[feed] top-bar profile error:', e) })
+    return () => { mounted = false }
+  }, [feed.currentUserId, supabase])
 
   // Weekly active neighbors count for activity meter
   const [weeklyActiveCount, setWeeklyActiveCount] = useState(0)
@@ -609,6 +626,28 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
+              {/* Top bar: avatar (→ profile) + bell (→ notifications). Sits
+                  above the neighborhood header so quick access doesn't push
+                  the title content down too far. */}
+              <View style={styles.topBarRow}>
+                <PressableOpacity
+                  onPress={() => router.push('/(tabs)/profile')}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('nav.profile')}
+                >
+                  <Avatar url={meAvatar.url} name={meAvatar.name} size={36} />
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={() => router.push('/notifications')}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('nav.notifications') ?? 'Notifications'}
+                  style={[styles.topBarBell, { backgroundColor: colors.card, borderColor: colors.border }]}
+                >
+                  <Bell size={18} color={colors.foreground} strokeWidth={1.6} />
+                </PressableOpacity>
+              </View>
               {/* 1. v3 Header — location eyebrow + Bricolage title + pulse row */}
               <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.header} hitSlop={8}>
                 <View style={styles.hLocLine}>
@@ -878,6 +917,22 @@ const styles = StyleSheet.create({
   // ── Top area ──
   topArea: {
     paddingHorizontal: 20,
+  },
+
+  // ── Top bar (avatar + bell) ──
+  topBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  topBarBell: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // ── v3 Header ──
