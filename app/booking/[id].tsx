@@ -23,6 +23,7 @@ import { isValidUUID } from '@/lib/validation'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
+import { StatusBanner, DepositChip, PreReturnChecklist, type ChecklistItem } from '@/components/lending'
 
 type BookingStatus = 'pending' | 'paid' | 'confirmed' | 'in_progress' | 'active' | 'completed' | 'cancelled' | 'disputed' | 'refunded'
 
@@ -41,10 +42,28 @@ interface BookingData {
   daily_fee?: number
   service_price?: number
   completed_at?: string | null
-  post?: { id: string; title: string; image_url: string | null } | null
+  post?: {
+    id: string
+    title: string
+    image_url: string | null
+    pre_return_checklist?: { key: string; label: string; optional?: boolean }[] | null
+  } | null
   other_user?: { id: string; name: string; avatar_url: string | null } | null
   other_user_role: string
   my_role: string
+  // Slice 1 additions — present once supabase/manual-fixes/20260510_lending_slice1.sql
+  // is applied. All optional so unmigrated DBs / partial selects still type-check.
+  deposit_amount?: number | null
+  deposit_status?: 'authorized' | 'captured' | 'released' | 'partial_captured' | 'none' | null
+  deposit_captured_amount?: number | null
+  return_record?: {
+    photos?: string[]
+    checks?: Record<string, boolean>
+    note?: string
+    submitted_at?: string
+  } | null
+  lender_review_at?: string | null
+  borrower_review_at?: string | null
 }
 
 const STATUS_KEYS: Record<BookingStatus, string> = {
@@ -119,6 +138,15 @@ function BookingDetailScreenInner() {
   const [reviewTags, setReviewTags] = useState<Set<string>>(new Set())
   const [reviewComment, setReviewComment] = useState('')
 
+  // Local pre-return checklist state for the LoanActive screen. Seeded from
+  // booking.return_record.checks on first load, then mutated locally as the
+  // borrower ticks items off. Persistence to the DB happens at Return-screen
+  // submit time so we don't have to debounce-PATCH from here.
+  const [preReturnChecks, setPreReturnChecks] = useState<Record<string, boolean>>({})
+  useEffect(() => {
+    setPreReturnChecks(booking?.return_record?.checks ?? {})
+  }, [booking?.return_record])
+
   // Feature flag gate — allow lending bookings even when PAYMENTS is off
   useEffect(() => {
     if (!FEATURES.PAYMENTS && !FEATURES.LENDING) {
@@ -140,7 +168,9 @@ function BookingDetailScreenInner() {
           .select(`
             id, post_id, borrower_id, lender_id, start_date, end_date,
             daily_fee, service_fee, total_amount, status, created_at,
-            post:posts!rental_bookings_post_id_fkey(id, title, image_url),
+            deposit_amount, deposit_status, deposit_captured_amount,
+            return_record, lender_review_at, borrower_review_at,
+            post:posts!rental_bookings_post_id_fkey(id, title, image_url, pre_return_checklist),
             borrower:profiles!rental_bookings_borrower_id_fkey(id, name, avatar_url),
             lender:profiles!rental_bookings_lender_id_fkey(id, name, avatar_url)
           `)
@@ -161,6 +191,12 @@ function BookingDetailScreenInner() {
             end_date: r.end_date,
             daily_fee: r.daily_fee,
             post: r.post,
+            deposit_amount: r.deposit_amount ?? null,
+            deposit_status: r.deposit_status ?? null,
+            deposit_captured_amount: r.deposit_captured_amount ?? null,
+            return_record: r.return_record ?? null,
+            lender_review_at: r.lender_review_at ?? null,
+            borrower_review_at: r.borrower_review_at ?? null,
             other_user: isBorrower ? r.lender : r.borrower,
             other_user_role: isBorrower ? 'lender' : 'borrower',
             my_role: isBorrower ? 'borrower' : 'lender',
@@ -526,54 +562,41 @@ function BookingDetailScreenInner() {
           <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
 
           {/* Status banner with progress bar */}
-          <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={s.statusDotRow}>
-              <View style={[s.statusDot, { backgroundColor: colors.foreground }]} />
-              <Text style={[s.sectionLabel, { color: colors.foreground, marginBottom: 0 }]}>
-                {t('booking.inProgress')}
-              </Text>
-            </View>
-            <Text style={[s.bannerHeadline, { color: colors.foreground }]}>
-              {booking.end_date
-                ? t('booking.returnIn', { days: Math.max(0, totalDays - elapsedDays).toString() })
-                : t('booking.activeTitle')
-              }
-            </Text>
-            {totalDays > 0 && (
-              <View style={s.progressRow}>
-                <View style={{ flex: 1 }}>
-                  <View style={[s.progressTrack, { backgroundColor: colors.border }]}>
-                    <View style={[s.progressFill, { backgroundColor: colors.foreground, width: `${Math.round(progressPct * 100)}%` as any }]} />
-                  </View>
-                </View>
-                <Text style={[s.progressText, { color: colors.mutedForeground }]}>
-                  {t('booking.daysProgress', { current: elapsedDays.toString(), total: totalDays.toString() })}
-                </Text>
-              </View>
-            )}
-          </View>
+          <StatusBanner
+            eyebrow={t('booking.inProgress') ?? 'KÄYNNISSÄ'}
+            title={booking.end_date
+              ? (t('booking.returnIn', { days: Math.max(0, totalDays - elapsedDays).toString() }) ?? '')
+              : (t('booking.activeTitle') ?? '')}
+            progress={totalDays > 0 ? progressPct : undefined}
+            meta={totalDays > 0
+              ? t('booking.daysProgress', { current: elapsedDays.toString(), total: totalDays.toString() })
+              : undefined}
+          />
+
+          {/* Deposit chip — hidden when no deposit / already released */}
+          <DepositChip
+            status={booking.deposit_status}
+            amount={booking.deposit_amount ?? null}
+            capturedAmount={booking.deposit_captured_amount ?? null}
+          />
 
           {/* Item snapshot */}
           <ItemSummaryCard booking={booking} colors={colors} t={t} locale={locale} router={router} compact />
 
-          {/* Todo list: Before returning */}
-          {isRental && (
-            <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>{t('booking.beforeReturn')}</Text>
-              {[
-                { text: t('rental.verifyCondition'), done: false },
-                { text: t('rental.takeReturnPhotos'), done: false },
-              ].map((item, i, arr) => (
-                <View key={i} style={[s.todoRow, i < arr.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
-                  <View style={[s.todoCheck, { backgroundColor: item.done ? colors.foreground : 'transparent', borderColor: item.done ? colors.foreground : colors.border }]}>
-                    {item.done && <Check size={11} color={colors.primaryForeground} strokeWidth={3.5} />}
-                  </View>
-                  <Text style={[s.todoText, { color: item.done ? colors.mutedForeground : colors.foreground, textDecorationLine: item.done ? 'line-through' : 'none' }]}>
-                    {item.text}
-                  </Text>
-                </View>
-              ))}
-            </View>
+          {/* Pre-return checklist — driven by post.pre_return_checklist.
+              Hidden if the listing has no checklist defined. Toggles are
+              local-only on this screen; persistence happens at Return submit. */}
+          {isRental && (booking.post?.pre_return_checklist?.length ?? 0) > 0 && (
+            <>
+              <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+                {t('booking.beforeReturn')}
+              </Text>
+              <PreReturnChecklist
+                items={(booking.post?.pre_return_checklist ?? []) as ChecklistItem[]}
+                value={preReturnChecks}
+                onChange={setPreReturnChecks}
+              />
+            </>
           )}
 
           {/* Price breakdown */}
