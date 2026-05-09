@@ -78,6 +78,23 @@ export default function MessagesScreen() {
     return () => { cancelled = true }
   }, [])
 
+  // Authoritative userId from Supabase auth session. fetchConversations also
+  // sets this, but only on the success path — if the conversations RPC throws
+  // before we reach setUserId(), the screen would render the "login required"
+  // empty state even though the user is fully authenticated. Subscribe here so
+  // the empty-state branch reflects real auth status, not just fetch state.
+  useEffect(() => {
+    let mounted = true
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted && session?.user?.id) setUserId(session.user.id)
+    }).catch(() => {})
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
+      setUserId(session?.user?.id ?? null)
+    })
+    return () => { mounted = false; subscription.unsubscribe() }
+  }, [supabase])
+
   const handleTogglePin = useCallback(async (convId: string) => {
     setPinnedIds(prev => {
       const newIds = prev.includes(convId)
@@ -751,6 +768,17 @@ export default function MessagesScreen() {
         ListEmptyComponent={
           loading ? (
             <MessageListSkeleton />
+          ) : fetchError ? (
+            // Fetch failed for an authenticated user — show the retry-empty
+            // state instead of the login-required one so the wording matches
+            // the actual situation. The error banner above already explains.
+            <EmptyState
+              icon={<RefreshCw size={48} color={colors.foreground} strokeWidth={1.5} />}
+              title={t('common.loadError')}
+              actionLabel={t('common.tryAgain') ?? t('common.retry') ?? 'Yritä uudelleen'}
+              onAction={() => { setRefreshing(true); fetchConversations() }}
+              actionVariant="filled"
+            />
           ) : !userId ? (
             <EmptyState
               icon={<LogIn size={48} color={colors.foreground} strokeWidth={1.5} />}
