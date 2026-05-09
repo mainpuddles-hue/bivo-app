@@ -53,6 +53,22 @@ export function createClient() {
       if (event === 'TOKEN_REFRESHED' && !session) {
         if (__DEV__) console.warn('[Supabase] Token refresh returned no session')
       }
+      // Mirror the access token into the Realtime client. Newer supabase-js
+      // versions are supposed to do this automatically, but we have observed
+      // CHANNEL_ERROR on every subscribe even after RLS on realtime.messages
+      // is opened up — most likely because the Realtime socket was opened
+      // before the JWT was attached. Calling setAuth on every relevant auth
+      // event makes that race impossible.
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        const token = session?.access_token
+        if (token) {
+          try { _client?.realtime.setAuth(token) } catch (e) {
+            if (__DEV__) console.warn('[Supabase] realtime.setAuth failed:', (e as Error)?.message ?? e)
+          }
+        }
+      } else if (event === 'SIGNED_OUT') {
+        try { _client?.realtime.setAuth(null) } catch {}
+      }
     })
     _authSubscription = subscription
   }
