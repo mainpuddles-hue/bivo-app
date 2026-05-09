@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { enableFreeze } from 'react-native-screens'
 import { Tabs, useRouter } from 'expo-router'
 import { View, Text, StyleSheet, Platform, Pressable } from 'react-native'
 import * as Notifications from 'expo-notifications'
 import * as Haptics from 'expo-haptics'
+import { BlurView } from 'expo-blur'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import Animated, { runOnJS } from 'react-native-reanimated'
 
 // Freeze inactive screens to save memory and CPU
 enableFreeze(true)
@@ -20,104 +23,142 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 // --- Tab configuration ---
 
 const TAB_ICONS = [Newspaper, Compass, Plus, MessageCircle, User] as const
-const TAB_LABEL_KEYS = ['nav.feed', 'explore.title', 'nav.create', 'nav.messages', 'nav.profile'] as const
 
-// --- Floating Pill Nav ---
-// Matches Helsinki Monochrome mockup: floating pill bar, icon-only, active = ink circle
+// --- Floating Glass Nav ---
+// Apple-style "liquid glass" pill: blurred backdrop + subtle tint + bright rim.
+// Horizontal pan gesture switches tabs without requiring a tap on the icon.
+
+const SWIPE_THRESHOLD = 40
 
 function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBarProps) {
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
+
+  // Wrap navigation in a stable callback so the gesture worklet can call it
+  // without re-creating the gesture on every render.
+  const switchTab = useCallback((delta: number) => {
+    const nextIndex = Math.max(0, Math.min(state.routes.length - 1, state.index + delta))
+    if (nextIndex === state.index) return
+    try { Haptics.selectionAsync() } catch {} // best-effort
+    const route = state.routes[nextIndex]
+    navigation.navigate(route.name, route.params)
+  }, [state.index, state.routes, navigation])
+
+  const pan = Gesture.Pan()
+    .activeOffsetX([-12, 12]) // require clear horizontal intent before activating
+    .failOffsetY([-10, 10])    // let vertical scrolls pass through
+    .onEnd((e) => {
+      'worklet'
+      if (e.translationX < -SWIPE_THRESHOLD) runOnJS(switchTab)(1)
+      else if (e.translationX > SWIPE_THRESHOLD) runOnJS(switchTab)(-1)
+    })
+
+  // Glass aesthetic tokens — kept inline because they are tightly coupled to
+  // the BlurView output (semi-transparent tint + bright rim sit on top of blur).
+  const tintColor = isDark ? 'rgba(20, 20, 20, 0.35)' : 'rgba(255, 255, 255, 0.45)'
+  const rimColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.55)'
+  const activeBg = isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.85)'
+  const activeIconColor = isDark ? colors.foreground : colors.primaryForeground
+  const idleIconColor = colors.foreground
 
   return (
     <View
-      style={[
-        s.pillOuter,
-        {
-          bottom: Math.max(insets.bottom, 22),
-        },
-      ]}
+      style={[s.pillOuter, { bottom: Math.max(insets.bottom, 22) }]}
       pointerEvents="box-none"
     >
+      {/* Outer wrapper carries the drop shadow; the rounded blur clip lives inside. */}
       <View
         style={[
-          s.pillBar,
-          {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
-            ...Platform.select({
-              ios: {
-                shadowColor: colors.foreground,
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.08,
-                shadowRadius: 20,
-              },
-              android: {
-                elevation: 8,
-              },
-            }),
-          },
+          s.shadowWrap,
+          Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 12 },
+              shadowOpacity: isDark ? 0.45 : 0.18,
+              shadowRadius: 24,
+            },
+            android: { elevation: 12 },
+          }),
         ]}
       >
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key]
-          const focused = state.index === index
-          const Icon = TAB_ICONS[index]
-          const badge = options.tabBarBadge as number | undefined
-          const iconColor = focused ? colors.primaryForeground : colors.foreground
+        <GestureDetector gesture={pan}>
+          <Animated.View
+            style={[
+              s.pillBar,
+              { borderColor: rimColor },
+            ]}
+          >
+            <BlurView
+              tint={isDark ? 'dark' : 'light'}
+              intensity={isDark ? 90 : 75}
+              style={StyleSheet.absoluteFillObject}
+            />
+            {/* Soft tint overlay — gives the milky glass cast that blur alone misses */}
+            <View
+              style={[StyleSheet.absoluteFillObject, { backgroundColor: tintColor }]}
+              pointerEvents="none"
+            />
+            {state.routes.map((route, index) => {
+              const { options } = descriptors[route.key]
+              const focused = state.index === index
+              const Icon = TAB_ICONS[index]
+              const badge = options.tabBarBadge as number | undefined
+              const iconColor = focused ? activeIconColor : idleIconColor
 
-          const onPress = () => {
-            try { Haptics.selectionAsync() } catch {}
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            })
-            if (!focused && !event.defaultPrevented) {
-              navigation.navigate(route.name, route.params)
-            }
-          }
+              const onPress = () => {
+                try { Haptics.selectionAsync() } catch {}
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                })
+                if (!focused && !event.defaultPrevented) {
+                  navigation.navigate(route.name, route.params)
+                }
+              }
 
-          const onLongPress = () => {
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            })
-          }
+              const onLongPress = () => {
+                navigation.emit({
+                  type: 'tabLongPress',
+                  target: route.key,
+                })
+              }
 
-          return (
-            <Pressable
-              key={route.key}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: focused }}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              style={({ pressed }) => [
-                s.pillItem,
-                {
-                  backgroundColor: focused ? colors.foreground : 'transparent',
-                  opacity: pressed ? 0.7 : 1,
-                  transform: [{ scale: pressed ? 0.95 : 1 }],
-                },
-              ]}
-            >
-              <Icon
-                size={20}
-                color={iconColor}
-                strokeWidth={focused ? 2 : 1.6}
-              />
-              {badge != null && badge > 0 && (
-                <View
-                  style={[s.badge, { backgroundColor: colors.destructive }]}
-                  accessibilityLabel={`${badge}`}
-                  accessibilityRole="text"
+              return (
+                <Pressable
+                  key={route.key}
+                  onPress={onPress}
+                  onLongPress={onLongPress}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: focused }}
+                  accessibilityLabel={options.tabBarAccessibilityLabel}
+                  style={({ pressed }) => [
+                    s.pillItem,
+                    {
+                      backgroundColor: focused ? activeBg : 'transparent',
+                      opacity: pressed ? 0.7 : 1,
+                      transform: [{ scale: pressed ? 0.95 : 1 }],
+                    },
+                  ]}
                 >
-                  <Text style={[s.badgeText, { color: colors.primaryForeground }]}>{badge > 99 ? '99+' : badge}</Text>
-                </View>
-              )}
-            </Pressable>
-          )
-        })}
+                  <Icon
+                    size={20}
+                    color={iconColor}
+                    strokeWidth={focused ? 2 : 1.6}
+                  />
+                  {badge != null && badge > 0 && (
+                    <View
+                      style={[s.badge, { backgroundColor: colors.destructive }]}
+                      accessibilityLabel={`${badge}`}
+                      accessibilityRole="text"
+                    >
+                      <Text style={[s.badgeText, { color: colors.primaryForeground }]}>{badge > 99 ? '99+' : badge}</Text>
+                    </View>
+                  )}
+                </Pressable>
+              )
+            })}
+          </Animated.View>
+        </GestureDetector>
       </View>
     </View>
   )
@@ -126,7 +167,6 @@ function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBa
 // --- Main Layout ---
 
 export default function TabLayout() {
-  const { colors } = useTheme()
   const { t } = useI18n()
   const router = useRouter()
   const supabase = useSupabase()
@@ -201,6 +241,10 @@ const s = StyleSheet.create({
     right: 16,
     zIndex: 40,
   },
+  shadowWrap: {
+    borderRadius: 999,
+    backgroundColor: 'transparent',
+  },
   pillBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -208,6 +252,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     padding: 8,
     gap: 4,
+    overflow: 'hidden', // clips the BlurView and tint to the pill shape
   },
   pillItem: {
     flex: 1,
