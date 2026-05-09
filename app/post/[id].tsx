@@ -74,6 +74,13 @@ function PostDetailScreenInner() {
   const toast = useToast()
   const insets = useSafeAreaInsets()
   const router = useRouter()
+  // Safe back: when create.tsx (or any other entry point) used router.replace
+  // to land here, the navigation stack is empty and `router.back()` raises
+  // "GO_BACK was not handled". Fall back to the feed in that case.
+  const handleBack = useCallback(() => {
+    if (router.canGoBack?.()) router.back()
+    else router.replace('/(tabs)')
+  }, [router])
   const { id } = useLocalSearchParams<{ id: string }>()
   const supabase = useSupabase()
   const mountedRef = useRef(true)
@@ -629,7 +636,7 @@ function PostDetailScreenInner() {
               } catch {
                 // Fire-and-forget — hard delete on timeout
               }
-              if (mountedRef.current) router.back()
+              if (mountedRef.current) handleBack()
             }, 10000)
           } catch {
             toast.show({ message: t('post.deleteFailed'), type: 'error' })
@@ -1046,7 +1053,7 @@ function PostDetailScreenInner() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Minimal back button overlay for loading state */}
         <View style={[styles.heroNav, { top: insets.top + 16 }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <PressableOpacity onPress={handleBack} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
         </View>
@@ -1061,7 +1068,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.heroNav, { top: insets.top + 16 }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <PressableOpacity onPress={handleBack} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
         </View>
@@ -1079,7 +1086,7 @@ function PostDetailScreenInner() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.heroNav, { top: insets.top + 16 }]}>
-          <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+          <PressableOpacity onPress={handleBack} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <ArrowLeft size={18} color={colors.foreground} />
           </PressableOpacity>
         </View>
@@ -1105,7 +1112,7 @@ function PostDetailScreenInner() {
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Hero nav overlay — back + heart circles on top of photo */}
       <View style={[styles.heroNav, { top: insets.top + 16 }]} pointerEvents="box-none">
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
+        <PressableOpacity onPress={handleBack} hitSlop={12} style={[styles.heroCircle, { backgroundColor: colors.card + 'EB' }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
           <ArrowLeft size={18} color={colors.foreground} />
         </PressableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
