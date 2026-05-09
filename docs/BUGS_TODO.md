@@ -9,7 +9,9 @@ items have been verified end-to-end.
 
 ---
 
-## Fixed in this session (5 commits, all pushed to main)
+## Fixed in this session (12 commits, all pushed to main)
+
+**Round 1 — autonomous bug-hunt:**
 
 | Commit | Scope |
 |--------|-------|
@@ -18,6 +20,22 @@ items have been verified end-to-end.
 | `be5af38` | Protect deep-linked screen headers from `router.back()` crash (notifications, messages, building/*, payment/cancel, invite, etc.) |
 | `fc0cc27` | Hide Apple Sign-In button when `isAvailableAsync()` returns false (Simulator, no-Apple-ID Macs) |
 | `928f084` | Use `ignoreDuplicates` for post_views upsert so RLS allows the insert (no UPDATE policy needed) |
+
+**Round 2 — simulator verification + DB flag:**
+
+| Commit | Scope |
+|--------|-------|
+| `671807f` | LogBox.ignoreLogs for `getRegistrationInfoAsync` (expo-notifications auto-reg), silent-skip for missing ads table |
+| `299be3d` | DB: flip `AD_CAMPAIGNS=false` on v1 (advertisements not deployed) |
+
+**Round 3 — three more parallel agents (payments, listings, admin/auth):**
+
+| Commit | Scope |
+|--------|-------|
+| `9d936e6` | `return-item.tsx` upload broken on three axes (blob.arrayBuffer, wrong RLS path scope, ext not whitelisted) |
+| `8439b0f` | `payouts.tsx` infinite re-fetch loop fix + remaining `router.back()` callsites (payouts, payment-checkout, my-listings, new-listing, admin headers, city-admin) |
+| `7f047f5` | OAuth `finishOAuth(null)` no longer shows fake success toast — bounces with proper error |
+| `ca3ba49` | `verify-otp.tsx` redirects to /login when email param missing entirely (was only handling malformed) |
 
 Plus the realtime-messages SELECT policy doc commit (`3319039`) carried
 over from the immediately-previous session, which paired with the
@@ -90,6 +108,23 @@ For posterity, so the same items don't get re-flagged next session:
   but not a crash. Polish-level, not P1.
 - **All `JSON.parse` callsites I scanned** are wrapped in `try/catch`.
   rateLimiter was the exception and it's now self-healing.
+- **`payment-checkout.tsx:47-50` NaN math** — already coerced with
+  `parseFloat(... || '0') || 0`, so undefined params resolve to 0.
+- **`payment-history.tsx` stale locale closure** — `localeStr` is in
+  `renderPayment`'s useCallback dep list (line 211), so it re-creates
+  on locale change. Agent looked at the wrong callback.
+- **`new-listing.tsx` upload error path** — `blob.type` is only used
+  for mime detection, the actual buffer comes from `uriToArrayBuffer`,
+  and `!response.ok` already short-circuits with `continue`.
+- **`blocked.tsx:44` user null guard** — guard exists at line 45
+  (`if (!user) return`); agent missed the next line.
+- **`_layout.tsx:290` getUser try/catch** — already has `.catch()`.
+- **`_layout.tsx:345` onAuthStateChange race** — mounted guard sits
+  at line 366, *before* the await on the profile query, exactly where
+  it needs to be.
+- **`verification.tsx` RLS silent failure** — when `profile` is null
+  the screen renders the zero-state correctly (all steps marked
+  not-done), no crash, no broken UI.
 
 ---
 
