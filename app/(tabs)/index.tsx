@@ -1006,17 +1006,16 @@ const styles = StyleSheet.create({
   // ── Section heads (v3 Bricolage) ──
   // Bigger, bolder, tighter — matches the modern editorial feel of the
   // healthcare design we drew inspiration from while staying inside
-  // Bricolage Grotesque (no new font family). Extra breathing room above
-  // each section makes the feed feel less crowded.
+  // Bricolage Grotesque (no new font family).
   categorySection: {
-    marginTop: 36,
+    marginTop: 24,
   },
   sectionHead: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 18,
+    marginBottom: 12,
   },
   sectionTitleWrap: {
     gap: 3,
