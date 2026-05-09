@@ -25,6 +25,18 @@ interface LockerRow {
   lng: number | null
 }
 
+// Mock-only PIN generator for slice 3. Plaintext, stored on rental_bookings
+// columns. Slice 3.5 will replace this with a server-side locker-assign
+// Edge Function that bcrypt-hashes the PIN, writes a locker_assignments
+// row, and returns the plaintext exactly once. Until then this lives on
+// the picker so a borrower confirming a Gardi locker leaves with a
+// usable LockerPinCard preview.
+function generateMockPin(): string {
+  let n = Math.floor(Math.random() * 10000)
+  if (n === 0 || n === 1234 || n === 4321) n = 4821 // fallback to the brief's example
+  return n.toString().padStart(4, '0')
+}
+
 const SIZE_LABELS: Record<string, string> = {
   s: 'S · pieni',
   m: 'M · keskikoko',
@@ -87,12 +99,26 @@ function LockerPickerScreenInner() {
     setSubmitting(true)
     try {
       const lockerRow = lockers.find(l => l.id === selected)
+      const update: Record<string, any> = {
+        locker_id: selected,
+        locker_provider: lockerRow?.provider ?? 'mock',
+        pickup_method: 'gardi',
+      }
+      // For mock provider, pre-generate the dropoff + pickup PINs at picker
+      // time so LockerPinCard has something to show as soon as the lender
+      // confirms the booking. Slice 3.5 will move this to a server-side
+      // locker-assign Edge Function (with bcrypt-hashed storage and audit
+      // rows in locker_assignments). For now: plaintext columns, 48-hour
+      // validity each, clearly marked as mock.
+      if ((lockerRow?.provider ?? 'mock') === 'mock') {
+        const ttlMs = 48 * 60 * 60 * 1000
+        update.locker_dropoff_pin = generateMockPin()
+        update.locker_dropoff_pin_expires_at = new Date(Date.now() + ttlMs).toISOString()
+        update.locker_pickup_pin = generateMockPin()
+        update.locker_pickup_pin_expires_at = new Date(Date.now() + ttlMs).toISOString()
+      }
       const { error } = await (supabase.from('rental_bookings') as any)
-        .update({
-          locker_id: selected,
-          locker_provider: lockerRow?.provider ?? 'mock',
-          pickup_method: 'gardi',
-        })
+        .update(update)
         .eq('id', params.bookingId)
       if (error) throw error
       router.replace({ pathname: '/payment-checkout', params: { bookingId: params.bookingId } } as any)
