@@ -420,13 +420,14 @@ const styles = StyleSheet.create({
   },
 
   // ── IMAGE variant ──
-  // 1:1 square keeps image cards visually close in height to text-only TINT
-  // and event INK variants in the same row. The previous 4:5 portrait made
-  // image cards ~50% taller, breaking the masonry rhythm.
+  // Fixed image height (170) gives the IMAGE card a predictable total height
+  // close to TINT/INK (170 image + ~80 meta = ~250). Aspect-ratio'd images
+  // (4:5 or 1:1) made image cards 1.5–2x taller than text-only neighbours
+  // and broke the row rhythm — fixed height is the simplest equalizer here.
   imageWrap: {
     position: 'relative',
     overflow: 'hidden',
-    aspectRatio: 1,
+    height: 170,
   },
   image: {
     width: '100%',
