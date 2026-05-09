@@ -121,6 +121,7 @@ export default function MessagesScreen() {
         uid = user?.id ?? null
       } catch {} // network error — uid stays null
     }
+    if (__DEV__) console.warn('[messages] fetchConversations: uid resolved to', uid ? `${uid.substring(0, 8)}...` : 'null')
     if (!mountedRef.current) return
     if (!uid) { setLoading(false); setRefreshing(false); return }
     setUserId(uid)
@@ -291,7 +292,8 @@ export default function MessagesScreen() {
     setConversations(filteredConvs)
     setLoading(false)
     setRefreshing(false)
-    } catch {
+    } catch (err: any) {
+      if (__DEV__) console.warn('[messages] fetchConversations failed:', err?.message ?? err, err?.code, err?.status)
       if (mountedRef.current) { setFetchError(true); setLoading(false); setRefreshing(false) }
     }
   }, [supabase])
