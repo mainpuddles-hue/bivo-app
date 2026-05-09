@@ -57,3 +57,16 @@ here.
   with 42501, and the user saw "Ei oikeuksia tähän toimintoon" on
   every publish attempt — even though the INSERT WITH CHECK clause
   passed. **Applied to v1 only.**
+
+- **`2026-05-09_realtime_messages_authenticated_subscribe_v1.sql`** —
+  Added a permissive `SELECT` policy on `realtime.messages` for the
+  `authenticated` role: `USING (true)`. The table had RLS enabled but
+  zero policies, so every channel subscribe handshake denied with
+  `CHANNEL_ERROR` for feed live-updates, useUnreadCount, useEventChatUnread,
+  and the messages thread. The actual data filtering still goes through
+  RLS on the underlying `public.messages` / `public.conversations` /
+  `public.notifications` tables — this policy only governs whether a
+  client may join a Realtime channel at all. Combined with the
+  `realtime.setAuth` mirroring change in `src/lib/supabase/client.ts`
+  (commit 0fcac7f), Realtime channels now subscribe cleanly on app
+  launch. **Applied to v1 only.**
