@@ -287,56 +287,49 @@ function LoginScreenInner() {
           },
         })
         if (error) throw error
-        if (data?.url) {
-          const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
-          if (result.type === 'success' && result.url) {
-            const url = result.url
-            const fragment = url.split('#')[1] || ''
-            const query = url.split('?')[1]?.split('#')[0] || ''
-            const raw = fragment || query
-            const params = new URLSearchParams(raw)
-            const accessToken = params.get('access_token')
-            const refreshToken = params.get('refresh_token')
-            const code = params.get('code')
-            if (accessToken && refreshToken) {
-              const { data: { user } } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-              if (user) {
-                const { data: oauthProfile, error: banErr } = await supabase.from('profiles').select('is_banned').eq('id', user.id).maybeSingle()
-                if (banErr || (oauthProfile as any)?.is_banned) {
-                  await supabase.auth.signOut()
-                  if ((oauthProfile as any)?.is_banned) {
-                    toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
-                  } else {
-                    toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
-                  }
-                  return
-                }
-              }
-              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-              toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
-              router.replace('/')
-              return
-            } else if (code) {
-              const { data: { user } } = await supabase.auth.exchangeCodeForSession(code)
-              if (user) {
-                const { data: oauthProfile, error: banErr } = await supabase.from('profiles').select('is_banned').eq('id', user.id).maybeSingle()
-                if (banErr || (oauthProfile as any)?.is_banned) {
-                  await supabase.auth.signOut()
-                  if ((oauthProfile as any)?.is_banned) {
-                    toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
-                  } else {
-                    toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
-                  }
-                  return
-                }
-              }
-              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-              toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
-              router.replace('/')
-              return
+        if (!data?.url) {
+          toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
+          return
+        }
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
+        if (result.type !== 'success' || !result.url) return // user dismissed
+        const url = result.url
+        const fragment = url.split('#')[1] || ''
+        const query = url.split('?')[1]?.split('#')[0] || ''
+        const raw = fragment || query
+        const params = new URLSearchParams(raw)
+        const accessToken = params.get('access_token')
+        const refreshToken = params.get('refresh_token')
+        const code = params.get('code')
+        const finishOAuth = async (sessionUser: any) => {
+          if (sessionUser) {
+            // Ban check is fail-open: a missing `is_banned` column or an RLS error
+            // on profiles must not lock legitimate users out of login. RLS itself
+            // enforces access on protected resources; this check is a UX safety net.
+            const { data: oauthProfile, error: banErr } = await supabase.from('profiles').select('is_banned').eq('id', sessionUser.id).maybeSingle()
+            if (__DEV__ && banErr) console.warn('[google-oauth] ban check skipped:', banErr.message, (banErr as any).code)
+            if ((oauthProfile as any)?.is_banned === true) {
+              await supabase.auth.signOut()
+              toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
+              return false
             }
           }
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+          toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
+          router.replace('/')
+          return true
         }
+        if (accessToken && refreshToken) {
+          const { data: { user } } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+          await finishOAuth(user)
+          return
+        }
+        if (code) {
+          const { data: { user } } = await supabase.auth.exchangeCodeForSession(code)
+          await finishOAuth(user)
+          return
+        }
+        toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
       }
     } catch (err: any) {
       if (__DEV__) console.warn('[google-oauth] failed:', err?.message ?? err, err?.status, err?.code)
