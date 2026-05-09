@@ -310,17 +310,24 @@ function LoginScreenInner() {
         const refreshToken = params.get('refresh_token')
         const code = params.get('code')
         const finishOAuth = async (sessionUser: any) => {
-          if (sessionUser) {
-            // Ban check is fail-open: a missing `is_banned` column or an RLS error
-            // on profiles must not lock legitimate users out of login. RLS itself
-            // enforces access on protected resources; this check is a UX safety net.
-            const { data: oauthProfile, error: banErr } = await supabase.from('profiles').select('is_banned').eq('id', sessionUser.id).maybeSingle()
-            if (__DEV__ && banErr) console.warn('[google-oauth] ban check skipped:', banErr.message, (banErr as any).code)
-            if ((oauthProfile as any)?.is_banned === true) {
-              await supabase.auth.signOut()
-              toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
-              return false
-            }
+          // setSession / exchangeCodeForSession can return user: null when the
+          // OAuth callback URL parsed but the token exchange did not actually
+          // create a session (expired code, mismatched redirect, etc.). Without
+          // this guard the user saw a misleading "Welcome back" toast and a
+          // redirect to /, which then bounced them straight back to login.
+          if (!sessionUser) {
+            toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
+            return false
+          }
+          // Ban check is fail-open: a missing `is_banned` column or an RLS error
+          // on profiles must not lock legitimate users out of login. RLS itself
+          // enforces access on protected resources; this check is a UX safety net.
+          const { data: oauthProfile, error: banErr } = await supabase.from('profiles').select('is_banned').eq('id', sessionUser.id).maybeSingle()
+          if (__DEV__ && banErr) console.warn('[google-oauth] ban check skipped:', banErr.message, (banErr as any).code)
+          if ((oauthProfile as any)?.is_banned === true) {
+            await supabase.auth.signOut()
+            toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
+            return false
           }
           try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
           toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
