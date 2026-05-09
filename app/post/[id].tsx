@@ -283,7 +283,7 @@ function PostDetailScreenInner() {
     // because the RLS policy denies the insert for the current user/anon.
     if (userId && !postViewsTableMissing) {
       ;(supabase.from('post_views') as any)
-        .upsert({ post_id: post.id, user_id: userId }, { onConflict: 'post_id,user_id' })
+        .upsert({ post_id: post.id, user_id: userId }, { onConflict: 'post_id,user_id', ignoreDuplicates: true })
         .then(({ error }: { error: any }) => {
           if (error) {
             if (isPostViewsUnusable(error)) {
