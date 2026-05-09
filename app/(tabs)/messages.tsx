@@ -115,12 +115,16 @@ export default function MessagesScreen() {
     if (!mountedRef.current) return
 
     if (rpcError) {
-      // Fallback: if RPC doesn't exist yet, use legacy query
+      // Fallback when get_conversations_with_details is not deployed:
+      // hand-roll the joins + aggregations the RPC would have done.
       if (__DEV__) console.warn('[messages] RPC fallback:', rpcError.message)
       try {
+        // 1. Conversations + the other user's profile. Drop last_active_date —
+        //    the column does not exist in the pivoted profiles schema and its
+        //    presence would 400 the whole query.
         const { data: fallbackData } = await supabase
           .from('conversations')
-          .select('*, user1:profiles!conversations_user1_id_fkey(id, name, avatar_url, last_active_date), user2:profiles!conversations_user2_id_fkey(id, name, avatar_url, last_active_date)')
+          .select('*, user1:profiles!conversations_user1_id_fkey(id, name, avatar_url), user2:profiles!conversations_user2_id_fkey(id, name, avatar_url)')
           .or(`user1_id.eq.${uid},user2_id.eq.${uid}`)
           .order('updated_at', { ascending: false })
           .limit(50)
@@ -143,7 +147,6 @@ export default function MessagesScreen() {
               id: otherProfile.id,
               name: otherProfile.name,
               avatar_url: otherProfile.avatar_url,
-              last_active_date: otherProfile.last_active_date,
             } : undefined,
             is_archived: isUser1 ? (row.user1_archived ?? false) : (row.user2_archived ?? false),
             last_message: undefined,
@@ -151,7 +154,53 @@ export default function MessagesScreen() {
           }
         }) as unknown as Conversation[]
 
-        // Filter out conversations with blocked users (fallback path)
+        // 2. Last message + unread count per conversation. Two parallel queries
+        //    over the messages table; group/count in JS so we don't need a
+        //    server-side aggregation RPC. allSettled so a partial failure (e.g.
+        //    blocked_users missing later) does not erase the conversation list.
+        const convIds = fallbackConvs.map(c => c.id)
+        if (convIds.length > 0) {
+          const [lastMsgsRes, unreadMsgsRes] = await Promise.allSettled([
+            supabase
+              .from('messages')
+              .select('id, conversation_id, sender_id, content, image_url, is_read, is_system, created_at')
+              .in('conversation_id', convIds)
+              .order('created_at', { ascending: false })
+              .limit(Math.max(convIds.length * 5, 50)),
+            supabase
+              .from('messages')
+              .select('conversation_id')
+              .in('conversation_id', convIds)
+              .eq('is_read', false)
+              .neq('sender_id', uid),
+          ])
+          if (!mountedRef.current) return
+
+          const lastByConv: Record<string, any> = {}
+          if (lastMsgsRes.status === 'fulfilled' && lastMsgsRes.value.data) {
+            for (const m of lastMsgsRes.value.data as any[]) {
+              if (!lastByConv[m.conversation_id]) lastByConv[m.conversation_id] = m
+            }
+          } else if (__DEV__ && lastMsgsRes.status === 'rejected') {
+            console.warn('[messages] last-message fetch failed:', (lastMsgsRes.reason as any)?.message)
+          }
+          const unreadByConv: Record<string, number> = {}
+          if (unreadMsgsRes.status === 'fulfilled' && unreadMsgsRes.value.data) {
+            for (const r of unreadMsgsRes.value.data as any[]) {
+              unreadByConv[r.conversation_id] = (unreadByConv[r.conversation_id] ?? 0) + 1
+            }
+          } else if (__DEV__ && unreadMsgsRes.status === 'rejected') {
+            console.warn('[messages] unread fetch failed:', (unreadMsgsRes.reason as any)?.message)
+          }
+
+          for (const c of fallbackConvs as any[]) {
+            const lm = lastByConv[c.id]
+            if (lm) c.last_message = lm
+            c.unread_count = unreadByConv[c.id] ?? 0
+          }
+        }
+
+        // 3. Filter out conversations with blocked users (fallback path)
         let filteredFallback = fallbackConvs
         try {
           const { data: blockedData } = await supabase
