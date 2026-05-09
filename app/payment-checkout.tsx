@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
+import { useStripePayment } from '@/hooks/useStripePayment'
 import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
@@ -81,6 +82,8 @@ function PaymentCheckoutScreenInner() {
     { label: t('checkout.tackbirdFee'), value: formatPrice(serviceFee, locale) },
   ]
 
+  const stripePayment = useStripePayment()
+
   const handlePay = useCallback(async () => {
     if (paying) return
     if (selectedMethod === 'new') {
@@ -93,11 +96,70 @@ function PaymentCheckoutScreenInner() {
       const userId = await getCachedUserId()
       if (!userId) { router.replace('/(auth)/login'); return }
 
-      // SECURITY WARNING: This is a placeholder flow. In production, booking status
-      // must only be updated by a server-side webhook after Stripe confirms payment.
-      // TODO: Replace with Stripe PaymentIntent + webhook confirmation
+      // Real-Stripe path: gated behind LENDING_PAYMENTS so we can roll out
+      // gradually. Fetches the booking to recover post_id + lender (seller),
+      // calls the existing stripe-checkout Edge Function via useStripePayment,
+      // and lets the hosted Stripe Checkout page handle 3DS / Apple Pay /
+      // MobilePay. The webhook is what flips bookings.status to 'paid' on
+      // payment_intent.succeeded — never the client.
+      if (FEATURES.LENDING_PAYMENTS) {
+        const { data: bk, error: bkError } = await supabase
+          .from('rental_bookings')
+          .select('id, post_id, lender_id, start_date, end_date, total_amount')
+          .eq('id', params.bookingId)
+          .maybeSingle()
+        if (bkError || !bk) {
+          if (__DEV__) console.warn('[payment-checkout] booking fetch failed:', bkError?.message)
+          toast.show({ message: t('payment.paymentFailed') ?? 'Maksu epäonnistui', type: 'error' })
+          return
+        }
+        const b = bk as any
+        // Booking days from the date range. Falls back to 1 so the Stripe
+        // call never bombs on a missing date — should never happen in practice.
+        const days = b.start_date && b.end_date
+          ? Math.max(1, Math.ceil(
+              (new Date(b.end_date).getTime() - new Date(b.start_date).getTime()) / 86_400_000,
+            ))
+          : 1
+        const totalCents = Math.round(total * 100)
+
+        const sessionId = await stripePayment.createPayment({
+          amount: totalCents,
+          description: params.itemTitle ? `Lainaus · ${params.itemTitle}` : 'TackBird-lainaus',
+          type: 'rental',
+          postId: b.post_id,
+          sellerId: b.lender_id,
+          metadata: {
+            booking_id: b.id,
+            booking_days: String(days),
+          },
+        })
+
+        if (!sessionId) {
+          // useStripePayment already surfaces the localized error via its
+          // internal setError — bubble it up via toast.
+          if (stripePayment.error) {
+            toast.show({ message: stripePayment.error, type: 'error' })
+          } else {
+            toast.show({ message: t('payment.paymentFailed') ?? 'Maksu epäonnistui', type: 'error' })
+          }
+          return
+        }
+
+        // Stripe Checkout has been opened in the browser; the user finishes
+        // payment there and gets redirected back to tackbird://payment/success
+        // (handled by app/payment/success.tsx). The webhook does the booking
+        // status advance — we just navigate optimistically so the user has
+        // somewhere to land if they re-enter the app from the deep link.
+        router.replace('/payment/success')
+        return
+      }
+
+      // Dev / flag-off path — keeps the simulate behavior so testing without
+      // a Stripe Connect account still works. Logs loudly so it's never
+      // mistaken for real payment in prod.
       if (__DEV__) {
-        console.warn('[checkout] DEV MODE: Simulating payment without real Stripe integration')
+        console.warn('[checkout] DEV MODE: Simulating payment (LENDING_PAYMENTS=false)')
       }
       const { error: payError } = await (supabase.from('bookings') as any).update({
         status: 'paid',
@@ -113,7 +175,7 @@ function PaymentCheckoutScreenInner() {
     } finally {
       setPaying(false)
     }
-  }, [paying, selectedMethod, params.bookingId, router, supabase, t, toast])
+  }, [paying, selectedMethod, params.bookingId, params.itemTitle, total, router, supabase, stripePayment, t, toast])
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
