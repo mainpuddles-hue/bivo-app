@@ -21,6 +21,7 @@ import { UnsupportedAreaScreen } from '@/components/UnsupportedAreaScreen'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { setAnalyticsUser, trackEvent, trackRetention, flushAnalyticsQueue } from '@/lib/analytics'
 import { clearAuthCache } from '@/lib/authCache'
+import { clearUserScopedState } from '@/lib/auth/cleanup'
 import { fetchRemoteFlags } from '@/lib/featureFlags'
 import { useAppStateManager } from '@/hooks/useAppState'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
@@ -435,8 +436,7 @@ function useAuthStateListener() {
           const isSessionExpiry = initialCheckDoneRef.current && hadSessionRef.current
 
           try {
-            clearAuthCache()
-            await AsyncStorage.removeItem('onboarding_complete')
+            await clearUserScopedState()
             // Reset app icon badge to 0 on logout — otherwise the previous
             // user's unread count persists on the home screen icon.
             Notifications.setBadgeCountAsync(0).catch((e: any) => { if (__DEV__) console.warn('[layout] badge clear failed:', e) })

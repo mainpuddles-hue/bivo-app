@@ -26,6 +26,8 @@ export const STORAGE_KEYS = {
   HIDDEN_POSTS: 'tackbird_hidden_posts',
   PINNED_CONVERSATIONS: 'pinned_conversations',
   DIGEST_DISMISSED: 'digest_dismissed',
+  WELCOME_TOAST_SHOWN: 'welcome_toast_shown',
+  POST_DRAFT: 'tackbird_post_draft',
 
   // Search
   SEARCH_HISTORY: 'tackbird-search-history',
