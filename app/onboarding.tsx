@@ -93,12 +93,6 @@ function OnboardingScreenInner() {
   }, [SCREEN_WIDTH])
 
   const handleComplete = useCallback(async () => {
-    if (!selectedAddress) {
-      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning) } catch {}
-      toast.show({ message: t('onboarding.addressRequired') ?? 'Valitse ensin osoitteesi', type: 'error' })
-      goToStep(1) // Navigate back to address step
-      return
-    }
     setSaving(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -140,51 +134,62 @@ function OnboardingScreenInner() {
         }
       }
 
-      // Build street address from Photon result
-      const streetAddress = selectedAddress.street
-        ? (selectedAddress.housenumber
-            ? `${selectedAddress.street} ${selectedAddress.housenumber}`
-            : selectedAddress.street)
-        : (selectedAddress.name || t('onboarding.unknownAddress'))
+      // Build street address from Photon result. When the user skipped address
+      // entry (selectedAddress is null) we mark onboarding complete with no
+      // address payload — the RPC is bypassed and only the boolean flag is
+      // persisted. This is the "ohita testaus" escape hatch.
+      const streetAddress = selectedAddress
+        ? (selectedAddress.street
+            ? (selectedAddress.housenumber
+                ? `${selectedAddress.street} ${selectedAddress.housenumber}`
+                : selectedAddress.street)
+            : (selectedAddress.name || t('onboarding.unknownAddress')))
+        : null
 
-      // Resolve building — atomically creates or finds building + links user.
-      // Tolerates missing RPC: in pivoted schemas the building infra may not be
-      // present, in which case onboarding still completes without the building link.
-      const { error: rpcError } = await (supabase as any).rpc('resolve_building', {
-        p_street_address: streetAddress,
-        p_postal_code: selectedAddress.postalCode ?? null,
-        p_city: selectedAddress.city ?? 'Helsinki',
-        p_neighborhood: selectedAddress.neighborhood ?? null,
-        p_lat: selectedAddress.lat,
-        p_lng: selectedAddress.lng,
-      })
+      if (selectedAddress) {
+        // Resolve building — atomically creates or finds building + links user.
+        // Tolerates missing RPC: in pivoted schemas the building infra may not be
+        // present, in which case onboarding still completes without the building link.
+        const { error: rpcError } = await (supabase as any).rpc('resolve_building', {
+          p_street_address: streetAddress,
+          p_postal_code: selectedAddress.postalCode ?? null,
+          p_city: selectedAddress.city ?? 'Helsinki',
+          p_neighborhood: selectedAddress.neighborhood ?? null,
+          p_lat: selectedAddress.lat,
+          p_lng: selectedAddress.lng,
+        })
 
-      // The building link is best-effort — when the RPC is absent (live schema
-      // pivoted away from buildings), onboarding still completes. We only treat
-      // truly unexpected RPC failures as fatal.
-      const rpcMissing =
-        !!rpcError && (
-          (rpcError as any).code === '42883' ||
-          (rpcError as any).code === 'PGRST202' ||
-          /function .* does not exist/i.test(rpcError.message ?? '') ||
-          /Could not find the function .* in the schema cache/i.test(rpcError.message ?? '')
-        )
-      if (rpcError && !rpcMissing) {
-        if (__DEV__) console.warn('[onboarding] resolve_building failed:', rpcError.message)
-        toast.show({ message: t('onboarding.saveFailed'), type: 'error' })
-        setSaving(false)
-        return
-      } else if (rpcMissing && __DEV__) {
-        console.warn('[onboarding] resolve_building RPC missing — skipping building link')
+        // The building link is best-effort — when the RPC is absent (live schema
+        // pivoted away from buildings), onboarding still completes. We only treat
+        // truly unexpected RPC failures as fatal.
+        const rpcMissing =
+          !!rpcError && (
+            (rpcError as any).code === '42883' ||
+            (rpcError as any).code === 'PGRST202' ||
+            /function .* does not exist/i.test(rpcError.message ?? '') ||
+            /Could not find the function .* in the schema cache/i.test(rpcError.message ?? '')
+          )
+        if (rpcError && !rpcMissing) {
+          if (__DEV__) console.warn('[onboarding] resolve_building failed:', rpcError.message)
+          toast.show({ message: t('onboarding.saveFailed'), type: 'error' })
+          setSaving(false)
+          return
+        } else if (rpcMissing && __DEV__) {
+          console.warn('[onboarding] resolve_building RPC missing — skipping building link')
+        }
+      } else if (__DEV__) {
+        console.warn('[onboarding] address skipped — completing without building link')
       }
 
-      // Update profile: mark onboarding complete + save neighborhood for feed filtering.
+      // Update profile: mark onboarding complete + save neighborhood when present.
       // Try the full update first; if it fails because of a missing column, retry
       // with a smaller payload so onboarding never gets permanently stuck.
       const fullUpdate: Record<string, any> = {
-        naapurusto: selectedAddress.neighborhood ?? selectedAddress.city ?? 'Helsinki',
-        city_id: selectedCity,
         onboarding_completed: true,
+      }
+      if (selectedAddress) {
+        fullUpdate.naapurusto = selectedAddress.neighborhood ?? selectedAddress.city ?? 'Helsinki'
+        fullUpdate.city_id = selectedCity
       }
       let updateError: any = null
       const fullRes = await (supabase.from('profiles') as any).update(fullUpdate).eq('id', user.id)
@@ -193,7 +198,7 @@ function OnboardingScreenInner() {
         if (__DEV__) console.warn('[onboarding] some profile columns missing, retrying minimal update:', updateError.message)
         // Drop city_id and naapurusto if the live schema doesn't have them
         const minimalUpdate: Record<string, any> = { onboarding_completed: true }
-        if (selectedAddress.neighborhood || selectedAddress.city) {
+        if (selectedAddress && (selectedAddress.neighborhood || selectedAddress.city)) {
           minimalUpdate.naapurusto = selectedAddress.neighborhood ?? selectedAddress.city ?? 'Helsinki'
         }
         const retryRes = await (supabase.from('profiles') as any).update(minimalUpdate).eq('id', user.id)
@@ -214,9 +219,10 @@ function OnboardingScreenInner() {
       // Mark onboarding complete locally
       await AsyncStorage.setItem('onboarding_complete', 'true')
       trackEvent('onboarding_completed', {
-        city: selectedAddress.city ?? selectedCity,
-        neighborhood: selectedAddress.neighborhood ?? null,
+        city: selectedAddress?.city ?? selectedCity ?? null,
+        neighborhood: selectedAddress?.neighborhood ?? null,
         address: streetAddress,
+        skipped_address: !selectedAddress,
       })
       router.replace('/')
     } catch (err) {
@@ -481,6 +487,17 @@ function OnboardingScreenInner() {
         >
           <Text style={[s.ctaText, { color: colors.primaryForeground, fontFamily: fonts.bodySemi }]}>
             {t('onboarding.next')}
+          </Text>
+        </PressableOpacity>
+        {/* Temporary testing escape hatch — proceed without picking an address. */}
+        <PressableOpacity
+          onPress={() => goToStep(2)}
+          style={{ paddingVertical: 12, alignItems: 'center', marginTop: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel="Ohita osoite"
+        >
+          <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, fontSize: 14, textDecorationLine: 'underline' }}>
+            Ohita toistaiseksi
           </Text>
         </PressableOpacity>
       </View>

@@ -24,3 +24,10 @@ here.
   `conversations` query that hits the group-membership branch failed
   with "infinite recursion detected in policy for relation
   conversation_members", breaking unread counts and Realtime channels.
+
+- **`2026-05-09_realtime_publication.sql`** — Added `messages`,
+  `conversations`, `conversation_members`, and `notifications` to the
+  `supabase_realtime` publication. The publication was empty in the
+  pivoted DB, so every `.on('postgres_changes')` subscription failed
+  with `CHANNEL_ERROR` (chat realtime, unread badge, feed live
+  updates).
