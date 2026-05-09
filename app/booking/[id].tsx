@@ -23,7 +23,7 @@ import { isValidUUID } from '@/lib/validation'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
-import { StatusBanner, DepositChip, PreReturnChecklist, HubHandoffCard, type ChecklistItem } from '@/components/lending'
+import { StatusBanner, DepositChip, PreReturnChecklist, HubHandoffCard, LockerPinCard, type ChecklistItem } from '@/components/lending'
 
 type PickupMethodValue = 'address' | 'hub' | 'gardi'
 
@@ -69,6 +69,12 @@ interface BookingData {
   pickup_method?: PickupMethodValue | null
   pickup_state?: string | null
   hub_id?: string | null
+  locker_id?: string | null
+  locker_provider?: 'mock' | 'gardi' | null
+  locker_pickup_pin?: string | null
+  locker_pickup_pin_expires_at?: string | null
+  locker_dropoff_pin?: string | null
+  locker_dropoff_pin_expires_at?: string | null
   deposit_captured_amount?: number | null
   return_record?: {
     photos?: string[]
@@ -151,6 +157,73 @@ function hubEyebrowFor(pickupState: string | null | undefined, myRole: string, t
   }
 }
 
+// Decides which PIN to surface on the LockerPinCard for the active viewer.
+// Lender uses the dropoff PIN to put items into the locker (drop / collect
+// flips between active drop or 'pickup_at_collect' which is the collect
+// step — same locker, same physical action of opening). Borrower uses the
+// pickup PIN to take items out (pickup or return-deposit). For mock
+// provider we simply read the column written at locker-pick time; for
+// real Gardi provider, slice 4 will refresh the PIN per direction.
+function lockerPinFor(
+  booking: { pickup_state?: string | null; my_role: string; locker_pickup_pin?: string | null; locker_pickup_pin_expires_at?: string | null; locker_dropoff_pin?: string | null; locker_dropoff_pin_expires_at?: string | null },
+  lockerName: string,
+  t: (k: string) => string,
+): { label: string; pin: string; lockerLine: string; validity?: string; locked: boolean } {
+  const role = booking.my_role
+  const state = booking.pickup_state
+
+  // Determine which side / direction is active right now.
+  // Default (state=pending_method or unknown) → lender's dropoff first, since
+  // that's the first physical event after a Gardi booking is paid.
+  let direction: 'pickup' | 'dropoff' = 'dropoff'
+  let label = t('locker.dropoffCode') ?? 'AVAUSKOODI'
+
+  if (state === 'awaiting_borrower_pickup' || (role === 'borrower' && state === 'in_use')) {
+    direction = 'pickup'
+    label = t('locker.pickupCode') ?? 'NOUTOKOODI'
+  } else if (state === 'awaiting_borrower_return') {
+    // Borrower is putting the item back into the locker.
+    direction = 'dropoff'
+    label = t('locker.returnCode') ?? 'PALAUTUSKOODI'
+  } else if (state === 'awaiting_lender_collection') {
+    // Lender is taking the returned item out.
+    direction = 'pickup'
+    label = t('locker.collectCode') ?? 'NOUTOKOODI'
+  }
+
+  const pin = direction === 'dropoff' ? booking.locker_dropoff_pin : booking.locker_pickup_pin
+  const expiresAt = direction === 'dropoff' ? booking.locker_dropoff_pin_expires_at : booking.locker_pickup_pin_expires_at
+
+  const validity = expiresAt
+    ? formatLockerExpiry(expiresAt, t)
+    : undefined
+
+  return {
+    label,
+    pin: pin || '— — — —',
+    lockerLine: lockerName,
+    validity,
+    locked: !pin,
+  }
+}
+
+function formatLockerExpiry(expiresAt: string, t: (k: string) => string): string {
+  try {
+    const d = new Date(expiresAt)
+    const now = new Date()
+    const sameDay =
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    const time = `${d.getHours().toString().padStart(2, '0')}.${d.getMinutes().toString().padStart(2, '0')}`
+    if (sameDay) return (t('locker.validToday') ?? 'Voimassa tänään') + ` ${time} asti`
+    const date = `${d.getDate()}.${d.getMonth() + 1}.`
+    return (t('locker.validUntil') ?? 'Voimassa') + ` ${date} ${time} asti`
+  } catch {
+    return ''
+  }
+}
+
 function hubCaptionFor(pickupState: string | null | undefined, myRole: string, t: (k: string) => string): string | undefined {
   switch (pickupState) {
     case 'awaiting_lender_dropoff':
@@ -226,6 +299,25 @@ function BookingDetailScreenInner() {
     return () => { mounted = false }
   }, [booking?.hub_id, supabase])
 
+  // Locker details for pickup_method='gardi' bookings.
+  const [locker, setLocker] = useState<{ location_name: string; address: string | null; lat: number | null; lng: number | null } | null>(null)
+  useEffect(() => {
+    const lockerId = booking?.locker_id
+    if (!lockerId) { setLocker(null); return }
+    let mounted = true
+    supabase
+      .from('lockers')
+      .select('location_name, address, lat, lng')
+      .eq('id', lockerId)
+      .maybeSingle()
+      .then(({ data, error }: { data: any; error: any }) => {
+        if (!mounted) return
+        if (error) { if (__DEV__) console.warn('[booking] locker fetch failed:', error.message); return }
+        if (data) setLocker(data)
+      })
+    return () => { mounted = false }
+  }, [booking?.locker_id, supabase])
+
   // Feature flag gate — allow lending bookings even when PAYMENTS is off
   useEffect(() => {
     if (!FEATURES.PAYMENTS && !FEATURES.LENDING) {
@@ -250,6 +342,9 @@ function BookingDetailScreenInner() {
             deposit_amount, deposit_status, deposit_captured_amount,
             return_record, lender_review_at, borrower_review_at,
             pickup_method, pickup_state, hub_id,
+            locker_id, locker_provider,
+            locker_pickup_pin, locker_pickup_pin_expires_at,
+            locker_dropoff_pin, locker_dropoff_pin_expires_at,
             post:posts!rental_bookings_post_id_fkey(id, title, image_url, pre_return_checklist),
             borrower:profiles!rental_bookings_borrower_id_fkey(id, name, avatar_url),
             lender:profiles!rental_bookings_lender_id_fkey(id, name, avatar_url)
@@ -276,6 +371,12 @@ function BookingDetailScreenInner() {
             pickup_method: r.pickup_method ?? null,
             pickup_state: r.pickup_state ?? null,
             hub_id: r.hub_id ?? null,
+            locker_id: r.locker_id ?? null,
+            locker_provider: r.locker_provider ?? null,
+            locker_pickup_pin: r.locker_pickup_pin ?? null,
+            locker_pickup_pin_expires_at: r.locker_pickup_pin_expires_at ?? null,
+            locker_dropoff_pin: r.locker_dropoff_pin ?? null,
+            locker_dropoff_pin_expires_at: r.locker_dropoff_pin_expires_at ?? null,
             deposit_captured_amount: r.deposit_captured_amount ?? null,
             return_record: r.return_record ?? null,
             lender_review_at: r.lender_review_at ?? null,
@@ -677,6 +778,24 @@ function BookingDetailScreenInner() {
               lng={hub.lng}
             />
           )}
+
+          {/* Locker PIN card — only when pickup_method='gardi'. The PIN
+              the user reads off this card depends on whose turn it is:
+              lender at dropoff or collection sees the dropoff PIN, borrower
+              at pickup or return sees the pickup PIN. Renders in the locked
+              state when the relevant PIN hasn't been issued yet. */}
+          {booking.pickup_method === 'gardi' && locker && (() => {
+            const pinSpec = lockerPinFor(booking, locker.location_name, t)
+            return (
+              <LockerPinCard
+                label={pinSpec.label}
+                pin={pinSpec.pin}
+                locker={pinSpec.lockerLine}
+                validity={pinSpec.validity}
+                locked={pinSpec.locked}
+              />
+            )
+          })()}
 
           {/* Item snapshot */}
           <ItemSummaryCard booking={booking} colors={colors} t={t} locale={locale} router={router} compact />

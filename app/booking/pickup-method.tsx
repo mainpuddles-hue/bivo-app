@@ -42,6 +42,7 @@ function PickupMethodScreenInner() {
   const [selected, setSelected] = useState<PickupMethodKey>('address')
   const [submitting, setSubmitting] = useState(false)
   const [hubCount, setHubCount] = useState(0)
+  const [lockerCount, setLockerCount] = useState(0)
 
   // Load booking + active hub count on mount. Booking gives us the listing
   // and (if the user came back to this screen) the previously selected method
@@ -53,7 +54,7 @@ function PickupMethodScreenInner() {
     let mounted = true
     ;(async () => {
       try {
-        const [bkRes, hubRes] = await Promise.all([
+        const [bkRes, hubRes, lockerRes] = await Promise.all([
           supabase
             .from('rental_bookings')
             .select(`
@@ -67,6 +68,17 @@ function PickupMethodScreenInner() {
             .from('hubs')
             .select('id', { count: 'exact', head: true })
             .eq('is_active', true),
+          // Lockers count is best-effort — if the slice 3 SQL hasn't been
+          // applied yet, the table doesn't exist and the query rejects.
+          // Treat that as "Gardi unavailable" and keep the card disabled.
+          supabase
+            .from('lockers')
+            .select('id', { count: 'exact', head: true })
+            .eq('is_active', true)
+            .then(
+              (res: { count: number | null; error: any }) => res,
+              () => ({ count: 0, error: null }),
+            ),
         ])
         if (!mounted) return
         if (bkRes.error || !bkRes.data) {
@@ -78,6 +90,10 @@ function PickupMethodScreenInner() {
         setTarget(bk)
         if (bk.pickup_method) setSelected(bk.pickup_method)
         setHubCount(hubRes.count ?? 0)
+        // lockerRes is the result of the .then(success, failure) above —
+        // either { count, error } or our { count: 0 } fallback.
+        const lockerCount = (lockerRes as any)?.count ?? 0
+        setLockerCount(lockerCount)
       } catch (e) {
         if (__DEV__) console.warn('[pickup-method] load threw:', (e as Error)?.message)
       }
@@ -102,12 +118,10 @@ function PickupMethodScreenInner() {
       // Branch into the right downstream screen.
       if (selected === 'hub') {
         router.push({ pathname: '/booking/hub-picker', params: { bookingId: target.id } } as any)
-      } else if (selected === 'address') {
-        router.push({ pathname: '/payment-checkout', params: { bookingId: target.id } } as any)
+      } else if (selected === 'gardi') {
+        router.push({ pathname: '/booking/locker-picker', params: { bookingId: target.id } } as any)
       } else {
-        // Gardi is gated until slice 3 lands. Should never reach here while
-        // the card is still disabled, but guard for defensive dev safety.
-        toast.show({ message: t('pickup.gardiComingSoon') ?? 'Gardi tulossa pian', type: 'info' })
+        router.push({ pathname: '/payment-checkout', params: { bookingId: target.id } } as any)
       }
     } catch (e) {
       if (__DEV__) console.warn('[pickup-method] save failed:', (e as Error)?.message)
@@ -180,11 +194,16 @@ function PickupMethodScreenInner() {
           <PickupMethodCard
             method="gardi"
             title={t('pickup.gardi') ?? 'Gardi älylokero'}
-            subtitle={t('pickup.gardiSub') ?? '24/7 nouto omalla PIN-koodilla'}
+            subtitle={
+              lockerCount > 0
+                ? (t('pickup.gardiSub') ?? '24/7 nouto omalla PIN-koodilla')
+                : (t('pickup.gardiEmpty') ?? 'Lokeroverkkoa rakennetaan parhaillaan')
+            }
             Icon={Package}
-            disabled
-            meta={t('pickup.comingSoon') ?? 'Tulossa pian'}
-            onPress={() => {}}
+            selected={selected === 'gardi'}
+            disabled={lockerCount === 0}
+            meta={lockerCount === 0 ? (t('pickup.empty') ?? 'Ei valittavissa') : undefined}
+            onPress={() => setSelected('gardi')}
           />
         </View>
 
@@ -197,7 +216,9 @@ function PickupMethodScreenInner() {
         label={
           selected === 'hub'
             ? (t('pickup.continueToHub') ?? 'Valitse hub')
-            : (t('pickup.continueToPayment') ?? 'Jatka maksuun')
+            : selected === 'gardi'
+              ? (t('pickup.continueToLocker') ?? 'Valitse lokero')
+              : (t('pickup.continueToPayment') ?? 'Jatka maksuun')
         }
         onPress={handleContinue}
         loading={submitting}
