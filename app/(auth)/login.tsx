@@ -262,6 +262,7 @@ function LoginScreenInner() {
   }
 
   const handleGoogleOAuth = async () => {
+    setErrorMsg('')
     setLoading(true)
     try {
       if (Platform.OS === 'web') {
@@ -388,7 +389,11 @@ function LoginScreenInner() {
       router.replace('/')
     } catch (err: any) {
       if (err?.code === 'ERR_CANCELED' || err?.code === 'ERR_REQUEST_CANCELED') return
-      setErrorMsg(translateError(err.message ?? 'Apple sign in failed'))
+      // expo-apple-authentication and Supabase auth surface raw English strings
+      // (e.g. "The authorization attempt failed for an unknown reason"). Map known
+      // codes via translateError; otherwise fall back to the localized appleFailed.
+      const known = err?.message ? translateError(err.message) : ''
+      setErrorMsg(known && known !== err.message ? known : t('auth.appleFailed'))
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) } catch {}
     } finally {
       setLoading(false)
@@ -440,7 +445,7 @@ function LoginScreenInner() {
             ? t('auth.resetPasswordHint')
             : mode === 'register'
               ? t('auth.fillAllFields')
-              : t('auth.resetDescription')}
+              : t('auth.welcomeBack')}
         </Text>
 
         {/* Section label */}
