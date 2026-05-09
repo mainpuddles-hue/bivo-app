@@ -43,10 +43,11 @@ import { ModalCloseButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DON
 import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType, PostComment, PostStatus } from '@/lib/types'
 
-// Module-level latches: once we learn that the live schema is missing the
-// post_views table or the get_post_view_count RPC, stop trying. Detail screen
-// remounts repeatedly during normal browsing — without this gate every open
-// fires a guaranteed 404 and a Metro warning.
+// Module-level latches: once we learn the live schema cannot accept a
+// post_views write — either the table is missing OR RLS rejects the insert
+// for the current user — stop trying. Detail screen remounts repeatedly
+// during normal browsing so without this gate every open fires a guaranteed
+// 4xx and a Metro warning.
 let postViewsTableMissing = false
 let getPostViewCountRpcMissing = false
 
@@ -56,6 +57,16 @@ const isMissingRelation = (err: any): boolean => {
   if (code === 'PGRST205' || code === '42P01' || code === 'PGRST202' || code === '42883') return true
   return /Could not find the (table|function) .* in the schema cache/i.test(err.message ?? '')
 }
+
+const isRlsDenial = (err: any): boolean => {
+  if (!err) return false
+  const code = err.code
+  if (code === '42501' || code === 'PGRST301') return true
+  return /violates row-level security policy/i.test(err.message ?? '')
+}
+
+const isPostViewsUnusable = (err: any): boolean =>
+  isMissingRelation(err) || isRlsDenial(err)
 
 function PostDetailScreenInner() {
   const { colors, isDark } = useTheme()
@@ -260,15 +271,20 @@ function PostDetailScreenInner() {
         if (mounted && typeof data === 'number') setViewCount(data)
       }).catch((e: any) => { if (__DEV__) console.warn('[post] view count fetch failed:', e) })
     }
-    // Record view (fire-and-forget). Skip once we know post_views does not exist.
+    // Record view (fire-and-forget). Skip once the post_views write becomes
+    // unusable for this session — either because the table is missing OR
+    // because the RLS policy denies the insert for the current user/anon.
     if (userId && !postViewsTableMissing) {
       ;(supabase.from('post_views') as any)
         .upsert({ post_id: post.id, user_id: userId }, { onConflict: 'post_id,user_id' })
         .then(({ error }: { error: any }) => {
           if (error) {
-            if (isMissingRelation(error)) {
+            if (isPostViewsUnusable(error)) {
               postViewsTableMissing = true
-              if (__DEV__) console.warn('[post] post_views table missing — skipping for this session')
+              if (__DEV__) {
+                const reason = isRlsDenial(error) ? 'RLS denial' : 'table missing'
+                console.warn(`[post] post_views unusable (${reason}) — skipping for this session`)
+              }
             } else if (__DEV__) console.warn('[post] view tracking failed:', error.message)
           }
         }, (e: any) => { if (__DEV__) console.warn('[post] view tracking failed:', e) })
