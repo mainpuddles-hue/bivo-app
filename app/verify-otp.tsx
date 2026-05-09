@@ -30,12 +30,15 @@ export default function VerifyOtpScreen() {
   const { email, mode: modeParam } = useLocalSearchParams<{ email: string; mode?: string }>()
   const otpMode: OtpMode = modeParam === 'recovery' ? 'recovery' : 'signup'
 
-  // Validate email from deep link
+  // Validate email from deep link. Bounce back to /login if the param is
+  // missing entirely OR malformed — without it the verify edge function
+  // rejects with an opaque error and the user sees a confusing screen they
+  // can't progress from.
   useEffect(() => {
-    if (email && !emailRegex.test(email)) {
+    if (!email || !emailRegex.test(email)) {
       router.replace('/(auth)/login')
     }
-  }, [email])
+  }, [email, router])
 
   const [digits, setDigits] = useState<string[]>(Array(DIGIT_COUNT).fill(''))
   const [activeIndex, setActiveIndex] = useState(0)
