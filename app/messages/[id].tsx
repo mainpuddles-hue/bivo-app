@@ -18,7 +18,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { useToast } from '@/components/Toast'
 import { ReportModal } from '@/components/ReportModal'
 import { isValidUUID } from '@/lib/validation'
-import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
+import { checkRateLimit, recordRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { getImageUrl } from '@/lib/imageUtils'
 import { getCachedUserId } from '@/lib/authCache'
 import type { Message, Profile } from '@/lib/types'
@@ -371,6 +371,7 @@ function ConversationScreenInner() {
     try {
       const { error } = await (supabase.from('messages') as any).insert({ conversation_id: id, sender_id: userId, content: text })
       if (error) throw error
+      recordRateLimit('message').catch(() => {}) // best-effort, slot already used server-side
       await (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id)
     } catch {
       toast.show({ message: t('messages.sendFailed'), type: 'error' })
@@ -409,8 +410,9 @@ function ConversationScreenInner() {
     try {
       const { error } = await (supabase.from('messages') as any).insert({ conversation_id: id, sender_id: userId, content })
       if (error) throw error
+      recordRateLimit('message').catch(() => {})
       // Non-critical: update conversation timestamp for sort order. Don't restore input if only this fails.
-      (supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch((err: any) => { if (__DEV__) console.warn('[messages] conversation update failed:', err?.message) })
+      ;(supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch((err: any) => { if (__DEV__) console.warn('[messages] conversation update failed:', err?.message) })
     } catch (err) {
       if (mountedRef.current) {
         // Remove optimistic message on failure
@@ -497,6 +499,7 @@ function ConversationScreenInner() {
         supabase.storage.from('message-images').remove([path]).catch((e: any) => { if (__DEV__) console.warn('[conversation] orphaned image cleanup failed:', e) })
         throw msgError
       }
+      recordRateLimit('message').catch(() => {})
       ;(supabase.from('conversations') as any).update({ updated_at: new Date().toISOString() }).eq('id', id).then(() => {}).catch((e: any) => { if (__DEV__) console.warn('[conversation] timestamp update failed:', e?.message) })
     } catch (err) {
       toast.show({ message: t('messages.imageSendFailed'), type: 'error' })

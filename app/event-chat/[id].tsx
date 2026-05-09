@@ -19,7 +19,7 @@ import { fonts } from '@/lib/fonts'
 import { formatTimeAgo } from '@/lib/format'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
-import { checkRateLimit } from '@/lib/rateLimiter'
+import { checkRateLimit, recordRateLimit } from '@/lib/rateLimiter'
 import { useToast } from '@/components/Toast'
 
 interface EventInfo {
@@ -110,7 +110,9 @@ function EventChatScreenInner() {
     const text = input
     setInput('')
     const ok = await sendMessage(text)
-    if (!ok) {
+    if (ok) {
+      recordRateLimit('event-chat-send').catch(() => {})
+    } else {
       setInput(text)
       toast.show({ message: t('messages.sendFailed') ?? 'Message failed to send', type: 'error' })
     }

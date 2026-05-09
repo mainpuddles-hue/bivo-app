@@ -25,7 +25,7 @@ import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/com
 import { trackEvent } from '@/lib/analytics'
 import { maybeRequestReview } from '@/lib/reviewPrompt'
 import { getCachedUserId } from '@/lib/authCache'
-import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
+import { checkRateLimit, recordRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { useToast } from '@/components/Toast'
 import { suggestTags } from '@/lib/autoCategory'
@@ -802,6 +802,7 @@ export default function CreateScreen() {
         }
       }
       trackEvent('post_created', { type: selectedType, has_price: !!servicePrice })
+      recordRateLimit('post_create').catch(() => {}) // best-effort, don't block on quota
       const createdPostId = post?.id
       AsyncStorage.removeItem(DRAFT_KEY).catch((e) => { if (__DEV__) console.warn('Post-submit draft cleanup failed:', e) })
       if (!mountedRef.current) return
