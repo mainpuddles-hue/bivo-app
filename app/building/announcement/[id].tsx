@@ -12,6 +12,7 @@ import { fonts } from '@/lib/fonts'
 import { formatTimeAgo } from '@/lib/format'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
+import { safeBack } from '@/lib/navigation'
 
 interface Announcement {
   id: string
@@ -128,7 +129,7 @@ function AnnouncementDetailInner() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 4, borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <PressableOpacity onPress={() => safeBack(router, '/(tabs)')} hitSlop={12} style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <ArrowLeft size={20} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>

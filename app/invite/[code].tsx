@@ -10,6 +10,7 @@ import { getCachedUserId } from '@/lib/authCache'
 import { fonts } from '@/lib/fonts'
 import { PressableOpacity } from '@/components/ui'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { safeBack } from '@/lib/navigation'
 
 function InviteScreenInner() {
   const { code } = useLocalSearchParams<{ code: string }>()
@@ -110,7 +111,7 @@ function InviteScreenInner() {
         {/* Secondary outline button */}
         {isError && (
           <PressableOpacity
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/(tabs)')}
             style={[styles.outlineButton, { borderColor: colors.foreground }]}
           >
             <Text style={[styles.outlineButtonText, { color: colors.foreground }]}>

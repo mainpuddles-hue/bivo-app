@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
+import { safeBack } from '@/lib/navigation'
 
 function PaymentCancelScreenInner() {
   const { colors } = useTheme()
@@ -27,7 +28,7 @@ function PaymentCancelScreenInner() {
         {/* Action buttons */}
         <View style={styles.actions}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/(tabs)')}
             style={[styles.primaryBtn, { backgroundColor: colors.foreground }]}
             accessibilityLabel={t('payment.tryAgain')}
             accessibilityRole="button"

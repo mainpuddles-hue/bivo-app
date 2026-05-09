@@ -786,7 +786,7 @@ function BarHeader({ colors, t, insets, router, title, subtitle }: {
   return (
     <View style={[s.header, { paddingTop: insets.top + 8 }]}>
       <PressableOpacity
-        onPress={() => router.back()}
+        onPress={() => safeBack(router, '/bookings')}
         hitSlop={12}
         accessibilityRole="button"
         accessibilityLabel={t('common.back')}

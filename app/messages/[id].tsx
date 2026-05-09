@@ -21,6 +21,7 @@ import { isValidUUID } from '@/lib/validation'
 import { checkRateLimit, recordRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { getImageUrl } from '@/lib/imageUtils'
 import { getCachedUserId } from '@/lib/authCache'
+import { safeBack } from '@/lib/navigation'
 import type { Message, Profile } from '@/lib/types'
 
 const PAGE_SIZE = 30
@@ -784,7 +785,7 @@ function ConversationScreenInner() {
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <PressableOpacity
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/(tabs)/messages')}
             hitSlop={12}
             style={[s.circleBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
             accessibilityRole="button"
@@ -825,7 +826,7 @@ function ConversationScreenInner() {
       {/* Header — Monochrome 06 */}
       <View style={[s.header, { paddingTop: insets.top + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <PressableOpacity
-          onPress={() => router.back()}
+          onPress={() => safeBack(router, '/(tabs)/messages')}
           hitSlop={12}
           style={[s.circleBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
           accessibilityRole="button"

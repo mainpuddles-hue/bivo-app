@@ -20,6 +20,7 @@ import { formatTimeAgo } from '@/lib/format'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
 import { checkRateLimit, recordRateLimit } from '@/lib/rateLimiter'
+import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
 
 interface EventInfo {
@@ -247,7 +248,7 @@ function EventChatScreenInner() {
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 4, borderBottomColor: colors.border }]}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => safeBack(router, '/community-events')}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}

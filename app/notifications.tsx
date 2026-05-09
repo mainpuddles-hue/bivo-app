@@ -16,6 +16,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { formatTimeAgo } from '@/lib/format'
 import { getCachedUserId } from '@/lib/authCache'
 import { FEATURES } from '@/lib/featureFlags'
+import { safeBack } from '@/lib/navigation'
 import type { Notification } from '@/lib/types'
 import { prioritizeNotifications, type PrioritizedNotification } from '@/lib/notificationPriority'
 
@@ -520,7 +521,7 @@ function NotificationsScreenInner() {
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <View style={styles.headerLeft}>
           <PressableOpacity
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/(tabs)')}
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={t('common.back')}

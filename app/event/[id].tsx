@@ -315,7 +315,7 @@ function EventDetailScreenInner() {
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.skeletonHeader, { paddingTop: insets.top + 8 }]}>
           <PressableOpacity
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/community-events')}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={t('common.back')}
@@ -334,7 +334,7 @@ function EventDetailScreenInner() {
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <View style={[s.skeletonHeader, { paddingTop: insets.top + 8 }]}>
           <PressableOpacity
-            onPress={() => router.back()}
+            onPress={() => safeBack(router, '/community-events')}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={t('common.back')}
@@ -414,7 +414,7 @@ function EventDetailScreenInner() {
       {/* Hero nav overlay — circle buttons on top of photo */}
       <View style={[s.heroNav, { top: insets.top + 12 }]} pointerEvents="box-none">
         <PressableOpacity
-          onPress={() => router.back()}
+          onPress={() => safeBack(router, '/community-events')}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
