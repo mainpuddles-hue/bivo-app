@@ -8,6 +8,13 @@ import { useSupabase } from './useSupabase'
  * Track user presence and count online users in neighborhood.
  * Uses Supabase Realtime Presence channels + profiles.last_seen_at heartbeat.
  */
+
+// Module-level gate: once we learn the live schema does not have
+// profiles.last_seen_at (or the table itself), stop trying. The heartbeat
+// fires every 5 minutes per user; without this gate Metro logs warnings on
+// every interval forever, which buries real diagnostics.
+let lastSeenColumnMissing = false
+
 export function usePresence(userId: string | null, neighborhood: string | null) {
   const supabase = useSupabase()
   const [onlineCount, setOnlineCount] = useState(0)
@@ -21,12 +28,24 @@ export function usePresence(userId: string | null, neighborhood: string | null) 
     let mounted = true
 
     const updateLastSeen = () => {
-      if (!mounted) return
+      if (!mounted || lastSeenColumnMissing) return
       ;(supabase.from('profiles') as any)
         .update({ last_seen_at: new Date().toISOString() })
         .eq('id', userId)
         .then(({ error }: { error: any }) => {
-          if (error && __DEV__) console.warn('usePresence:updateLastSeen:', error.message)
+          if (!error) return
+          // PGRST204 / 42703 / matching message → column doesn't exist; latch
+          // the gate and stop spamming. Any other error stays as a one-off warn.
+          const code = error.code
+          const isMissingColumn =
+            code === 'PGRST204' || code === '42703' ||
+            /Could not find the .*last_seen_at.* column/i.test(error.message ?? '')
+          if (isMissingColumn) {
+            lastSeenColumnMissing = true
+            if (__DEV__) console.warn('usePresence: last_seen_at column missing — heartbeat disabled for this session')
+          } else if (__DEV__) {
+            console.warn('usePresence:updateLastSeen:', error.message)
+          }
         })
         .catch((e: unknown) => { if (__DEV__) console.warn('usePresence:updateLastSeen:', e) })
     }
