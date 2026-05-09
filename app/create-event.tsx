@@ -28,6 +28,7 @@ import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { createEventChat } from '@/lib/eventChatHelpers'
 import { useToast } from '@/components/Toast'
+import { uriToArrayBuffer } from '@/lib/uploadHelpers'
 import type { CommunityEvent } from '@/lib/types'
 
 type EventCategory = CommunityEvent['category']
@@ -314,7 +315,8 @@ function CreateEventScreenInner() {
           setSubmitting(false)
           return
         }
-        const arrayBuffer = await blob.arrayBuffer()
+        // RN's blob.arrayBuffer() is undefined for fetch(file://) blobs.
+        const arrayBuffer = await uriToArrayBuffer(imageUri)
 
         const { error: uploadError } = await supabase.storage
           .from('event-images')

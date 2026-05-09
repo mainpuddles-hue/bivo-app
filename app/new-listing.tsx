@@ -46,6 +46,7 @@ import { PressableOpacity } from '@/components/ui'
 import { getCachedUserId } from '@/lib/authCache'
 import { trackEvent } from '@/lib/analytics'
 import { useToast } from '@/components/Toast'
+import { uriToArrayBuffer } from '@/lib/uploadHelpers'
 
 const TOTAL_STEPS = 7
 
@@ -262,7 +263,7 @@ function NewListingScreenInner() {
           const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : (mimeType.split('/')[1] || 'jpg')
           const tempId = Date.now().toString()
           const path = `${userId}/${tempId}/${i}.${ext}`
-          const arrayBuffer = await blob.arrayBuffer()
+          const arrayBuffer = await uriToArrayBuffer(uri)
           const { error: uploadError } = await supabase.storage
             .from('post-images')
             .upload(path, arrayBuffer, { contentType: mimeType, upsert: true })

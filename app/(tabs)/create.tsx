@@ -26,6 +26,7 @@ import { trackEvent } from '@/lib/analytics'
 import { maybeRequestReview } from '@/lib/reviewPrompt'
 import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, recordRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
+import { uriToArrayBuffer } from '@/lib/uploadHelpers'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { useToast } from '@/components/Toast'
 import { suggestTags } from '@/lib/autoCategory'
@@ -564,7 +565,7 @@ export default function CreateScreen() {
       const mimeSubtype = mimeType.split('/')[1] ?? 'jpeg'
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `${userId}/${postId}/${i}.${ext}`
-      const arrayBuffer = await blob.arrayBuffer()
+      const arrayBuffer = await uriToArrayBuffer(uri)
       const success = await uploadSingleImageWithProgress(uri, path, mimeType, arrayBuffer, i)
       if (success) {
         const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path)
