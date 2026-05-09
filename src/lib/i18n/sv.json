@@ -291,7 +291,8 @@
     "distance": "Avstånd",
     "category": "Kategori",
     "responseTime": "Svarstid",
-    "deposit": "Deposition"
+    "deposit": "Deposition",
+    "saveFailed": "Kunde inte spara"
   },
   "offer": {
     "title": "Ge ett bud",

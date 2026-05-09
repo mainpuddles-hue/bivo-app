@@ -19,6 +19,7 @@ import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { CATEGORIES } from '@/lib/constants'
 import { useSupabase } from '@/hooks/useSupabase'
+import { useToast } from '@/components/Toast'
 import { formatTimeAgo, formatPrice, formatEventDateShort } from '@/lib/format'
 import { isHumanAction } from '@/lib/abuseDetection'
 import { getImageUrl } from '@/lib/imageUtils'
@@ -48,6 +49,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const { t, locale } = useI18n()
   const router = useRouter()
   const supabase = useSupabase()
+  const toast = useToast()
 
   const [imgError, setImgError] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
@@ -138,9 +140,18 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         ? await (supabase.from('post_likes') as any).delete().eq('post_id', post.id).eq('user_id', userId)
         : await (supabase.from('post_likes') as any).insert({ post_id: post.id, user_id: userId })
       if (error) {
+        if (__DEV__) console.warn('[card] like failed:', error.message, error.code)
         if (mountedRef.current) {
           setLiked(wasLiked)
           setLikeCount(prevCount)
+          // Surface failure to the user — silent revert hides missing-table
+          // errors (PGRST205 / 42P01) and looks like the tap simply did nothing.
+          if (error.code !== '23505') {
+            toast.show({ message: t('engagement.likeFailed'), type: 'error' })
+          } else {
+            // Duplicate key: already liked, keep optimistic state
+            setLiked(true)
+          }
         }
         return
       }

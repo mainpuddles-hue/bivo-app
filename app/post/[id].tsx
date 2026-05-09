@@ -321,8 +321,14 @@ function PostDetailScreenInner() {
         if (__DEV__) console.warn('[post] like failed:', error.message, error.code)
         setIsLiked(wasLiked)
         setLikeCount(prevCount)
-        // Duplicate key = already liked, re-sync
-        if (error.code === '23505') setIsLiked(true)
+        // Duplicate key = already liked, re-sync (no toast — silent recovery)
+        if (error.code === '23505') {
+          setIsLiked(true)
+        } else {
+          // Surface every other failure to the user. Missing post_likes table
+          // (PGRST205 / 42P01) returns a friendlier toast than a silent revert.
+          toast.show({ message: t('engagement.likeFailed'), type: 'error' })
+        }
       } else {
         // Sync count from source of truth
         const { count: realCount } = await supabase.from('post_likes').select('id', { count: 'exact', head: true }).eq('post_id', id)
@@ -360,13 +366,21 @@ function PostDetailScreenInner() {
       if (wasSaved) {
         setIsSaved(false)
         const { error } = await (supabase.from('saved_posts') as any).delete().eq('post_id', id).eq('user_id', userId)
-        if (error) { setIsSaved(wasSaved) }
+        if (error) {
+          if (__DEV__) console.warn('[post] unsave failed:', error.message, error.code)
+          setIsSaved(wasSaved)
+          toast.show({ message: t('post.saveFailed'), type: 'error' })
+        }
       } else {
         setIsSaved(true)
         const { error } = await (supabase.from('saved_posts') as any).insert({ post_id: id, user_id: userId })
         if (error) {
-          if (error.code === '23505') { /* already saved */ }
-          else { setIsSaved(wasSaved) }
+          if (error.code === '23505') { /* already saved — keep optimistic state */ }
+          else {
+            if (__DEV__) console.warn('[post] save failed:', error.message, error.code)
+            setIsSaved(wasSaved)
+            toast.show({ message: t('post.saveFailed'), type: 'error' })
+          }
         }
       }
     } finally { savingRef.current = false }

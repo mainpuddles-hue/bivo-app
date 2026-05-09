@@ -291,7 +291,8 @@
     "distance": "Distance",
     "category": "Category",
     "responseTime": "Response time",
-    "deposit": "Deposit"
+    "deposit": "Deposit",
+    "saveFailed": "Could not save"
   },
   "offer": {
     "title": "Make an Offer",

@@ -291,7 +291,8 @@
     "distance": "Etäisyys",
     "category": "Kategoria",
     "responseTime": "Vastausaika",
-    "deposit": "Vakuus"
+    "deposit": "Vakuus",
+    "saveFailed": "Tallennus epäonnistui"
   },
   "offer": {
     "title": "Tee tarjous",
