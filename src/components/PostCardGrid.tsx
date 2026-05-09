@@ -420,10 +420,13 @@ const styles = StyleSheet.create({
   },
 
   // ── IMAGE variant ──
+  // 1:1 square keeps image cards visually close in height to text-only TINT
+  // and event INK variants in the same row. The previous 4:5 portrait made
+  // image cards ~50% taller, breaking the masonry rhythm.
   imageWrap: {
     position: 'relative',
     overflow: 'hidden',
-    aspectRatio: 4 / 5,
+    aspectRatio: 1,
   },
   image: {
     width: '100%',
@@ -587,10 +590,12 @@ const styles = StyleSheet.create({
   },
 
   // ── TINT variant (text-only) ──
+  // minHeight aligned with INK (250) so a TINT card sitting next to an INK
+  // event card or a square IMAGE card occupies the same visual slot.
   tintCard: {
     padding: 14,
     gap: 4,
-    minHeight: 220,
+    minHeight: 250,
   },
   tintTopRow: {
     flexDirection: 'row',
