@@ -30,8 +30,6 @@ const mockColors: ThemeColors = {
   purple: '#7C5CBF',
   purpleMuted: '#F4F0FF',
   primaryForeground: '#FFFFFF',
-  accentForeground: '#FFFFFF',
-  surfaceOverlay: 'rgba(255,255,255,0.82)',
   surfaceTinted: 'rgba(26,29,31,0.04)',
   warmTint: '#F0EEE9',
   onInkMuted: '#B8BCC0',

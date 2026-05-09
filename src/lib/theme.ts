@@ -22,8 +22,6 @@ export const colors = {
     purple: '#7C5CBF',
     purpleMuted: '#F4F0FF',
     primaryForeground: '#FFFFFF',  // on-ink text (white on ink buttons)
-    accentForeground: '#FFFFFF',
-    surfaceOverlay: 'rgba(255,255,255,0.82)',
     surfaceTinted: 'rgba(26,29,31,0.04)', // ink tint
     warmTint: '#F0EEE9',               // warm neutral for text-only cards, suggestion banners
     onInkMuted: '#B8BCC0',             // muted text on ink surfaces (subtitles on selected items)
@@ -56,8 +54,6 @@ export const colors = {
     purple: '#BF5AF2',
     purpleMuted: '#1E1628',
     primaryForeground: '#1A1D1F',  // dark on-ink (dark text on light buttons)
-    accentForeground: '#1A1D1F',
-    surfaceOverlay: 'rgba(14,16,18,0.82)',
     surfaceTinted: 'rgba(245,246,247,0.06)',
     warmTint: '#2A2722',               // dark warm neutral
     onInkMuted: '#4A4D51',             // muted text on ink surfaces (dark mode)
@@ -98,8 +94,6 @@ export type ThemeColors = {
   purple: string
   purpleMuted: string
   primaryForeground: string
-  accentForeground: string
-  surfaceOverlay: string
   surfaceTinted: string
   warmTint: string
   onInkMuted: string
