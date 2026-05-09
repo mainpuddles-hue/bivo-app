@@ -338,7 +338,8 @@ function LoginScreenInner() {
           }
         }
       }
-    } catch {
+    } catch (err: any) {
+      if (__DEV__) console.warn('[google-oauth] failed:', err?.message ?? err, err?.status, err?.code)
       toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
     } finally {
       setLoading(false)
