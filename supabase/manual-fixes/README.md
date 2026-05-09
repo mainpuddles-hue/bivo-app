@@ -42,3 +42,18 @@ here.
   via `app/new-listing.tsx` and `app/(tabs)/create.tsx` was silently
   RLS-denied — `posts.image_url` and `post_images` rows were empty
   for all user-created posts. **Applied to v1 only.**
+
+- **`2026-05-09_posts_select_owner_drafts_v1.sql`** — Added
+  `user_id = auth.uid()` as a top-level OR branch to the
+  `posts_select` USING clause so authors always see their own posts,
+  including inactive ones. The previous USING required
+  `is_active = true`, which silently broke the publish flow:
+  `app/(tabs)/create.tsx` inserts the row with `is_active = false`
+  (so images can upload before activation) and uses `.select('id')`
+  to recover the new id. PostgREST translates that into
+  `INSERT ... RETURNING`, and Postgres applies the SELECT policy to
+  the returned row. The freshly-inserted draft was not yet
+  `is_active`, so the SELECT denied it, the whole INSERT rolled back
+  with 42501, and the user saw "Ei oikeuksia tähän toimintoon" on
+  every publish attempt — even though the INSERT WITH CHECK clause
+  passed. **Applied to v1 only.**
