@@ -16,6 +16,13 @@ interface PaymentOptions {
   type: 'rental' | 'service' | 'ad_campaign'
   postId?: string
   sellerId?: string
+  /**
+   * Slice 1.5: when true, the resulting PaymentIntent lands in
+   * 'requires_capture' instead of being charged immediately. The platform
+   * captures it later via capture-rental when the lender confirms.
+   * Only respected by stripe-checkout when type='rental'.
+   */
+  manualCapture?: boolean
 }
 
 /**
@@ -70,6 +77,8 @@ export function useStripePayment() {
           metadata: options.metadata,
           // Commission: 10% to Puddles Oy via Stripe Connect destination charges
           application_fee_amount: Math.round(options.amount * 0.10),
+          // Slice 1.5: pass-through for rental manual-capture flow.
+          manual_capture: options.manualCapture === true,
           success_url: 'tackbird://payment/success',
           cancel_url: 'tackbird://payment/cancel',
         }),

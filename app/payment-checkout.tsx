@@ -129,6 +129,11 @@ function PaymentCheckoutScreenInner() {
           type: 'rental',
           postId: b.post_id,
           sellerId: b.lender_id,
+          // Slice 1.5: hold the rental fee in 'requires_capture' until the
+          // lender confirms the booking. The capture-rental Edge Function
+          // (called from booking/[id] handleConfirm) captures the PI and
+          // releases the funds to the lender's Connect account.
+          manualCapture: true,
           metadata: {
             booking_id: b.id,
             booking_days: String(days),

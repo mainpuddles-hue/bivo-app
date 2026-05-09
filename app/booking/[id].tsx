@@ -502,7 +502,52 @@ function BookingDetailScreenInner() {
     }
   }, [booking, supabase, t, userId, toast])
 
-  const handleConfirm = useCallback(() => updateBookingStatus('confirmed'), [updateBookingStatus])
+  const handleConfirm = useCallback(async () => {
+    if (!booking) return
+    // Slice 1.5: when LENDING_PAYMENTS is on AND the booking is a paid
+    // rental in 'paid' status, the lender confirming should also capture
+    // the previously authorized rental PaymentIntent. Route through the
+    // capture-rental Edge Function which captures the PI server-side and
+    // advances booking.status='confirmed' atomically. If the flag is off
+    // OR the booking is in any other state (free rental, in-flight legacy
+    // booking, service booking) fall back to the direct status update.
+    const isPaidRentalManualCapture =
+      FEATURES.LENDING_PAYMENTS &&
+      booking.type === 'rental' &&
+      booking.status === 'paid'
+
+    if (!isPaidRentalManualCapture) {
+      updateBookingStatus('confirmed')
+      return
+    }
+
+    if (updatingRef.current) return
+    updatingRef.current = true
+    setActionLoading(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('capture-rental', {
+        body: { booking_id: booking.id },
+      })
+      if (error) throw error
+      const captured = (data as any)?.captured === true
+      if (!captured) throw new Error('capture-rental returned non-success')
+      // Optimistic update — the function already wrote to the DB but
+      // re-fetch the row would also work. Optimistic keeps the UI snappy.
+      setBooking(prev => prev ? {
+        ...prev,
+        status: 'confirmed',
+        ...(prev.pickup_method === 'hub' || prev.pickup_method === 'gardi'
+          ? { pickup_state: 'awaiting_lender_dropoff' }
+          : {}),
+      } : prev)
+    } catch (err: any) {
+      if (__DEV__) console.warn('[booking] capture-rental failed:', err?.message ?? err)
+      toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
+    } finally {
+      setActionLoading(false)
+      updatingRef.current = false
+    }
+  }, [booking, supabase, t, toast, updateBookingStatus])
 
   // Slice 2/3 helper: advance the physical-handoff micro-state.
   // alsoSetStatus lets us bundle status changes with state changes (e.g.

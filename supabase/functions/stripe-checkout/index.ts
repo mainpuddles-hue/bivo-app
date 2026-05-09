@@ -61,6 +61,9 @@ serve(async (req) => {
       seller_id,
       metadata = {},
       application_fee_amount, // ignored — recalculated server-side
+      manual_capture,      // slice 1.5: rental flow uses manual capture so the
+                           // platform holds the rental fee until lender confirms.
+                           // Boolean. Default false → immediate capture (legacy).
       // success_url and cancel_url removed — always use hardcoded tackbird:// scheme (security: prevent open redirect)
     } = body
 
@@ -316,6 +319,24 @@ serve(async (req) => {
         transfer_data: {
           destination: sellerProfile.stripe_connect_account_id,
         },
+      }
+    }
+
+    // Slice 1.5: manual-capture for rental bookings. The PI lands in
+    // 'requires_capture' state after the borrower pays — funds are
+    // authorized on the card but not transferred to the lender's Connect
+    // account yet. The capture-rental Edge Function captures the PI when
+    // the lender confirms the booking; cancel-rental cancels and refunds
+    // the auth if the lender declines or it expires.
+    //
+    // setup_future_usage='off_session' saves the borrower's payment
+    // method against the customer record so the slice 1.6 deposit hold
+    // can charge it without a second checkout page.
+    if (manual_capture === true && type === 'rental') {
+      sessionParams.payment_intent_data = {
+        ...(sessionParams.payment_intent_data ?? {}),
+        capture_method: 'manual',
+        setup_future_usage: 'off_session',
       }
     }
 
