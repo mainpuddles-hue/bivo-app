@@ -32,8 +32,9 @@ import { useToast } from '@/components/Toast'
 import { suggestTags } from '@/lib/autoCategory'
 import type { PostType, TrustLevel } from '@/lib/types'
 import { suggestExpirationDays } from '@/lib/expirePrediction'
+import { STORAGE_KEYS } from '@/lib/storageKeys'
 
-const DRAFT_KEY = 'tackbird_post_draft'
+const DRAFT_KEY = STORAGE_KEYS.POST_DRAFT
 
 const TARJOAN_SERVICE_TAGS: { id: string; label: string }[] = [
   { id: 'kodinhoito', label: 'tags.kodinhoito' },

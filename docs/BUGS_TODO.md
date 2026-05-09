@@ -128,6 +128,81 @@ For posterity, so the same items don't get re-flagged next session:
 
 ---
 
+## Security audit findings (2026-05-09 round 4)
+
+Ran `supabase db advisors --linked --type security` (152 rows) plus a
+parallel client-side Explore agent. The big stuff is fixed; the rest
+is captured below by category.
+
+### Done in this round
+- `waitlist` SELECT lockdown (DB) — see manual-fixes
+- Sign-out cleanup helper `src/lib/auth/cleanup.ts` covering push token,
+  drafts, hidden-posts, search history, saved searches, streak/review
+  counters, and Realtime channel teardown
+- `STORAGE_KEYS.POST_DRAFT` + `WELCOME_TOAST_SHOWN` registered, all
+  inline-string usages migrated to the registry
+
+### Open — needs user signoff before fixing
+
+**`buildings` and `organizations` permissive RLS** — both have
+`INSERT WITH CHECK (true)` and `buildings_select USING (true)`. Anyone
+authenticated can insert a row; anyone (incl. anon) can read every
+building. Buildings hold street_address / postal_code / lat / lng /
+member_count for taloyhtiöt, no email or PII.
+**Decision needed:** restrict SELECT to "buildings the user is a
+member of OR buildings in their naapurusto" — but that requires
+deciding the visibility model for community discovery. May intentionally
+be open today for joining-by-address-search.
+
+**`organizations.org_insert WITH CHECK true`** — anyone authenticated
+can create an organization. UPDATE is gated to board/manager/admin
+roles via `organization_members`, SELECT is gated by `is_public OR
+is_org_member(id)`. The risk is spam orgs cluttering the directory.
+**Decision needed:** require an invite code, or rate-limit creates,
+or restrict to verified users only?
+
+**Auth — leaked-password protection disabled.** Supabase advisor
+flagged that the HaveIBeenPwned check on signup/password change is
+off. Toggle is in Supabase Dashboard → Auth → Providers → Email →
+"Leaked Password Protection". One-click enable, but it's a deploy-
+side change (not SQL), so leaving the call to the human.
+
+### Open — bulk DB hygiene (low individual risk, high count)
+
+**56 + 56 SECURITY DEFINER functions executable by anon/authenticated.**
+Most look like ordinary helpers (RPCs called from the app); the risk
+is only real if any of them touch tables the caller shouldn't reach.
+**Suggested triage:** dump the function bodies, look for any that
+SELECT/UPDATE outside the caller's normal scope (e.g. cross-user
+data), then narrow the EXECUTE grants.
+
+**13 `function_search_path_mutable` warnings.** Fix by appending
+`SET search_path = ''` to every SECURITY DEFINER function definition
+so a malicious caller can't redirect built-in calls (`coalesce`,
+`now`, etc.) by altering their session search_path. Mechanical edit
+once we audit the function set above.
+
+**10 `public_bucket_allows_listing` warnings.** Every public bucket
+has a SELECT policy that allows listing all object names, not just
+fetching a known URL. For uploads, public read by exact path is fine;
+the listing capability lets anyone enumerate file naming patterns.
+**Suggested fix:** for each public bucket replace `... USING (true)`
+with `... USING (true) WITH CHECK (false)` — or scope SELECT to the
+specific path prefix when the table the URL is referenced in is
+already authorised to be seen.
+
+**6 `materialized_view_in_api`.** Each MV exposed via PostgREST.
+Need to know which ones leak rows we don't want public; likely a
+case-by-case revoke from anon/authenticated.
+
+**4 `extension_in_public`.** Cosmetic. Move PostGIS / pgcrypto / etc
+out of `public` into a dedicated `extensions` schema when convenient.
+
+**1 ERROR `rls_disabled_in_public` on `spatial_ref_sys`.** PostGIS
+internal table, has no per-user data, but the advisor flags it.
+Either enable RLS with a permissive policy (cosmetic), or accept and
+suppress.
+
 ## Open — schema / DB-side items (require user signoff)
 
 Not applied because they touch the live DB. SQL drafts go in

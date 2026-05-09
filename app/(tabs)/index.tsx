@@ -31,6 +31,7 @@ import { FEATURES } from '@/lib/featureFlags'
 import { PollCard, type Poll } from '@/components/PollCard'
 import type { Post, PostType, CommunityEvent } from '@/lib/types'
 import { CATEGORIES } from '@/lib/constants'
+import { STORAGE_KEYS } from '@/lib/storageKeys'
 
 type FeedItem =
   | { _kind: 'section'; key: string; categoryType: PostType; posts: Post[] }
@@ -300,7 +301,7 @@ function FeedScreenInner() {
   // Welcome toast on first feed load (shown once per install)
   useEffect(() => {
     if (welcomeShownRef.current || feed.loading || feed.posts.length === 0) return
-    AsyncStorage.getItem('welcome_toast_shown').then(val => {
+    AsyncStorage.getItem(STORAGE_KEYS.WELCOME_TOAST_SHOWN).then(val => {
       if (val === 'true' || welcomeShownRef.current) return
       welcomeShownRef.current = true
       const nh = feed.userNeighborhood
@@ -310,7 +311,7 @@ function FeedScreenInner() {
           : (t('feed.welcomeToastGeneric') || 'Tervetuloa TackBirdiin!'),
         type: 'success',
       })
-      AsyncStorage.setItem('welcome_toast_shown', 'true').catch((e) => { if (__DEV__) console.warn('Welcome toast flag save failed:', e) })
+      AsyncStorage.setItem(STORAGE_KEYS.WELCOME_TOAST_SHOWN, 'true').catch((e) => { if (__DEV__) console.warn('Welcome toast flag save failed:', e) })
     }).catch((e) => { if (__DEV__) console.warn('Welcome toast flag read failed:', e) })
   }, [feed.loading, feed.posts.length, feed.userNeighborhood, toast, t])
 
@@ -353,7 +354,7 @@ function FeedScreenInner() {
   // ── Hidden post IDs (persisted to AsyncStorage) ──
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
   useEffect(() => {
-    AsyncStorage.getItem('tackbird_hidden_posts').then(val => {
+    AsyncStorage.getItem(STORAGE_KEYS.HIDDEN_POSTS).then(val => {
       if (val) {
         try { setHiddenIds(new Set(JSON.parse(val))) } catch {} // Intentional: corrupted cache
       }
@@ -366,7 +367,7 @@ function FeedScreenInner() {
     const next = new Set(hiddenIdsRef.current)
     next.add(postId)
     setHiddenIds(next)
-    AsyncStorage.setItem('tackbird_hidden_posts', JSON.stringify([...next])).catch((e) => { if (__DEV__) console.warn('Hidden posts save failed:', e) })
+    AsyncStorage.setItem(STORAGE_KEYS.HIDDEN_POSTS, JSON.stringify([...next])).catch((e) => { if (__DEV__) console.warn('Hidden posts save failed:', e) })
   }, [])
 
   // ── "Seen" / new indicator ──

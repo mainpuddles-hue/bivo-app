@@ -71,6 +71,18 @@ here.
   (commit 0fcac7f), Realtime channels now subscribe cleanly on app
   launch. **Applied to v1 only.**
 
+- **`2026-05-09_lock_down_waitlist_select_v1.sql`** — Dropped the
+  permissive `select_waitlist USING (true)` policy on `public.waitlist`.
+  The table holds pre-launch signup emails plus auto-detected lat/lng,
+  and the policy let any client (anon or authenticated) run a single
+  SELECT to dump the full list. That was a GDPR Article 32 breach in
+  the making and a competitive risk. With the policy removed and no
+  replacement SELECT policy defined, RLS denies reads to anon/
+  authenticated; only `service_role` (Edge Functions, admin server)
+  can read. Anon INSERT remains open by design — the marketing-site
+  signup form needs it. Existing rows should be assumed already
+  exposed to anyone who knew to query. **Applied to v1 only.**
+
 - **`2026-05-09_disable_ad_campaigns_flag_v1.sql`** — Flipped the
   remote `AD_CAMPAIGNS` row in `feature_flags` from `true` to `false`.
   v1 has no `advertisements` table, but the flag was on, so every
