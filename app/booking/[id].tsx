@@ -474,11 +474,25 @@ function BookingDetailScreenInner() {
       if (newStatus === 'completed' && booking.type === 'service') {
         updateData.completed_at = new Date().toISOString()
       }
+      // Slice 2/3: when the lender confirms a hub or gardi rental, kick the
+      // pickup micro-state into 'awaiting_lender_dropoff' so the next button
+      // they see is "Vahvista jätetty hubiin/lokeroon".
+      if (
+        newStatus === 'confirmed' &&
+        booking.type === 'rental' &&
+        (booking.pickup_method === 'hub' || booking.pickup_method === 'gardi')
+      ) {
+        updateData.pickup_state = 'awaiting_lender_dropoff'
+      }
       const { error } = await (supabase.from(table) as any).update(updateData).eq('id', booking.id)
       if (error) {
         toast.show({ message: mapErrorToFinnish(error, t), type: 'error' })
       } else {
-        setBooking(prev => prev ? { ...prev, status: newStatus } : prev)
+        setBooking(prev => prev ? {
+          ...prev,
+          status: newStatus,
+          ...(updateData.pickup_state ? { pickup_state: updateData.pickup_state } : {}),
+        } : prev)
       }
     } catch (err) {
       toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
@@ -486,9 +500,52 @@ function BookingDetailScreenInner() {
       setActionLoading(false)
       updatingRef.current = false
     }
-  }, [booking, supabase, t, userId])
+  }, [booking, supabase, t, userId, toast])
 
   const handleConfirm = useCallback(() => updateBookingStatus('confirmed'), [updateBookingStatus])
+
+  // Slice 2/3 helper: advance the physical-handoff micro-state.
+  // alsoSetStatus lets us bundle status changes with state changes (e.g.
+  // borrower picks up → pickup_state='in_use' AND status='active').
+  const updatePickupState = useCallback(async (newState: string, alsoSetStatus?: BookingStatus) => {
+    if (!booking || !userId) return
+    if (updatingRef.current) return
+    updatingRef.current = true
+    setActionLoading(true)
+    try {
+      const updateData: any = { pickup_state: newState }
+      if (alsoSetStatus) updateData.status = alsoSetStatus
+      if (alsoSetStatus === 'completed') updateData.completed_at = new Date().toISOString()
+      const { error } = await (supabase.from('rental_bookings') as any).update(updateData).eq('id', booking.id)
+      if (error) {
+        toast.show({ message: mapErrorToFinnish(error, t), type: 'error' })
+      } else {
+        setBooking(prev => prev ? { ...prev, pickup_state: newState, ...(alsoSetStatus ? { status: alsoSetStatus } : {}) } : prev)
+      }
+    } catch (err) {
+      toast.show({ message: mapErrorToFinnish(err, t), type: 'error' })
+    } finally {
+      setActionLoading(false)
+      updatingRef.current = false
+    }
+  }, [booking, supabase, t, userId, toast])
+
+  const handleConfirmDropoff = useCallback(
+    () => updatePickupState('awaiting_borrower_pickup'),
+    [updatePickupState],
+  )
+  const handleConfirmPickup = useCallback(
+    () => updatePickupState('in_use', 'active'),
+    [updatePickupState],
+  )
+  const handleConfirmReturnDropoff = useCallback(
+    () => updatePickupState('awaiting_lender_collection'),
+    [updatePickupState],
+  )
+  const handleConfirmCollect = useCallback(
+    () => updatePickupState('completed_pickup_flow', 'completed'),
+    [updatePickupState],
+  )
   const handleCancel = useCallback(() => {
     Alert.alert(t('rental.cancelBooking'), t('rental.bookingCancelled'), [
       { text: t('common.cancel'), style: 'cancel' },
@@ -821,6 +878,84 @@ function BookingDetailScreenInner() {
 
           {/* Action buttons */}
           <View style={s.actionsContainer}>
+            {/* Slice 2/3: hub / gardi-specific micro-state advance buttons.
+                Each one is shown only when it's that side's turn and the
+                booking is using a non-address pickup method. The whole
+                block is hidden for address-flow bookings, so the legacy
+                "return item" CTA below stays the only call-to-action there. */}
+            {isRental && (booking.pickup_method === 'hub' || booking.pickup_method === 'gardi') && (
+              <>
+                {/* Lender drops the item at hub/locker */}
+                {booking.my_role === 'lender' && booking.pickup_state === 'awaiting_lender_dropoff' && (
+                  <PressableOpacity
+                    onPress={handleConfirmDropoff}
+                    disabled={actionLoading}
+                    style={[s.actionBtnPrimary, { backgroundColor: colors.foreground }]}
+                    accessibilityRole="button"
+                  >
+                    {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
+                      <Text style={[s.actionBtnText, { color: colors.primaryForeground }]}>
+                        {booking.pickup_method === 'hub'
+                          ? (t('hub.confirmDropoff') ?? 'Vahvista jätetty hubiin')
+                          : (t('locker.confirmDropoff') ?? 'Vahvista jätetty lokeroon')}
+                      </Text>
+                    )}
+                  </PressableOpacity>
+                )}
+                {/* Borrower picks up from hub/locker */}
+                {booking.my_role === 'borrower' && booking.pickup_state === 'awaiting_borrower_pickup' && (
+                  <PressableOpacity
+                    onPress={handleConfirmPickup}
+                    disabled={actionLoading}
+                    style={[s.actionBtnPrimary, { backgroundColor: colors.foreground }]}
+                    accessibilityRole="button"
+                  >
+                    {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
+                      <Text style={[s.actionBtnText, { color: colors.primaryForeground }]}>
+                        {booking.pickup_method === 'hub'
+                          ? (t('hub.confirmPickup') ?? 'Vahvista nouto hubista')
+                          : (t('locker.confirmPickup') ?? 'Vahvista nouto lokerosta')}
+                      </Text>
+                    )}
+                  </PressableOpacity>
+                )}
+                {/* Borrower returns the item to hub/locker */}
+                {booking.my_role === 'borrower' && booking.pickup_state === 'awaiting_borrower_return' && (
+                  <PressableOpacity
+                    onPress={handleConfirmReturnDropoff}
+                    disabled={actionLoading}
+                    style={[s.actionBtnPrimary, { backgroundColor: colors.foreground }]}
+                    accessibilityRole="button"
+                  >
+                    {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
+                      <Text style={[s.actionBtnText, { color: colors.primaryForeground }]}>
+                        {booking.pickup_method === 'hub'
+                          ? (t('hub.confirmReturn') ?? 'Vahvista palautus hubiin')
+                          : (t('locker.confirmReturn') ?? 'Vahvista palautus lokeroon')}
+                      </Text>
+                    )}
+                  </PressableOpacity>
+                )}
+                {/* Lender collects the returned item from hub/locker */}
+                {booking.my_role === 'lender' && booking.pickup_state === 'awaiting_lender_collection' && (
+                  <PressableOpacity
+                    onPress={handleConfirmCollect}
+                    disabled={actionLoading}
+                    style={[s.actionBtnPrimary, { backgroundColor: colors.foreground }]}
+                    accessibilityRole="button"
+                  >
+                    {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
+                      <Text style={[s.actionBtnText, { color: colors.primaryForeground }]}>
+                        {booking.pickup_method === 'hub'
+                          ? (t('hub.confirmCollect') ?? 'Vahvista nouto hubista')
+                          : (t('locker.confirmCollect') ?? 'Vahvista nouto lokerosta')}
+                      </Text>
+                    )}
+                  </PressableOpacity>
+                )}
+              </>
+            )}
+
             {canComplete && (
               <PressableOpacity
                 onPress={handleComplete}
