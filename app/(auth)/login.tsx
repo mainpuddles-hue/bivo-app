@@ -129,6 +129,14 @@ function LoginScreenInner() {
   const [errorMsg, setErrorMsg] = useState('')
   const [touchedEmail, setTouchedEmail] = useState(false)
   const [touchedPassword, setTouchedPassword] = useState(false)
+  const [appleAvailable, setAppleAvailable] = useState(false)
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return
+    AppleAuthentication.isAvailableAsync()
+      .then((available) => setAppleAvailable(available))
+      .catch(() => setAppleAvailable(false))
+  }, [])
 
   const emailError = touchedEmail && email.trim() && !emailRegex.test(email.trim()) ? (t('auth.invalidEmail') ?? 'Invalid email') : ''
   const passwordError = touchedPassword && mode === 'register' && password.trim() && (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) ? (t('settings.passwordTooWeak') ?? 'Weak password') : ''
@@ -631,8 +639,8 @@ function LoginScreenInner() {
           </View>
         )}
 
-        {/* Apple Sign In — iOS only */}
-        {mode !== 'forgot' && Platform.OS === 'ios' && (
+        {/* Apple Sign In — iOS only, hide when unavailable (e.g. Simulator) */}
+        {mode !== 'forgot' && Platform.OS === 'ios' && appleAvailable && (
           <AppleAuthentication.AppleAuthenticationButton
             buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
             buttonStyle={
