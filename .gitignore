@@ -17,4 +17,8 @@ repomix-output.xml
 ux-audit/
 *.png
 .dmux/
-\ncoverage/
+coverage/
+
+# Generated/cache files
+*.log
+*.tsbuildinfo
