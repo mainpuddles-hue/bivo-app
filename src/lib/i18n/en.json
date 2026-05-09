@@ -2922,7 +2922,8 @@
     "catLibraries": "Libraries",
     "catSports": "Sports",
     "catHealth": "Health",
-    "catShops": "Shops"
+    "catShops": "Shops",
+    "externalSourcesLimited": "Some event sources are temporarily unavailable"
   },
   "celebration": {
     "firstResponse": "Your first response!",

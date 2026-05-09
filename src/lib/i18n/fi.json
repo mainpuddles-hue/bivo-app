@@ -2922,7 +2922,8 @@
     "catLibraries": "Kirjastot",
     "catSports": "Liikunta",
     "catHealth": "Terveys",
-    "catShops": "Kaupat"
+    "catShops": "Kaupat",
+    "externalSourcesLimited": "Joitakin tapahtumalähteitä ei tällä hetkellä saatavilla"
   },
   "celebration": {
     "firstResponse": "Ensimmäinen vastauksesi!",

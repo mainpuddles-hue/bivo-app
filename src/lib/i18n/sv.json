@@ -2922,7 +2922,8 @@
     "catLibraries": "Bibliotek",
     "catSports": "Sport",
     "catHealth": "Hälsa",
-    "catShops": "Butiker"
+    "catShops": "Butiker",
+    "externalSourcesLimited": "Vissa evenemangskällor är tillfälligt otillgängliga"
   },
   "celebration": {
     "firstResponse": "Ditt första svar!",

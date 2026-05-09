@@ -222,6 +222,11 @@ function ExploreScreenInner() {
   const [places, setPlaces] = useState<LocalPlace[]>([])
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const userLocationRef = useRef<{ latitude: number; longitude: number } | null>(null)
+  // True when Ticketmaster + Kide + Meteli all returned zero events while
+  // Helsinki LinkedEvents returned some — almost always means the third-party
+  // proxy Edge Functions are unauthorised (401) or otherwise misconfigured.
+  // Used to surface a small banner so users do not assume "no events nearby".
+  const [externalSourcesLimited, setExternalSourcesLimited] = useState(false)
 
   // Community preview state
   const [communityEventPreviews, setCommunityEventPreviews] = useState<CommunityEventPreview[]>([])
@@ -289,6 +294,12 @@ function ExploreScreenInner() {
         }
       }
       if (__DEV__) console.log(`[explore] Events: ${helsinkiEvents.length} LE + ${tmEvents.length} TM + ${kideEvents.length} Kide + ${meteliEvents.length} Meteli = ${futureCityEvents.length} merged`)
+      // If LinkedEvents returned content but every paid third-party proxy
+      // returned zero, treat the proxies as down. False positives are possible
+      // when those sources genuinely have no upcoming events, but in practice
+      // the three together always have some Helsinki content.
+      const externalCount = tmEvents.length + kideEvents.length + meteliEvents.length
+      setExternalSourcesLimited(externalCount === 0 && helsinkiEvents.length > 0)
       setCityEvents(futureCityEvents)
       setCommunityEvents(communityRes)
       setPlaces(placesResult)
@@ -844,6 +855,18 @@ function ExploreScreenInner() {
         {/* ── Events sub-tab ── */}
         {activeTab === 'events' && (
           <>
+            {/* Banner shown when third-party event proxies are silently down.
+                Distinct from the empty-state error row below — this fires when
+                we have *some* events (Helsinki LinkedEvents) but the paid
+                feeds returned nothing, so the user knows the catalog is not
+                literally empty, just incomplete. */}
+            {externalSourcesLimited && (
+              <View style={[s.errorRow, { backgroundColor: `${colors.foreground}10`, marginHorizontal: 16, marginTop: 12 }]}>
+                <Text style={[s.errorRowText, { color: colors.mutedForeground }]}>
+                  {t('explore.externalSourcesLimited')}
+                </Text>
+              </View>
+            )}
             {/* Combined sort + category row */}
             <ScrollView
               horizontal
