@@ -697,8 +697,13 @@ function PostDetailScreenInner() {
     const applyStatus = async (newStatus: PostStatus) => {
       try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) } catch {}
       const { error } = await (supabase.from('posts') as any).update({ status: newStatus }).eq('id', post.id)
-      if (error) { toast.show({ message: t('post.statusUpdateFailed'), type: 'error' }) }
-      else { setPost(prev => prev ? { ...prev, status: newStatus } : prev); toast.show({ message: t('post.statusUpdated'), type: 'success' }) }
+      if (error) {
+        if (__DEV__) console.warn('[post] status update failed:', error.message, error.code, error.details, error.hint)
+        toast.show({ message: t('post.statusUpdateFailed'), type: 'error' })
+      } else {
+        setPost(prev => prev ? { ...prev, status: newStatus } : prev)
+        toast.show({ message: t('post.statusUpdated'), type: 'success' })
+      }
     }
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
