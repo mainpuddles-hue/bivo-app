@@ -1394,7 +1394,9 @@ function BookingLifecycleStepper({ booking, colors, isDark, t }: {
   const isRental = booking.type === 'rental'
   const currentIdx = mapStatusToStepperIndex(booking.status, isRental)
 
-  const doneColor = colors.accent ?? '#4CAF6A'
+  // Booking-stepper "done" — uses semantic success token so the lifecycle
+  // matches the rest of the app's success-green vocabulary.
+  const doneColor = colors.success
   const currentColor = colors.primary
   const futureColor = colors.border
   const cancelledColor = colors.destructive

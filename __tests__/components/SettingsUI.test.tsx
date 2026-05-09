@@ -37,6 +37,9 @@ const mockColors: ThemeColors = {
   onInkMuted: '#B8BCC0',
   borderStrong: '#C8CBCE',
   danger: '#C44536',
+  trustTier1: '#9CA3AF',
+  trustTier2: '#3B82F6',
+  trustTier3: '#2D7A4F',
 }
 
 const MockIcon = () => <View testID="settings-icon"><Text>icon</Text></View>

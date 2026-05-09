@@ -29,6 +29,12 @@ export const colors = {
     onInkMuted: '#B8BCC0',             // muted text on ink surfaces (subtitles on selected items)
     borderStrong: '#C8CBCE',            // stronger border for emphasis (inputs, active states)
     danger: '#C44536',                  // semantic danger — logout, destructive rows
+    // Trust tier indicator colors. Tier 1 = bronze/neutral, Tier 2 = info-blue,
+    // Tier 3 = success-green. Bound separately from `success` so trust remains
+    // its own semantic axis; consumed by TrustBadge / TrustGate via `colors.trustTier{N}`.
+    trustTier1: '#9CA3AF',              // neutral grey — Tier 1 (basic verified)
+    trustTier2: '#3B82F6',              // info blue — Tier 2 (phone + address)
+    trustTier3: '#2D7A4F',              // success green — Tier 3 (ID verified)
   },
   dark: {
     // Helsinki Monochrome dark: inverted ink palette
@@ -57,6 +63,10 @@ export const colors = {
     onInkMuted: '#4A4D51',             // muted text on ink surfaces (dark mode)
     borderStrong: '#4A4D51',            // stronger border for emphasis (inputs, active states)
     danger: '#FF453A',                  // semantic danger — logout, destructive rows
+    // Trust tier — dark-mode shifts for legibility on dark surfaces.
+    trustTier1: '#B5BAC2',              // brighter neutral
+    trustTier2: '#60A5FA',              // brighter info blue
+    trustTier3: '#34D399',              // brighter success green
   },
 }
 
@@ -95,4 +105,7 @@ export type ThemeColors = {
   onInkMuted: string
   borderStrong: string
   danger: string
+  trustTier1: string
+  trustTier2: string
+  trustTier3: string
 }

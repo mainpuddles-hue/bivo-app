@@ -28,6 +28,12 @@ export function TrustGateModal({
   const { colors, isDark } = useTheme()
   const { t } = useI18n()
   const requiredTier = TRUST_TIERS[requiredLevel]
+  // Theme-aware tint for the required tier — same lookup pattern as
+  // TrustBadge's trustTierColor helper.
+  const requiredTint =
+    requiredLevel === 1 ? colors.trustTier1
+      : requiredLevel === 2 ? colors.trustTier2
+      : colors.trustTier3
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -37,8 +43,8 @@ export function TrustGateModal({
             <X size={20} color={colors.mutedForeground} />
           </PressableOpacity>
 
-          <View style={[styles.lockCircle, { backgroundColor: `${requiredTier.color}18` }]}>
-            <Lock size={28} color={requiredTier.color} />
+          <View style={[styles.lockCircle, { backgroundColor: `${requiredTint}18` }]}>
+            <Lock size={28} color={requiredTint} />
           </View>
 
           <Text style={[styles.title, { color: colors.foreground }]}>
@@ -79,7 +85,7 @@ export function TrustGateModal({
           )}
 
           {currentLevel === 1 && onVerifyPress && (
-            <PressableOpacity onPress={() => { onClose(); onVerifyPress() }} style={[styles.actionBtn, { backgroundColor: TRUST_TIERS[2].color }]}>
+            <PressableOpacity onPress={() => { onClose(); onVerifyPress() }} style={[styles.actionBtn, { backgroundColor: colors.trustTier2 }]}>
               <ShieldCheck size={18} color={colors.primaryForeground} />
               <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{t('trust.verifyNow')}</Text>
             </PressableOpacity>

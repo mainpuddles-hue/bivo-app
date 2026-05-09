@@ -13,6 +13,18 @@ const ICONS = {
   ShieldPlus,
 } as const
 
+/**
+ * Pick the theme-aware tint for a given trust tier. Light/dark switching is
+ * handled by the theme tokens (`trustTier1/2/3`). Keeps the trust palette
+ * out of TRUST_TIERS so a brand recolor doesn't require touching the
+ * permissions data.
+ */
+function trustTierColor(level: TrustLevel, colors: { trustTier1: string; trustTier2: string; trustTier3: string }): string {
+  if (level === 1) return colors.trustTier1
+  if (level === 2) return colors.trustTier2
+  return colors.trustTier3
+}
+
 interface TrustBadgeProps {
   level: TrustLevel
   size?: 'small' | 'medium' | 'large'
@@ -35,9 +47,9 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress, 
 
   const content = (
     <View style={[styles.badge, size === 'large' && styles.badgeLarge]}>
-      <Icon size={iconSize} color={tier.color} strokeWidth={1.5} />
+      <Icon size={iconSize} color={trustTierColor(level, colors)} strokeWidth={1.5} />
       {showLabel && (
-        <Text style={[styles.label, { color: tier.color, fontSize }]}>
+        <Text style={[styles.label, { color: trustTierColor(level, colors), fontSize }]}>
           {t(tier.nameKey)}
         </Text>
       )}
@@ -81,18 +93,19 @@ export function TrustBadge({ level, size = 'small', showLabel = false, onPress, 
                   const t2 = TRUST_TIERS[lvl]
                   const TierIcon = ICONS[t2.icon]
                   const isCurrentTier = lvl === level
+                  const tintColor = trustTierColor(lvl, colors)
                   return (
                     <View
                       key={lvl}
                       style={[
                         styles.tierRow,
-                        { borderColor: isCurrentTier ? t2.color : colors.border },
+                        { borderColor: isCurrentTier ? tintColor : colors.border },
                         isCurrentTier && { backgroundColor: colors.muted },
                       ]}
                     >
-                      <TierIcon size={20} color={t2.color} strokeWidth={1.5} />
+                      <TierIcon size={20} color={tintColor} strokeWidth={1.5} />
                       <View style={styles.tierRowText}>
-                        <Text style={[styles.tierRowName, { color: t2.color }]}>{t(t2.nameKey)}{isCurrentTier ? ' \u2605' : ''}</Text>
+                        <Text style={[styles.tierRowName, { color: tintColor }]}>{t(t2.nameKey)}{isCurrentTier ? ' \u2605' : ''}</Text>
                         <Text style={[styles.tierRowDesc, { color: colors.mutedForeground }]}>{t(`trust.tier${lvl}Desc`)}</Text>
                       </View>
                     </View>

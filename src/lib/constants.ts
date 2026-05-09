@@ -83,7 +83,6 @@ export const TRUST_TIERS = {
   1: {
     level: 1 as const,
     nameKey: 'trust.tier1',
-    color: '#9CA3AF',
     icon: 'Shield' as const,
     permissions: {
       canLainaa: true,
@@ -97,7 +96,6 @@ export const TRUST_TIERS = {
   2: {
     level: 2 as const,
     nameKey: 'trust.tier2',
-    color: '#3B82F6',
     icon: 'ShieldCheck' as const,
     permissions: {
       canLainaa: true,
@@ -111,7 +109,6 @@ export const TRUST_TIERS = {
   3: {
     level: 3 as const,
     nameKey: 'trust.tier3',
-    color: '#2D7A4F',
     icon: 'ShieldPlus' as const,
     permissions: {
       canLainaa: true,
