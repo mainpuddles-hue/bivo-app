@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, ChevronRight, Bell } from 'lucide-react-native'
-import { Avatar } from '@/components/Avatar'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity, MagneticPressable } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
@@ -67,22 +66,6 @@ function FeedScreenInner() {
       if (!overlayFlag && !layoutFlag) setShowOnboarding(true)
     }).catch((e) => { if (__DEV__) console.warn('Onboarding flag check failed:', e) })
   }, [])
-
-  // Current user's avatar + name for the new top bar (left side). Fetched
-  // once per user-id change. Falls back gracefully if profiles read fails.
-  const [meAvatar, setMeAvatar] = useState<{ url: string | null; name: string | null }>({ url: null, name: null })
-  useEffect(() => {
-    if (!feed.currentUserId) return
-    let mounted = true
-    Promise.resolve(
-      supabase.from('profiles').select('avatar_url, name').eq('id', feed.currentUserId).maybeSingle()
-    ).then(({ data, error }: any) => {
-      if (!mounted) return
-      if (error) { if (__DEV__) console.warn('[feed] top-bar profile fetch failed:', error.message); return }
-      if (data) setMeAvatar({ url: data.avatar_url ?? null, name: data.name ?? null })
-    }).catch((e: any) => { if (__DEV__) console.warn('[feed] top-bar profile error:', e) })
-    return () => { mounted = false }
-  }, [feed.currentUserId, supabase])
 
   // Weekly active neighbors count for activity meter
   const [weeklyActiveCount, setWeeklyActiveCount] = useState(0)
@@ -626,18 +609,10 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
-              {/* Top bar: avatar (→ profile) + bell (→ notifications). Sits
-                  above the neighborhood header so quick access doesn't push
-                  the title content down too far. */}
+              {/* Top bar: bell (→ notifications) right-aligned. Avatar was
+                  previously here but removed per user feedback — profile is
+                  reachable from the bottom tab bar already. */}
               <View style={styles.topBarRow}>
-                <PressableOpacity
-                  onPress={() => router.push('/(tabs)/profile')}
-                  hitSlop={10}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('nav.profile')}
-                >
-                  <Avatar url={meAvatar.url} name={meAvatar.name} size={36} />
-                </PressableOpacity>
                 <PressableOpacity
                   onPress={() => router.push('/notifications')}
                   hitSlop={10}
@@ -919,11 +894,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  // ── Top bar (avatar + bell) ──
+  // ── Top bar (bell only — avatar removed per user feedback) ──
   topBarRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     marginBottom: 12,
   },
   topBarBell: {
