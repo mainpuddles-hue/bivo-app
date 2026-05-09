@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/client'
 // Static defaults — used until remote flags are fetched
 const DEFAULTS = {
   LENDING: true,
-  LENDING_PAYMENTS: true,     // Lending deposit/fees
-  PAYMENTS: true,
+  LENDING_PAYMENTS: false,    // Lending deposit/fees — hidden for pivot
+  PAYMENTS: false,
   AD_CAMPAIGNS: false,
   BUSINESS_ACCOUNT: false,
   IDENTITY_VERIFICATION: false,
