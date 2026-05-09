@@ -20,8 +20,9 @@ interface FilterChipProps {
   label: string
   isActive: boolean
   onPress: () => void
+  dotColor?: string
 }
-const FilterChip = memo(function FilterChip({ label, isActive, onPress }: FilterChipProps) {
+const FilterChip = memo(function FilterChip({ label, isActive, onPress, dotColor }: FilterChipProps) {
   const { colors } = useTheme()
   const reduceMotion = useReduceMotion()
   const scale = useRef(new Animated.Value(1)).current
@@ -51,6 +52,20 @@ const FilterChip = memo(function FilterChip({ label, isActive, onPress }: Filter
             : { backgroundColor: 'transparent', borderColor: colors.border },
         ]}
       >
+        {dotColor && (
+          <View
+            style={[
+              styles.chipDot,
+              {
+                // When the chip is active (filled foreground), fade the dot to
+                // the inverted background color so it stays visible against the
+                // ink. Idle chips show the saturated category color directly.
+                backgroundColor: isActive ? colors.background : dotColor,
+                opacity: isActive ? 0.6 : 1,
+              },
+            ]}
+          />
+        )}
         <Text style={[
           styles.chipText,
           { color: isActive ? colors.background : colors.foreground },
@@ -84,6 +99,7 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
             key={type}
             label={t(cat.label)}
             isActive={isActive}
+            dotColor={cat.color}
             onPress={() => { try { Haptics.selectionAsync() } catch {} onFilterChange(isActive ? null : type) }}
           />
         )
@@ -94,12 +110,22 @@ export const FilterBar = memo(function FilterBar({ activeFilter, onFilterChange 
 
 const styles = StyleSheet.create({
   chip: {
-    height: 36,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    height: 36,
     paddingHorizontal: 14,
+    gap: 6,
     borderRadius: 999,
     borderWidth: 1,
+  },
+  // Small saturated dot (6px) — enough to read the category color at a
+  // glance without turning the chip into a pastel tile. Skipped on the
+  // "Kaikki" all-filter chip since it has no color of its own.
+  chipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   chipText: {
     fontSize: 13,
