@@ -288,7 +288,10 @@ function NewListingScreenInner() {
         user_id: userId,
         type: 'lainaa' as const,
         title: title.trim(),
-        description: description.trim() || null,
+        // posts.description is NOT NULL in v1; coerce empty input to '' rather
+        // than null so the insert doesn't violate the constraint when the
+        // wizard's description field is left blank.
+        description: description.trim() || '',
         image_url: imageUrls[0] || null,
         location: address.trim() || null,
         daily_fee: pricingModel === 'free' ? 0 : parseFloat(price) || 0,
