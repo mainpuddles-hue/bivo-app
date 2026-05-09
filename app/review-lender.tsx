@@ -19,22 +19,20 @@ import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
 import { StarRating, TagChipRow, StickyCTA } from '@/components/lending'
 
-// Borrower-side virtues, per design handoff §3.
+// Lender-side virtues, per design handoff §4.
 const TAGS_FI = [
-  { key: 'returned_on_time',  label: 'Palautti ajoissa' },
-  { key: 'good_condition',    label: 'Hyvässä kunnossa' },
-  { key: 'friendly',          label: 'Ystävällinen' },
-  { key: 'clear_comm',        label: 'Kommunikoi selvästi' },
-  { key: 'experienced',       label: 'Kokenut käyttäjä' },
-  { key: 'would_lend_again',  label: 'Lainaisin uudestaan' },
+  { key: 'fast_response',  label: 'Nopea vastaus' },
+  { key: 'friendly',       label: 'Ystävällinen' },
+  { key: 'good_condition', label: 'Hyvässä kunnossa' },
+  { key: 'clear_instr',    label: 'Selkeät ohjeet' },
+  { key: 'flexible',       label: 'Joustava aikataulu' },
 ]
 const TAGS_EN = [
-  { key: 'returned_on_time',  label: 'Returned on time' },
-  { key: 'good_condition',    label: 'Good condition' },
-  { key: 'friendly',          label: 'Friendly' },
-  { key: 'clear_comm',        label: 'Clear communication' },
-  { key: 'experienced',       label: 'Experienced user' },
-  { key: 'would_lend_again',  label: 'Would lend again' },
+  { key: 'fast_response',  label: 'Quick to respond' },
+  { key: 'friendly',       label: 'Friendly' },
+  { key: 'good_condition', label: 'Good condition' },
+  { key: 'clear_instr',    label: 'Clear instructions' },
+  { key: 'flexible',       label: 'Flexible schedule' },
 ]
 
 interface BookingTarget {
@@ -43,12 +41,12 @@ interface BookingTarget {
   lender_id: string
   start_date: string | null
   end_date: string | null
-  lender_review_at: string | null
+  borrower_review_at: string | null
   post: { id: string; title: string } | null
-  borrower: { id: string; name: string; avatar_url: string | null } | null
+  lender: { id: string; name: string; avatar_url: string | null } | null
 }
 
-function ReviewBorrowerScreenInner() {
+function ReviewLenderScreenInner() {
   const { colors } = useTheme()
   const { t, locale } = useI18n()
   const insets = useSafeAreaInsets()
@@ -73,28 +71,28 @@ function ReviewBorrowerScreenInner() {
         const { data, error } = await supabase
           .from('rental_bookings')
           .select(`
-            id, borrower_id, lender_id, start_date, end_date, lender_review_at,
+            id, borrower_id, lender_id, start_date, end_date, borrower_review_at,
             post:posts!rental_bookings_post_id_fkey(id, title),
-            borrower:profiles!rental_bookings_borrower_id_fkey(id, name, avatar_url)
+            lender:profiles!rental_bookings_lender_id_fkey(id, name, avatar_url)
           `)
           .eq('id', params.bookingId)
           .maybeSingle()
         if (!mounted) return
         if (error || !data) {
-          if (__DEV__) console.warn('[review-borrower] load failed:', error?.message)
+          if (__DEV__) console.warn('[review-lender] load failed:', error?.message)
           toast.show({ message: t('common.error') ?? 'Error', type: 'error' })
           return
         }
         setTarget(data as unknown as BookingTarget)
       } catch (e) {
-        if (__DEV__) console.warn('[review-borrower] load threw:', (e as Error)?.message)
+        if (__DEV__) console.warn('[review-lender] load threw:', (e as Error)?.message)
       }
     })()
     return () => { mounted = false }
   }, [params.bookingId, supabase, t, toast])
 
   const handleSubmit = useCallback(async () => {
-    if (submitting || rating === 0 || !target?.borrower) return
+    if (submitting || rating === 0 || !target?.lender) return
     setSubmitting(true)
     try {
       const reviewerId = await getCachedUserId()
@@ -102,7 +100,7 @@ function ReviewBorrowerScreenInner() {
 
       const { error: reviewError } = await (supabase.from('reviews') as any).insert({
         reviewer_id: reviewerId,
-        reviewed_id: target.borrower.id,
+        reviewed_id: target.lender.id,
         booking_id: target.id,
         rating,
         comment: comment.trim() || null,
@@ -110,25 +108,26 @@ function ReviewBorrowerScreenInner() {
       })
       if (reviewError) throw reviewError
 
+      // Mark the booking so the lifecycle UI knows this side has reviewed.
       ;(supabase.from('rental_bookings') as any)
-        .update({ lender_review_at: new Date().toISOString() })
+        .update({ borrower_review_at: new Date().toISOString() })
         .eq('id', target.id)
         .then(({ error }: { error: any }) => {
-          if (error && __DEV__) console.warn('[review-borrower] mark lender_review_at failed:', error.message)
+          if (error && __DEV__) console.warn('[review-lender] mark borrower_review_at failed:', error.message)
         })
 
-      toast.show({ message: t('reviewBorrower.reviewPublished') ?? 'Arvio julkaistu', type: 'success' })
+      toast.show({ message: t('reviewLender.published') ?? 'Arvio lähetetty', type: 'success' })
       safeBack(router, '/bookings')
     } catch (e) {
-      if (__DEV__) console.warn('[review-borrower] submit failed:', (e as Error)?.message)
+      if (__DEV__) console.warn('[review-lender] submit failed:', (e as Error)?.message)
       toast.show({ message: t('common.error') ?? 'Tallennus epäonnistui', type: 'error' })
     } finally {
       setSubmitting(false)
     }
   }, [submitting, rating, target, comment, selectedTags, supabase, router, toast, t])
 
-  const borrowerName = target?.borrower?.name ?? t('rental.borrower') ?? 'Lainaaja'
-  const meta = target?.start_date && target?.end_date
+  const lenderName = target?.lender?.name ?? t('rental.lender') ?? 'Lainanantaja'
+  const dateRange = target?.start_date && target?.end_date
     ? `${target.post?.title ?? ''}${target.post?.title ? ' · ' : ''}${formatRange(target.start_date, target.end_date, locale)}`
     : (target?.post?.title ?? '')
 
@@ -145,7 +144,7 @@ function ReviewBorrowerScreenInner() {
           <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>
-          {t('reviewBorrower.title') ?? 'Arvioi lainaaja'}
+          {t('reviewLender.title') ?? 'Arvioi lainanantaja'}
         </Text>
         <View style={s.headerSpacer} />
       </View>
@@ -156,41 +155,36 @@ function ReviewBorrowerScreenInner() {
           contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 110 }]}
           keyboardDismissMode="interactive"
         >
-          {/* Hero — handoff §3 calls for Instrument Serif here. We don't have
-              that font loaded yet, so we use Instrument Sans 600 / 22 / -0.4
-              which is the same metrics minus the serif strokes. The font
-              swap is a separate ticket once @expo-google-fonts/instrument-serif
-              is added. */}
+          {/* Hero — plain sans (no serif) per handoff §4 */}
           <View style={s.hero}>
             <View style={[s.avatarShadow, { shadowColor: '#000' }]}>
-              <Avatar url={target?.borrower?.avatar_url} name={borrowerName} size={72} />
+              <Avatar url={target?.lender?.avatar_url} name={lenderName} size={72} />
             </View>
             <Text style={[s.heroTitle, { color: colors.foreground }]} accessibilityRole="header">
-              {t('reviewBorrower.heroQuestion', { name: borrowerName }) ?? `Miten ${borrowerName} hoiti lainan?`}
+              {t('reviewLender.heroQuestion', { name: lenderName }) ?? `Miten ${lenderName} onnistui?`}
             </Text>
-            <Text style={[s.heroMeta, { color: colors.mutedForeground }]}>{meta}</Text>
+            <Text style={[s.heroMeta, { color: colors.mutedForeground }]}>
+              {t('reviewLender.heroMeta') ?? 'Arvio auttaa muita naapureita ja pitää yhteisön reiluna.'}
+            </Text>
           </View>
 
-          {/* Stars card — radius 14, padding 18×16 per handoff */}
-          <View style={[s.starsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[s.starsLabel, { color: colors.mutedForeground }]}>
-              {t('reviewBorrower.overallRating') ?? 'YLEISARVIO'}
-            </Text>
-            <StarRating value={rating} onChange={setRating} size={30} gap={10} />
-            <Text style={[s.starsHint, { color: colors.mutedForeground }]}>
-              {ratingWord(rating, t)}
-            </Text>
+          {/* Stars row — standalone, not in a card, per handoff §4 */}
+          <View style={s.starsRow}>
+            <StarRating value={rating} onChange={setRating} size={34} gap={14} />
           </View>
+          <Text style={[s.starsHint, { color: colors.mutedForeground }]}>
+            {ratingWord(rating, t)}
+          </Text>
 
           {/* Tags */}
-          <Text style={[s.sectionLabel, { color: colors.mutedForeground, marginTop: 18 }]}>
-            {t('reviewBorrower.whatWentWell') ?? 'MIKÄ MENI HYVIN'}
+          <Text style={[s.sectionLabel, { color: colors.mutedForeground }]}>
+            {t('reviewLender.whatWentWell') ?? 'MIKÄ TOIMI HYVIN'}
           </Text>
           <TagChipRow tags={tags} selected={selectedTags} onChange={setSelectedTags} />
 
-          {/* Comment */}
+          {/* Comment — single card per handoff §4 */}
           <Text style={[s.sectionLabel, { color: colors.mutedForeground, marginTop: 22 }]}>
-            {t('reviewBorrower.publicComment') ?? 'JULKINEN KOMMENTTI'}{'  '}
+            {t('reviewLender.publicComment') ?? 'JULKINEN KOMMENTTI'}{'  '}
             <Text style={[s.optionalTag, { color: colors.tertiaryForeground }]}>
               ({t('returnItem.optional') ?? 'valinnainen'})
             </Text>
@@ -198,7 +192,7 @@ function ReviewBorrowerScreenInner() {
           <TextInput
             value={comment}
             onChangeText={setComment}
-            placeholder={t('reviewBorrower.commentPlaceholder') ?? 'Kerro lyhyesti, miten kokemus meni…'}
+            placeholder={t('reviewLender.commentPlaceholder') ?? 'Kerro lyhyesti, miten kokemus meni…'}
             placeholderTextColor={colors.mutedForeground}
             multiline
             editable={!submitting}
@@ -209,13 +203,13 @@ function ReviewBorrowerScreenInner() {
           />
 
           <Text style={[s.footerNote, { color: colors.mutedForeground }]}>
-            {t('reviewBorrower.footerNote', { name: borrowerName }) ?? `Arvio näytetään ${borrowerName}n profiilissa.`}
+            {t('reviewLender.footerNote', { name: lenderName }) ?? `Arvio näytetään ${lenderName}n profiilissa.`}
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>
 
       <StickyCTA
-        label={t('reviewBorrower.publishReview') ?? 'Julkaise arvio'}
+        label={t('reviewLender.send') ?? 'Lähetä arvio'}
         onPress={handleSubmit}
         disabled={rating === 0}
         loading={submitting}
@@ -290,31 +284,22 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
   heroMeta: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontFamily: fonts.body,
-    lineHeight: 16,
+    lineHeight: 17,
     textAlign: 'center',
+    paddingHorizontal: 8,
   },
 
-  starsCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
+  starsRow: {
     alignItems: 'center',
-    gap: 12,
-  },
-  starsLabel: {
-    fontSize: 10.5,
-    fontFamily: fonts.bodySemi,
-    fontWeight: '600',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    paddingVertical: 10,
   },
   starsHint: {
     fontSize: 12,
     fontFamily: fonts.body,
-    marginTop: -2,
+    textAlign: 'center',
+    marginBottom: 18,
   },
 
   sectionLabel: {
@@ -333,14 +318,14 @@ const s = StyleSheet.create({
   },
 
   commentInput: {
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 13,
     fontFamily: fonts.body,
     lineHeight: 20,
-    minHeight: 76,
+    minHeight: 80,
     textAlignVertical: 'top',
   },
   footerNote: {
@@ -351,10 +336,10 @@ const s = StyleSheet.create({
   },
 })
 
-export default function ReviewBorrowerScreen() {
+export default function ReviewLenderScreen() {
   return (
-    <ScreenErrorBoundary screenName="ReviewBorrower">
-      <ReviewBorrowerScreenInner />
+    <ScreenErrorBoundary screenName="ReviewLender">
+      <ReviewLenderScreenInner />
     </ScreenErrorBoundary>
   )
 }
