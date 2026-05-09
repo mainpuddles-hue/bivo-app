@@ -912,8 +912,19 @@ function PostDetailScreenInner() {
         .select('id').single()
       if (bookingError || !booking) { toast.show({ message: t('rental.bookingFailed'), type: 'error' }); setSendingBooking(false); return }
 
-      if (!isFreeRental && FEATURES.PAYMENTS) {
-        // Paid rental: create Stripe Checkout session
+      if (!isFreeRental && FEATURES.LENDING_PAYMENTS) {
+        // New flow (slice 1+2+3): always route through the pickup-method
+        // picker before payment, so the borrower picks Address / Hub / Gardi.
+        // The picker writes pickup_method on the booking and routes onward
+        // to /payment-checkout, which is where the Stripe Checkout session is
+        // actually created. We don't call createPayment from here anymore.
+        setBookingModalVisible(false); setBookingStartDate(null); setBookingEndDate(null)
+        toast.show({ message: t('rental.bookingCreated'), type: 'success' })
+        router.push({ pathname: '/booking/pickup-method', params: { bookingId: booking.id } } as any)
+      } else if (!isFreeRental && FEATURES.PAYMENTS) {
+        // Legacy direct-Stripe flow — kept while LENDING_PAYMENTS is off so
+        // production keeps using the path the team has already QA'd.
+        // Removable once LENDING_PAYMENTS has flipped on remote.
         const amountCents = Math.round(bookingTotal * 100)
         const sessionId = await createPayment({ amount: amountCents, description: `${post.title} — ${bookingDays} ${t('rental.daysAbbr')}`, type: 'rental', postId: id, sellerId: post.user_id, metadata: { booking_id: booking.id, start_date: bookingStartDate, end_date: bookingEndDate, booking_days: String(bookingDays) } })
         if (sessionId) {
