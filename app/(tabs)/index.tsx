@@ -90,25 +90,6 @@ function FeedScreenInner() {
     return () => { mounted = false }
   }, [feed.userNeighborhood, supabase])
 
-  // Batch view counts for feed cards — stabilize deps to avoid re-firing on every render
-  const [viewCounts, setViewCounts] = useState<Record<string, number>>({})
-  const postIdKey = useMemo(() => feed.posts.map(p => p.id).join(','), [feed.posts])
-  useEffect(() => {
-    if (!postIdKey) return
-    let mounted = true
-    const postIds = postIdKey.split(',')
-    ;(supabase.rpc as any)('get_post_view_counts_batch', { p_post_ids: postIds })
-      .then(({ data, error }: any) => {
-        if (!mounted) return
-        if (error) { if (__DEV__) console.warn('[feed] view counts RPC failed:', error.message); return }
-        if (!data) return
-        const map: Record<string, number> = {}
-        for (const row of data) map[row.post_id] = row.view_count
-        setViewCounts(map)
-      })
-      .catch((err: any) => { if (__DEV__) console.warn('[feed] view counts error:', err) })
-    return () => { mounted = false }
-  }, [postIdKey, supabase])
 
   // Inline events — fetch 3 upcoming events to inject into feed
   const [inlineEvents, setInlineEvents] = useState<Post[]>([])
@@ -511,7 +492,6 @@ function FeedScreenInner() {
                 index={idx}
                 sortBy={feed.sortBy}
                 followedIds={feed.followedIds}
-                viewCount={viewCounts[post.id]}
               />
             </View>
           ))}
@@ -561,14 +541,13 @@ function FeedScreenInner() {
                 index={index}
                 sortBy={feed.sortBy}
                 followedIds={feed.followedIds}
-                viewCount={viewCounts[post.id]}
               />
             </View>
           ))}
         </ScrollView>
       </View>
     )
-  }, [colors, t, feed.currentUserId, feed.sortBy, feed.followedIds, trackInteraction, viewCounts, handleFilterChangeWithHaptics, handleSortChangeWithHaptics, screenWidth, SORT_OPTIONS])
+  }, [colors, t, feed.currentUserId, feed.sortBy, feed.followedIds, trackInteraction, handleFilterChangeWithHaptics, handleSortChangeWithHaptics, screenWidth, SORT_OPTIONS])
 
   // ── Render ──
   return (
@@ -804,7 +783,6 @@ function FeedScreenInner() {
                             index={index}
                             sortBy={feed.sortBy}
                             followedIds={feed.followedIds}
-                            viewCount={viewCounts[post.id]}
                           />
                         </View>
                       ))}

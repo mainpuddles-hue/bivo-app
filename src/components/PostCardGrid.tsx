@@ -40,10 +40,9 @@ interface PostCardGridProps {
   index?: number
   sortBy?: string
   followedIds?: string[]
-  viewCount?: number
 }
 
-export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds, viewCount }: PostCardGridProps) {
+export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds }: PostCardGridProps) {
   const { colors, isDark } = useTheme()
   const reduceMotion = useReduceMotion()
   const { t, locale } = useI18n()
