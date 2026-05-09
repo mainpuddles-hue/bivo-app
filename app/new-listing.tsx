@@ -308,12 +308,33 @@ function NewListingScreenInner() {
         }))
       }
 
-      const { data: post, error } = await (supabase.from('posts') as any)
-        .insert(postData)
-        .select('id')
-        .single()
+      let post: { id: string } | null = null
+      let firstError: any = null
+      {
+        const res = await (supabase.from('posts') as any)
+          .insert(postData)
+          .select('id')
+          .single()
+        post = res.data
+        firstError = res.error
+      }
 
-      if (error) throw error
+      // Retry without pre_return_checklist if the column doesn't exist yet
+      // on this project. The slice 1 SQL migration adds the column; until
+      // it's applied, pre-existing publishes should still work for listings
+      // that author a return checklist.
+      if (firstError && /pre_return_checklist/i.test(firstError.message ?? '')) {
+        if (__DEV__) console.warn('[new-listing] retrying without pre_return_checklist (column missing on DB)')
+        const { pre_return_checklist: _drop, ...withoutChecklist } = postData
+        const res = await (supabase.from('posts') as any)
+          .insert(withoutChecklist)
+          .select('id')
+          .single()
+        post = res.data
+        firstError = res.error
+      }
+
+      if (firstError) throw firstError
 
       // Insert additional images
       if (imageUrls.length > 1 && post?.id) {
@@ -330,7 +351,10 @@ function NewListingScreenInner() {
 
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
       router.replace(isDraft ? '/(tabs)/profile' : `/post/${post?.id}`)
-    } catch (err) {
+    } catch (err: any) {
+      if (__DEV__) {
+        console.warn('[new-listing] publish failed:', err?.message ?? err, err?.code, err?.details, err?.hint)
+      }
       toast.show({ message: t('newListing.errorPublishFailed'), type: 'error' })
     } finally {
       setPublishing(false)
