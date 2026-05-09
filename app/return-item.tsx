@@ -19,6 +19,7 @@ import { FEATURES } from '@/lib/featureFlags'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
+import { uriToArrayBuffer } from '@/lib/uploadHelpers'
 import { getCachedUserId } from '@/lib/authCache'
 import { safeBack } from '@/lib/navigation'
 import { useToast } from '@/components/Toast'
@@ -89,11 +90,17 @@ function ReturnItemScreenInner() {
       // Upload return photos
       const uploadedUrls: string[] = []
       for (const uri of photos) {
-        const resp = await fetch(uri)
-        const blob = await resp.blob()
-        const buf = await new Response(blob).arrayBuffer()
-        const ext = uri.split('.').pop()?.toLowerCase() || 'jpg'
-        const path = `returns/${params.bookingId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+        // RN's blob.arrayBuffer() is not implemented for file:// URIs — use the
+        // expo-file-system helper instead, same as the post-create flow does.
+        const buf = await uriToArrayBuffer(uri)
+        const rawExt = uri.split('.').pop()?.toLowerCase() || 'jpg'
+        // Whitelist the extension so a malformed uri can't smuggle path
+        // separators or alternate file types into the storage path.
+        const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg'
+        // post-images bucket RLS scopes writes to the user's own folder
+        // (auth.uid()/...) — keep returns under that prefix so the upload
+        // is allowed.
+        const path = `${userId}/returns/${params.bookingId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
 
         const { error: uploadError } = await supabase.storage
           .from('post-images')
