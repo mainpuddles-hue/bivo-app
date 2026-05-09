@@ -52,11 +52,11 @@ function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBa
       else if (e.translationX > SWIPE_THRESHOLD) runOnJS(switchTab)(-1)
     })
 
-  // Glass aesthetic tokens — kept inline because they are tightly coupled to
-  // the BlurView output (semi-transparent tint + bright rim sit on top of blur).
-  const tintColor = isDark ? 'rgba(20, 20, 20, 0.35)' : 'rgba(255, 255, 255, 0.45)'
-  const rimColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.55)'
-  const activeBg = isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.85)'
+  // Glass aesthetic tokens — tuned to read like iOS 17/26 system glass:
+  // moderate blur, soft tint that lets content bleed through, hairline rim.
+  const tintColor = isDark ? 'rgba(18, 18, 20, 0.30)' : 'rgba(255, 255, 255, 0.32)'
+  const rimColor = isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.70)'
+  const activeBg = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.65)'
   const activeIconColor = isDark ? colors.foreground : colors.primaryForeground
   const idleIconColor = colors.foreground
 
@@ -89,7 +89,7 @@ function FloatingPillNav({ state, descriptors, navigation, insets }: BottomTabBa
           >
             <BlurView
               tint={isDark ? 'dark' : 'light'}
-              intensity={isDark ? 90 : 75}
+              intensity={isDark ? 80 : 60}
               style={StyleSheet.absoluteFillObject}
             />
             {/* Soft tint overlay — gives the milky glass cast that blur alone misses */}
@@ -249,7 +249,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 999,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth, // crisp iOS-native edge
     padding: 8,
     gap: 4,
     overflow: 'hidden', // clips the BlurView and tint to the pill shape
