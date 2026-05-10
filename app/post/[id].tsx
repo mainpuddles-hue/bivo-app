@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS, useWindowDimensions, Keyboard } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable, StyleSheet, ActivityIndicator, TextInput, FlatList, Alert, Modal, KeyboardAvoidingView, Platform, ActionSheetIOS, useWindowDimensions, Keyboard, Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
@@ -127,6 +127,19 @@ function PostDetailScreenInner() {
   const onHeroViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) setHeroPage(viewableItems[0].index ?? 0)
   }).current
+
+  // Phase 2 P1 #6 — collapsible compact header. When the user scrolls the
+  // hero out of view, fade in a compact bar (back + title + actions) so
+  // the navigation always knows what page it's on. Same physics + thresholds
+  // profile.tsx already proved.
+  const scrollY = useRef(new Animated.Value(0)).current
+  const COLLAPSE_START = 100
+  const COLLAPSE_END = 180
+  const compactOpacity = scrollY.interpolate({
+    inputRange: [COLLAPSE_START, COLLAPSE_END],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  })
   const heroViewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current
 
   // Description expand/collapse
@@ -1147,7 +1160,17 @@ function PostDetailScreenInner() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.foreground} />}>
+      <Animated.ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true },
+        )}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.foreground} />}
+      >
         {/* v3 Hero — 1:1 aspect with gradient + glass controls */}
         <View style={styles.heroWrap}>
           {allImages.length > 0 && !heroImageError ? (
@@ -1174,8 +1197,22 @@ function PostDetailScreenInner() {
               <ImageIcon size={48} color={colors.border} />
             </View>
           )}
-          {/* Top gradient overlay */}
+          {/* Top gradient overlay — protects the hero nav (back / save / more)
+              against bright photos. */}
           <LinearGradient colors={['rgba(0,0,0,0.20)', 'rgba(0,0,0,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 0.35 }} style={styles.heroOverlay} pointerEvents="none" />
+          {/* Phase 2 P1 #6 — bottom darkening gradient. Sets up an anchored
+              edge for the body card to butt against and gives the page a
+              focal weight that the previous all-flat hero lacked. The
+              0 → 0.45 ramp is heavy enough that the title (when it later
+              moves onto the hero) reads against any photo, light enough
+              that the photo content still dominates on bright images. */}
+          <LinearGradient
+            colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.45)']}
+            start={{ x: 0, y: 0.65 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.heroOverlay}
+            pointerEvents="none"
+          />
           {/* Category chip on hero */}
           {category && (
             <View style={[styles.catChipHero, { backgroundColor: colors.card + 'EB' }]}>
@@ -1561,7 +1598,31 @@ function PostDetailScreenInner() {
 
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
+
+      {/* Phase 2 P1 #6 — sticky compact header. Crossfades in when scrollY
+          crosses 100; gives the user a navigational anchor when the hero
+          has scrolled away. Always-on back button + always-on save/more,
+          centered post title in the gap. pointerEvents='box-none' so the
+          underlying heroNav still receives touches when this is invisible. */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.compactHeader,
+          {
+            paddingTop: insets.top + 8,
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+            opacity: compactOpacity,
+          },
+        ]}
+      >
+        <View style={styles.compactCenter}>
+          <Text style={[styles.compactTitle, { color: colors.foreground }]} numberOfLines={1}>
+            {post.title}
+          </Text>
+        </View>
+      </Animated.View>
 
       {/* Fullscreen Image Gallery */}
       {allImages.length > 0 && (
@@ -2098,6 +2159,33 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 13, fontFamily: fonts.body, textAlign: 'center', marginTop: 8, lineHeight: 18 },
   payBookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 999, minHeight: 48 },
   heroNav: { position: 'absolute', left: 16, right: 16, zIndex: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+
+  // Phase 2 P1 #6 — sticky compact header. Lives above heroNav on the
+  // z-axis so it covers the floating circle buttons when scrolled.
+  compactHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 64, // leave room for the heroNav buttons underneath
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    zIndex: 15,
+  },
+  compactCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  compactTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
+    textAlign: 'center',
+  },
   heroCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   pricingLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1 },
   infoModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 24 },
