@@ -58,7 +58,7 @@ function CreatePollInner() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     } catch {}
 
-    const userId = getCachedUserId()
+    const userId = await getCachedUserId()
     if (!userId) {
       toast.show({ message: t('common.loginRequired'), type: 'error' })
       setSubmitting(false)
@@ -69,16 +69,16 @@ function CreatePollInner() {
     const hours = expiresIn === '1d' ? 24 : expiresIn === '3d' ? 72 : 168
     const expiresAt = new Date(Date.now() + hours * 3600000).toISOString()
 
-    // Get user's building + neighborhood
+    // Get user's neighborhood
     const { data: profile } = await supabase
       .from('profiles')
-      .select('naapurusto, building_id')
+      .select('naapurusto')
       .eq('id', userId)
       .maybeSingle()
 
     const cleanOptions = options.map(o => o.trim()).filter(Boolean)
     if (cleanOptions.length < MIN_OPTIONS) {
-      toast.show({ message: t('polls.questionPlaceholder'), type: 'error' })
+      toast.show({ message: t('polls.minOptionsRequired') ?? 'Lisää vähintään 2 vaihtoehtoa', type: 'error' })
       setSubmitting(false)
       return
     }
@@ -87,7 +87,6 @@ function CreatePollInner() {
       creator_id: userId,
       question: question.trim(),
       options: cleanOptions,
-      building_id: (profile as any)?.building_id ?? null,
       naapurusto: (profile as any)?.naapurusto ?? null,
       expires_at: expiresAt,
     })

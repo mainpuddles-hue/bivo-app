@@ -1,5 +1,5 @@
 /**
- * Image optimization utilities for TackBird Mobile.
+ * Image optimization utilities for Bivo Mobile.
  *
  * Uses Supabase Storage image transformations to serve resized/compressed
  * images instead of full-resolution originals (5-10 MB).

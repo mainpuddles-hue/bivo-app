@@ -1,5 +1,5 @@
 /**
- * Jest setup for TackBird Mobile component tests.
+ * Jest setup for Bivo Mobile component tests.
  *
  * Mocks external dependencies that are not relevant to component logic:
  * expo-image, expo-router, expo-haptics, expo-secure-store,

@@ -2,7 +2,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.com',
+  'Access-Control-Allow-Origin': 'https://bivoapp.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 }
 
@@ -116,11 +116,11 @@ serve(async (req) => {
         <p>${activity.posts} ${isFi ? 'uutta ilmoitusta' : 'new posts'}</p>
         <p>${activity.events} ${isFi ? 'uutta tapahtumaa' : 'new events'}</p>
         <br>
-        <a href="https://tackbird.com" style="display:inline-block;padding:12px 24px;background:#2D6B5E;color:#fff;text-decoration:none;border-radius:8px;">
-          ${isFi ? 'Avaa TackBird' : 'Open TackBird'}
+        <a href="https://bivoapp.io" style="display:inline-block;padding:12px 24px;background:#2D6B5E;color:#fff;text-decoration:none;border-radius:8px;">
+          ${isFi ? 'Avaa Bivo' : 'Open Bivo'}
         </a>
         <br><br>
-        <p style="font-size:12px;color:#999;">— TackBird</p>
+        <p style="font-size:12px;color:#999;">— Bivo</p>
       `
 
       const controller = new AbortController()
@@ -133,7 +133,7 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'TackBird <digest@tackbird.com>',
+            from: 'Bivo <digest@bivoapp.io>',
             to: user.email,
             subject,
             html,

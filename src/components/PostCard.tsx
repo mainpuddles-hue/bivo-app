@@ -22,7 +22,7 @@ import { isHumanAction } from '@/lib/abuseDetection'
 import { getImageUrl } from '@/lib/imageUtils'
 import type { Post, PostType } from '@/lib/types'
 
-const APP_URL = 'https://tackbird.com'
+const APP_URL = 'https://bivoapp.io'
 
 function getExpirationInfo(expiresAt: string | null, t: (key: string, params?: Record<string, string | number>) => string): { label: string; severity: 'urgent' | 'warning' } | null {
   if (!expiresAt) return null

@@ -1,7 +1,7 @@
 /**
  * Pro Subscription Business Logic Tests
  *
- * Tests the core business logic for TackBird Pro:
+ * Tests the core business logic for Bivo Pro:
  * - Feed algorithm Pro boost (+0.2 social score component)
  * - Feed ranking: Pro listings always sorted first
  * - Commission calculation: 5% for Pro, 10% for free

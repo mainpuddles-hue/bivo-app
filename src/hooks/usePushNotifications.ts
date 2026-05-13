@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@/lib/supabase/client'
 
 const PROJECT_ID = '504a9107-9e8e-4e5d-90fe-ea7564166e33'
-const PUSH_PREF_KEY = 'tackbird-push-enabled'
+const PUSH_PREF_KEY = 'bivo-push-enabled'
 
 const isWeb = Platform.OS === 'web'
 

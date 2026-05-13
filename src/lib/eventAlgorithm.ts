@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { getRecentCategories, type EventInteraction } from './eventInteractions'
 
 /**
- * All event interest categories available in TackBird.
+ * All event interest categories available in Bivo.
  */
 export const EVENT_CATEGORIES = [
   'music', 'sport', 'culture', 'food', 'family', 'nature',

@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { useSupabase } from '@/hooks/useSupabase'
-import { TackBirdLogo } from '@/components/TackBirdLogo'
+import { BivoLogo } from '@/components/BivoLogo'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 
 /**
@@ -200,7 +200,7 @@ function AuthCallbackScreenInner() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.logoCircle, { backgroundColor: colors.foreground }]}>
-        <TackBirdLogo size={32} color={colors.primaryForeground} />
+        <BivoLogo size={32} color={colors.primaryForeground} />
       </View>
       {error ? (
         <View style={styles.errorBox}>

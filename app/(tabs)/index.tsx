@@ -3,10 +3,11 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ScrollView, ActionShe
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, ChevronRight, Bell } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, ChevronRight } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity, MagneticPressable } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
+import { BivoPin } from '@/components/BivoPin'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -31,8 +32,6 @@ import { FEATURES } from '@/lib/featureFlags'
 import { PollCard, type Poll } from '@/components/PollCard'
 import type { Post, PostType, CommunityEvent } from '@/lib/types'
 import { CATEGORIES } from '@/lib/constants'
-import { STORAGE_KEYS } from '@/lib/storageKeys'
-import { SectionEyebrow } from '@/components/SectionEyebrow'
 
 type FeedItem =
   | { _kind: 'section'; key: string; categoryType: PostType; posts: Post[] }
@@ -62,7 +61,7 @@ function FeedScreenInner() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   useEffect(() => {
     Promise.all([
-      AsyncStorage.getItem('tackbird_onboarding_completed'),
+      AsyncStorage.getItem('bivo_onboarding_completed'),
       AsyncStorage.getItem('onboarding_complete'),
     ]).then(([overlayFlag, layoutFlag]) => {
       if (!overlayFlag && !layoutFlag) setShowOnboarding(true)
@@ -92,6 +91,25 @@ function FeedScreenInner() {
     return () => { mounted = false }
   }, [feed.userNeighborhood, supabase])
 
+  // Batch view counts for feed cards — stabilize deps to avoid re-firing on every render
+  const [viewCounts, setViewCounts] = useState<Record<string, number>>({})
+  const postIdKey = useMemo(() => feed.posts.map(p => p.id).join(','), [feed.posts])
+  useEffect(() => {
+    if (!postIdKey) return
+    let mounted = true
+    const postIds = postIdKey.split(',')
+    ;(supabase.rpc as any)('get_post_view_counts_batch', { p_post_ids: postIds })
+      .then(({ data, error }: any) => {
+        if (!mounted) return
+        if (error) { if (__DEV__) console.warn('[feed] view counts RPC failed:', error.message); return }
+        if (!data) return
+        const map: Record<string, number> = {}
+        for (const row of data) map[row.post_id] = row.view_count
+        setViewCounts(map)
+      })
+      .catch((err: any) => { if (__DEV__) console.warn('[feed] view counts error:', err) })
+    return () => { mounted = false }
+  }, [postIdKey, supabase])
 
   // Inline events — fetch 3 upcoming events to inject into feed
   const [inlineEvents, setInlineEvents] = useState<Post[]>([])
@@ -141,51 +159,41 @@ function FeedScreenInner() {
     Promise.resolve(
       supabase
         .from('community_events')
-        .select('*')
+        .select('*, creator:profiles!community_events_creator_id_fkey(id, name, avatar_url)')
         .eq('is_active', true)
         .gte('event_date', now)
         .order('event_date', { ascending: true })
         .limit(20)
-    ).then(async ({ data, error }: any) => {
+    ).then(({ data, error }: any) => {
       if (!mounted) return
       if (error) { if (__DEV__) console.warn('[feed] community events failed:', error.message); return }
       if (!data) return
-      const events = data as any[]
-      const eventIds = events.map(e => e.id)
-      if (eventIds.length === 0) { setHeroCommunityEvents(events); return }
-      // FK community_events.creator_id → auth.users (not profiles), so PostgREST cannot embed
-      // creator profiles via select(). Fetch creators separately by id.
-      const creatorIds = Array.from(new Set(events.map(e => e.creator_id).filter(Boolean)))
-      const [participantsRes, creatorsRes] = await Promise.all([
+      // Enrich with participant count
+      const eventIds = (data as any[]).map((e: any) => e.id)
+      if (eventIds.length === 0) { setHeroCommunityEvents(data); return }
+      Promise.resolve(
         supabase
           .from('community_event_participants')
           .select('event_id')
           .in('event_id', eventIds)
-          .eq('status', 'joined'),
-        creatorIds.length > 0
-          ? supabase.from('profiles').select('id, name, avatar_url').in('id', creatorIds)
-          : Promise.resolve({ data: [] as any[] }),
-      ])
-      if (!mounted) return
-      const counts: Record<string, number> = {}
-      const participants = (participantsRes as any).data as any[] | null
-      if (participants) for (const p of participants) {
-        counts[p.event_id] = (counts[p.event_id] || 0) + 1
-      }
-      const creatorMap: Record<string, { id: string; name: string; avatar_url: string | null }> = {}
-      const creators = (creatorsRes as any).data as any[] | null
-      if (creators) for (const c of creators) creatorMap[c.id] = c
-      const enriched = events.map(e => ({
-        ...e,
-        participant_count: counts[e.id] || 0,
-        creator: e.creator_id ? creatorMap[e.creator_id] ?? null : null,
-      }))
-      setHeroCommunityEvents(enriched)
+          .eq('status', 'joined')
+      ).then(({ data: participants }: any) => {
+        if (!mounted) return
+        const counts: Record<string, number> = {}
+        if (participants) for (const p of participants as any[]) {
+          counts[p.event_id] = (counts[p.event_id] || 0) + 1
+        }
+        const enriched = (data as any[]).map((e: any) => ({
+          ...e,
+          participant_count: counts[e.id] || 0,
+        }))
+        setHeroCommunityEvents(enriched)
+      }).catch(() => { if (mounted) setHeroCommunityEvents(data) })
     }).catch((err: any) => { if (__DEV__) console.warn('[feed] community events error:', err) })
     return () => { mounted = false }
   }, [supabase])
 
-  // Building card removed — TackBird is neighborhood-based, not building-based.
+  // Building card removed — Bivo is neighborhood-based, not building-based.
   // Geographic feed filtering is handled by useFeedData (bounding box around user location).
 
   // Fetch active polls for feed display
@@ -275,14 +283,7 @@ function FeedScreenInner() {
         .limit(3)
     ).then(({ data, error }: any) => {
       if (!mounted) return
-      if (error) {
-        // Schema cache miss = table not deployed on this project — happens
-        // on v1 which doesn't have the ads tables yet. Skip silently; the
-        // remote AD_CAMPAIGNS flag may be true regardless of deploy state.
-        const isMissingTable = error.code === 'PGRST205' || /could not find the table/i.test(error.message ?? '')
-        if (!isMissingTable && __DEV__) console.warn('[feed] ads fetch failed:', error.message)
-        return
-      }
+      if (error) { if (__DEV__) console.warn('[feed] ads fetch failed:', error.message); return }
       if (!data || data.length === 0) return
       const nh = feed.userNeighborhood
       const filtered = nh
@@ -302,17 +303,17 @@ function FeedScreenInner() {
   // Welcome toast on first feed load (shown once per install)
   useEffect(() => {
     if (welcomeShownRef.current || feed.loading || feed.posts.length === 0) return
-    AsyncStorage.getItem(STORAGE_KEYS.WELCOME_TOAST_SHOWN).then(val => {
+    AsyncStorage.getItem('welcome_toast_shown').then(val => {
       if (val === 'true' || welcomeShownRef.current) return
       welcomeShownRef.current = true
       const nh = feed.userNeighborhood
       toast.show({
         message: nh
           ? (t('feed.welcomeToast', { neighborhood: nh }) || `Tervetuloa ${nh}n ilmoitustaululle!`)
-          : (t('feed.welcomeToastGeneric') || 'Tervetuloa TackBirdiin!'),
+          : (t('feed.welcomeToastGeneric') || 'Tervetuloa Bivoon!'),
         type: 'success',
       })
-      AsyncStorage.setItem(STORAGE_KEYS.WELCOME_TOAST_SHOWN, 'true').catch((e) => { if (__DEV__) console.warn('Welcome toast flag save failed:', e) })
+      AsyncStorage.setItem('welcome_toast_shown', 'true').catch((e) => { if (__DEV__) console.warn('Welcome toast flag save failed:', e) })
     }).catch((e) => { if (__DEV__) console.warn('Welcome toast flag read failed:', e) })
   }, [feed.loading, feed.posts.length, feed.userNeighborhood, toast, t])
 
@@ -355,7 +356,7 @@ function FeedScreenInner() {
   // ── Hidden post IDs (persisted to AsyncStorage) ──
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEYS.HIDDEN_POSTS).then(val => {
+    AsyncStorage.getItem('bivo_hidden_posts').then(val => {
       if (val) {
         try { setHiddenIds(new Set(JSON.parse(val))) } catch {} // Intentional: corrupted cache
       }
@@ -368,7 +369,7 @@ function FeedScreenInner() {
     const next = new Set(hiddenIdsRef.current)
     next.add(postId)
     setHiddenIds(next)
-    AsyncStorage.setItem(STORAGE_KEYS.HIDDEN_POSTS, JSON.stringify([...next])).catch((e) => { if (__DEV__) console.warn('Hidden posts save failed:', e) })
+    AsyncStorage.setItem('bivo_hidden_posts', JSON.stringify([...next])).catch((e) => { if (__DEV__) console.warn('Hidden posts save failed:', e) })
   }, [])
 
   // ── "Seen" / new indicator ──
@@ -377,11 +378,11 @@ function FeedScreenInner() {
   const [showMissedBanner, setShowMissedBanner] = useState(false)
 
   useEffect(() => {
-    AsyncStorage.getItem('tackbird_last_feed_visit').then(val => {
+    AsyncStorage.getItem('bivo_last_feed_visit').then(val => {
       if (val) setLastFeedVisit(val)
     }).catch((e) => { if (__DEV__) console.warn('Last feed visit read failed:', e) })
     return () => {
-      AsyncStorage.setItem('tackbird_last_feed_visit', new Date().toISOString()).catch((e) => { if (__DEV__) console.warn('Last feed visit save failed:', e) })
+      AsyncStorage.setItem('bivo_last_feed_visit', new Date().toISOString()).catch((e) => { if (__DEV__) console.warn('Last feed visit save failed:', e) })
     }
   }, [])
 
@@ -443,14 +444,17 @@ function FeedScreenInner() {
       }
       return items
     }
-    // Unfiltered: horizontal category sections
-    const items: FeedItem[] = []
-    categorySections.forEach((section, idx) => {
-      items.push({ _kind: 'section', key: `section-${section.type}`, categoryType: section.type, posts: section.posts })
-      if (idx === 1 && feedAds.length > 0) {
+    // Unfiltered: 2-column grid (Bivo discover style)
+    const allPosts = categorySections.flatMap(s => s.posts)
+    const items: FeedItem[] = [
+      { _kind: 'sortRow', key: 'sort-row', count: allPosts.length },
+    ]
+    for (let i = 0; i < allPosts.length; i += 2) {
+      items.push({ _kind: 'gridRow', key: `row-${i}`, posts: allPosts.slice(i, i + 2) })
+      if (i === 4 && feedAds.length > 0) {
         items.push({ _kind: 'ad', key: 'ad-0', ad: feedAds[0] })
       }
-    })
+    }
     return items
   }, [feed.activeFilter, categorySections, feedAds])
 
@@ -511,6 +515,7 @@ function FeedScreenInner() {
                 index={idx}
                 sortBy={feed.sortBy}
                 followedIds={feed.followedIds}
+                viewCount={viewCounts[post.id]}
               />
             </View>
           ))}
@@ -523,17 +528,11 @@ function FeedScreenInner() {
       <View style={styles.categorySection}>
         <View style={styles.sectionHead}>
           <View style={styles.sectionTitleWrap}>
-            {/* Slice 1 vocabulary on the feed: 8px category-colored dot
-                + uppercase count line above the section title. Single
-                rhythmic motif across feed sections (matches StatusBanner
-                eyebrowRow + the slice 1/2/3 lending screens). */}
-            <SectionEyebrow
-              label={`${item.posts.length} ${t('feed.nearby') ?? 'lähellä'}`}
-              dotColor={category.color}
-              style={{ marginBottom: 4 }}
-            />
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
               {t(category.label)}
+            </Text>
+            <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>
+              {item.posts.length} {t('feed.nearby') ?? 'lähellä'}
             </Text>
           </View>
           <PressableOpacity
@@ -566,13 +565,14 @@ function FeedScreenInner() {
                 index={index}
                 sortBy={feed.sortBy}
                 followedIds={feed.followedIds}
+                viewCount={viewCounts[post.id]}
               />
             </View>
           ))}
         </ScrollView>
       </View>
     )
-  }, [colors, t, feed.currentUserId, feed.sortBy, feed.followedIds, trackInteraction, handleFilterChangeWithHaptics, handleSortChangeWithHaptics, screenWidth, SORT_OPTIONS])
+  }, [colors, t, feed.currentUserId, feed.sortBy, feed.followedIds, trackInteraction, viewCounts, handleFilterChangeWithHaptics, handleSortChangeWithHaptics, screenWidth, SORT_OPTIONS])
 
   // ── Render ──
   return (
@@ -624,54 +624,16 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
-              {/* Notification bell positioned absolutely in the top-right
-                  corner so it doesn't claim its own row above the header.
-                  pointerEvents box-none on the wrapper lets taps pass through
-                  to the neighborhood picker beneath everywhere except the
-                  bell itself. */}
-              <View pointerEvents="box-none" style={styles.topBarFloat}>
-                <PressableOpacity
-                  onPress={() => router.push('/notifications')}
-                  hitSlop={10}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('nav.notifications') ?? 'Notifications'}
-                  style={[styles.topBarBell, { backgroundColor: colors.card, borderColor: colors.border }]}
-                >
-                  <Bell size={18} color={colors.foreground} strokeWidth={1.6} />
-                </PressableOpacity>
-              </View>
               {/* 1. v3 Header — location eyebrow + Bricolage title + pulse row */}
               <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.header} hitSlop={8}>
-                <View style={styles.hLocLine}>
-                  <View style={[styles.hLocPin, { backgroundColor: colors.success }]}>
-                    <View style={[styles.hLocPinDot, { backgroundColor: colors.card }]} />
-                  </View>
-                  <Text style={[styles.hLocText, { color: colors.mutedForeground }]}>
-                    {t('feed.yourNeighborhood') ?? 'Naapurustosi'}
-                  </Text>
-                </View>
+                <Text style={[styles.hLocText, { color: colors.mutedForeground }]}>
+                  {t('feed.yourNeighborhood') ?? 'Naapurustosi'}
+                </Text>
                 <View style={styles.hTitleRow}>
+                  <BivoPin size={28} color={colors.foreground} />
                   <Text style={[styles.hTitle, { color: colors.foreground }]}>
                     {feed.userNeighborhood ?? 'Helsinki'}
                   </Text>
-                </View>
-                <View style={styles.hPulse}>
-                  <View style={styles.pulseGroup}>
-                    <View style={[styles.pulseDot, { backgroundColor: colors.success }]} />
-                    <Text style={[styles.pulseText, { color: colors.foreground }]}>
-                      <Text style={{ fontFamily: fonts.bodySemi }}>{onlineCount || 0}</Text>
-                      {' '}{t('feed.neighborsNow') ?? 'naapuria juuri nyt'}
-                    </Text>
-                  </View>
-                  {weeklyActiveCount > 0 && (
-                    <>
-                      <Text style={[styles.pulseDivider, { color: colors.tertiaryForeground }]}>·</Text>
-                      <Text style={[styles.pulseText, { color: colors.foreground }]}>
-                        <Text style={{ fontFamily: fonts.bodySemi }}>{feed.posts.length}</Text>
-                        {' '}{t('feed.postsThisWeek') ?? 'ilmoitusta'}
-                      </Text>
-                    </>
-                  )}
                 </View>
               </PressableOpacity>
 
@@ -824,6 +786,7 @@ function FeedScreenInner() {
                             index={index}
                             sortBy={feed.sortBy}
                             followedIds={feed.followedIds}
+                            viewCount={viewCounts[post.id]}
                           />
                         </View>
                       ))}
@@ -911,47 +874,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  // ── Notification bell — floats top-right of the header, no layout space ──
-  // Absolute positioning inside topArea (which has paddingHorizontal: 20) so
-  // right: 0 aligns the bell with the same content gutter as the rest of the
-  // feed. The header text starts on the left, no visual collision.
-  topBarFloat: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    zIndex: 10,
-  },
-  topBarBell: {
-    width: 36,
-    height: 36,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   // ── v3 Header ──
   header: {
     marginBottom: 4,
-  },
-  hLocLine: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  hLocPin: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hLocPinDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    // backgroundColor set dynamically via inline style (colors.card)
   },
   hLocText: {
     fontSize: 12,
@@ -959,12 +884,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
     letterSpacing: -0.1,
     lineHeight: 16,
+    marginBottom: 4,
   },
   hTitleRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 10,
+    alignItems: 'center',
+    gap: 8,
     marginTop: 2,
   },
   hTitle: {

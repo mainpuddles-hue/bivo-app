@@ -48,11 +48,12 @@ function PaymentSuccessScreenInner() {
       try {
         const { data } = await (supabase
           .from('rental_bookings') as any)
-          .select('id, start_date, end_date, total_amount, status, post:posts!rental_bookings_post_id_fkey(title)')
+          .select('id, borrower_id, start_date, end_date, total_amount, status, post:posts!rental_bookings_post_id_fkey(title)')
           .eq('stripe_session_id', session_id!)
           .maybeSingle()
 
         if (data) {
+          if ((data as any).borrower_id !== user.id) { setNotFound(true); setLoading(false); return }
           setBooking({
             id: (data as any).id,
             post_title: (data as any).post?.title ?? '',
@@ -72,11 +73,12 @@ function PaymentSuccessScreenInner() {
         try {
           const { data: serviceData } = await (supabase
             .from('service_bookings') as any)
-            .select('id, created_at, total_amount, status, post:posts!service_bookings_post_id_fkey(title)')
+            .select('id, buyer_id, created_at, total_amount, status, post:posts!service_bookings_post_id_fkey(title)')
             .eq('stripe_session_id', session_id!)
             .maybeSingle()
 
           if (serviceData) {
+            if ((serviceData as any).buyer_id !== user.id) { setNotFound(true); setLoading(false); return }
             setBooking({
               id: (serviceData as any).id,
               post_title: (serviceData as any).post?.title ?? '',
@@ -96,16 +98,17 @@ function PaymentSuccessScreenInner() {
       if (!found) {
         try {
           const { data: adData } = await (supabase.from('advertisements') as any)
-            .select('id, title, status')
+            .select('id, title, status, budget_cents, user_id')
             .eq('stripe_session_id', session_id!)
             .maybeSingle()
           if (adData) {
+            if (adData.user_id !== user.id) { setNotFound(true); setLoading(false); return }
             setBooking({
               id: adData.id,
               post_title: adData.title ?? 'Ad Campaign',
               start_date: new Date().toISOString(),
               end_date: new Date().toISOString(),
-              total_amount: 0,
+              total_amount: (adData.budget_cents ?? 0) / 100,
               status: adData.status ?? 'active',
             })
             found = true

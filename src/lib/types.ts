@@ -1,4 +1,4 @@
-// Database types for TackBird — shared with web app
+// Database types for Bivo — shared with web app
 
 export type BoostTier = 'free' | 'pro' | 'business'
 

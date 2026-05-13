@@ -1,11 +1,11 @@
 import Svg, { Path } from 'react-native-svg'
 
-interface TackBirdLogoProps {
+interface BivoLogoProps {
   size?: number
   color?: string
 }
 
-export function TackBirdLogo({ size = 32, color = '#FFFFFF' }: TackBirdLogoProps) {
+export function BivoLogo({ size = 32, color = '#FFFFFF' }: BivoLogoProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path

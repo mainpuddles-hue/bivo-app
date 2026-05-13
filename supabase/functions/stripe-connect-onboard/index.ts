@@ -13,7 +13,7 @@ function getEnvOrThrow(key: string): string {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.com',
+  'Access-Control-Allow-Origin': 'https://bivoapp.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -98,10 +98,10 @@ serve(async (req) => {
     }
 
     // Create Account Link for onboarding UI
-    // Validate return_url to prevent open redirect — only allow tackbird:// scheme
-    const safeReturnUrl = (typeof return_url === 'string' && return_url.startsWith('tackbird://'))
+    // Validate return_url to prevent open redirect — only allow bivo:// scheme
+    const safeReturnUrl = (typeof return_url === 'string' && return_url.startsWith('bivo://'))
       ? return_url
-      : 'tackbird://payment-settings'
+      : 'bivo://payment-settings'
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: safeReturnUrl,

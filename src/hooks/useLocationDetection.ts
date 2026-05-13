@@ -66,7 +66,7 @@ export function useLocationDetection(userId: string | null) {
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
             {
               headers: {
-                'User-Agent': 'TackBirdMobile/1.0',
+                'User-Agent': 'BivoMobile/1.0',
                 'Accept-Language': 'en',
               },
               signal: geoController.signal,

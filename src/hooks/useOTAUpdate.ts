@@ -29,7 +29,7 @@ export function useOTAUpdate() {
 
         Alert.alert(
           'Päivitys saatavilla',
-          'TackBird on päivittynyt. Käynnistä uudelleen ottaaksesi päivityksen käyttöön.',
+          'Bivo on päivittynyt. Käynnistä uudelleen ottaaksesi päivityksen käyttöön.',
           [
             { text: 'Myöhemmin', style: 'cancel' },
             { text: 'Käynnistä', onPress: () => Updates.reloadAsync() },

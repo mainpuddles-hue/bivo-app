@@ -1,0 +1,3 @@
+export const PLATFORM_COMMISSION_RATE = 0.10
+export const MAX_RENTAL_DAYS = 6
+export const STRIPE_MIN_CHARGE_CENTS = 50

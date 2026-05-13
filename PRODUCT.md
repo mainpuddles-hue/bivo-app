@@ -1,10 +1,10 @@
-# TackBird — Product Overview
+# Bivo — Product Overview
 
 > Updated: 2026-04-26 | Version: Building-first pivot (v3 design)
 
-## What TackBird Is
+## What Bivo Is
 
-TackBird is a hyperlocal neighborhood platform for Finland. It connects residents within their naapurusto (micro-neighborhood like Kallio, Töölö, Sörnäinen) through a shared bulletin board, peer lending, community events, building management (taloyhtiö), and trust-based reputation.
+Bivo is a hyperlocal neighborhood platform for Finland. It connects residents within their naapurusto (micro-neighborhood like Kallio, Töölö, Sörnäinen) through a shared bulletin board, peer lending, community events, building management (taloyhtiö), and trust-based reputation.
 
 **Company:** Puddles Oy (Y-tunnus 3610705-3)
 **Platform:** iOS + Android (React Native / Expo)
@@ -13,7 +13,7 @@ TackBird is a hyperlocal neighborhood platform for Finland. It connects resident
 
 ## Current Strategic Focus
 
-TackBird has pivoted from a general marketplace toward a **building-first community platform**. The beachhead entry point is the taloyhtiö (housing association) — every Finnish apartment building has one. By anchoring users to their physical building, TackBird creates natural trust and daily relevance.
+Bivo has pivoted from a general marketplace toward a **building-first community platform**. The beachhead entry point is the taloyhtiö (housing association) — every Finnish apartment building has one. By anchoring users to their physical building, Bivo creates natural trust and daily relevance.
 
 ### What's Active (MVP)
 - Neighborhood bulletin board (5 post categories)
@@ -70,7 +70,7 @@ Dynamic scoring based on: response speed, ratings, cancellations, disputes, acti
 
 ## Event Integration
 
-TackBird aggregates events from 4 sources using a 7-factor ranking algorithm:
+Bivo aggregates events from 4 sources using a 7-factor ranking algorithm:
 
 | Source | Type | Integration |
 |--------|------|-------------|
@@ -82,7 +82,7 @@ TackBird aggregates events from 4 sources using a 7-factor ranking algorithm:
 
 ## Taloyhtiö (Building Management)
 
-The building module is the newest and most strategic feature. Every Finnish apartment building has a taloyhtiö (housing association). TackBird provides:
+The building module is the newest and most strategic feature. Every Finnish apartment building has a taloyhtiö (housing association). Bivo provides:
 
 - **Building hub** — view members, building info, rules
 - **Announcements** — board broadcasts to all residents
@@ -135,7 +135,7 @@ Stripe Connect is integrated but `charges_enabled: false`. Activation requires m
 ## Competitive Position
 
 ### Direct Competitors in Finland
-| Competitor | What It Does | What TackBird Does Better |
+| Competitor | What It Does | What Bivo Does Better |
 |-----------|-------------|--------------------------|
 | Tori.fi | Buy/sell classifieds | Neighborhood scope, trust system, lending, events, community |
 | Facebook Marketplace + groups | Buy/sell + informal groups | Unified platform, structured data, moderation, no algorithm burial |

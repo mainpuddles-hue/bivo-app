@@ -41,7 +41,7 @@ function AboutScreenInner() {
           <View style={[s.logoPlaceholder, { backgroundColor: colors.foreground }]}>
             <Text style={[s.logoText, { color: colors.background }]}>TB</Text>
           </View>
-          <Text style={[s.appName, { color: colors.foreground }]}>TackBird</Text>
+          <Text style={[s.appName, { color: colors.foreground }]}>Bivo</Text>
           <Text style={[s.versionText, { color: colors.mutedForeground }]}>v{appVersion}</Text>
           <Text style={[s.tagline, { color: colors.mutedForeground }]}>{t('about.tagline')}</Text>
         </View>
@@ -76,13 +76,13 @@ function AboutScreenInner() {
         {/* Website */}
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <PressableOpacity
-            onPress={() => Linking.openURL('https://tackbird.com').catch((e) => { if (__DEV__) console.warn('[about] link open failed:', e) })}
+            onPress={() => Linking.openURL('https://bivoapp.io').catch((e) => { if (__DEV__) console.warn('[about] link open failed:', e) })}
             style={s.linkRow}
-            accessibilityLabel="tackbird.com"
+            accessibilityLabel="bivoapp.io"
             accessibilityRole="link"
           >
             <ExternalLink size={18} color={colors.foreground} />
-            <Text style={[s.linkText, { color: colors.foreground }]}>tackbird.com</Text>
+            <Text style={[s.linkText, { color: colors.foreground }]}>bivoapp.io</Text>
           </PressableOpacity>
         </View>
 

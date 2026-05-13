@@ -135,13 +135,13 @@ function HelpScreenInner() {
           <Text style={[s.contactTitle, { color: colors.foreground }]}>{t('help.contactTitle')}</Text>
           <Text style={[s.contactDesc, { color: colors.mutedForeground }]}>{t('help.contactDesc')}</Text>
           <PressableOpacity
-            onPress={() => Linking.openURL('mailto:tuki@tackbird.com').catch(() => toast.show({ message: t('common.error'), type: 'error' }))}
+            onPress={() => Linking.openURL('mailto:tuki@bivoapp.io').catch(() => toast.show({ message: t('common.error'), type: 'error' }))}
             style={[s.contactBtn, { backgroundColor: colors.foreground }]}
-            accessibilityLabel="tuki@tackbird.com"
+            accessibilityLabel="tuki@bivoapp.io"
             accessibilityRole="link"
           >
             <Mail size={16} color={colors.background} />
-            <Text style={[s.contactBtnText, { color: colors.background }]}>tuki@tackbird.com</Text>
+            <Text style={[s.contactBtnText, { color: colors.background }]}>tuki@bivoapp.io</Text>
           </PressableOpacity>
         </View>
 

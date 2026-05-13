@@ -1,5 +1,5 @@
 /**
- * Shared UI primitives for TackBird Mobile.
+ * Shared UI primitives for Bivo Mobile.
  *
  * These components enforce UI UX Pro Max consistency rules:
  * - PressableOpacity: automatic pressed feedback (opacity 0.7)

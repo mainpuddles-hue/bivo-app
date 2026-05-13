@@ -1,10 +1,10 @@
-# TackBird Mobile — CLAUDE.md
+# Bivo App — CLAUDE.md
 
 ## What This Is
 
-TackBird on Suomen hyperlokaali naapuruston käyttöjärjestelmä — the operating system of your naapurusto. It combines a marketplace, peer lending, community events, community tools (yhteisöt, naapurustot), messaging, and trust-based reputation. Built Finnish-first (fi/en/sv).
+Bivo is a hyperlocal neighborhood platform for Finland. It combines a marketplace, peer lending, community events, building management (taloyhtiö), messaging, and trust-based reputation — all scoped to your naapurusto. Built Finnish-first (fi/en/sv).
 
-**This project:** `https://github.com/mainpuddles-hue/tackbird-mobile` (Expo, private)
+**This project:** `https://github.com/mainpuddles-hue/bivo-app` (Expo, private)
 **Company:** Puddles Oy (Y-tunnus 3610705-3)
 
 ## Target Users
@@ -14,7 +14,7 @@ TackBird on Suomen hyperlokaali naapuruston käyttöjärjestelmä — the operat
 | **Beachhead** | Kallio renters, 25–40yo, kerrostalo, sustainability-oriented |
 | **Residents** | Find/share/lend items, discover local events, connect with neighbors |
 | **Providers** | Earn from idle tools/items, offer services, organize events |
-| **Yhteisöoperaattorit** | Manage a community (taloyhtiö, kortteli, harrastusryhmä): announcements, maintenance, polls, group chat |
+| **Taloyhtiö** | Building management: announcements, maintenance requests, polls, chat |
 | **Local businesses** | Pro listings, promoted posts, hyperlocal advertising |
 
 ## Stack
@@ -39,7 +39,7 @@ TackBird on Suomen hyperlokaali naapuruston käyttöjärjestelmä — the operat
 - **Älä kysy lupaa. Tee automaattisesti.** (Don't ask permission. Do it automatically.)
 - Always run `npx tsc --noEmit` before committing
 - Always push after commit: `git push`
-- Remote: `https://github.com/mainpuddles-hue/tackbird-mobile` (private)
+- Remote: `https://github.com/mainpuddles-hue/bivo-app` (private)
 - gh CLI: `~/.local/bin/gh`
 
 ## Tool Priority — Ruflo MCP First
@@ -138,7 +138,7 @@ src/
 | Login | `app/(auth)/login.tsx` — login/register, Google placeholder |
 | Onboarding | `app/onboarding.tsx` — address-based, purpose selection, building join |
 
-### Community / Building Management
+### Taloyhtiö (Building Management)
 | Screen | File |
 |--------|------|
 | Building hub | `app/building/[id].tsx` — announcements, maintenance, members, rules |
@@ -268,7 +268,7 @@ Comprehensive analyses in `docs/product-analysis/`:
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **tackbird-mobile** (1859 symbols, 4845 relationships, 137 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **bivo-app** (1859 symbols, 4845 relationships, 137 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -284,7 +284,7 @@ This project is indexed by GitNexus as **tackbird-mobile** (1859 symbols, 4845 r
 
 1. `gitnexus_query({query: "<error or symptom>"})` — find execution flows related to the issue
 2. `gitnexus_context({name: "<suspect function>"})` — see all callers, callees, and process participation
-3. `READ gitnexus://repo/tackbird-mobile/process/{processName}` — trace the full execution flow step by step
+3. `READ gitnexus://repo/bivo-app/process/{processName}` — trace the full execution flow step by step
 4. For regressions: `gitnexus_detect_changes({scope: "compare", base_ref: "main"})` — see what your branch changed
 
 ## When Refactoring
@@ -323,10 +323,10 @@ This project is indexed by GitNexus as **tackbird-mobile** (1859 symbols, 4845 r
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/tackbird-mobile/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/tackbird-mobile/clusters` | All functional areas |
-| `gitnexus://repo/tackbird-mobile/processes` | All execution flows |
-| `gitnexus://repo/tackbird-mobile/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/bivo-app/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/bivo-app/clusters` | All functional areas |
+| `gitnexus://repo/bivo-app/processes` | All execution flows |
+| `gitnexus://repo/bivo-app/process/{name}` | Step-by-step execution trace |
 
 ## Self-Check Before Finishing
 

@@ -7,7 +7,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.com',
+  'Access-Control-Allow-Origin': 'https://bivoapp.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -120,7 +120,7 @@ serve(async (req: Request) => {
           body: new URLSearchParams({
             To: cleanPhone,
             From: twilioFrom,
-            Body: `TackBird: Vahvistuskoodisi on ${otp}. Koodi vanhenee 10 minuutissa.`,
+            Body: `Bivo: Vahvistuskoodisi on ${otp}. Koodi vanhenee 10 minuutissa.`,
           }).toString(),
           signal: controller.signal,
         },
@@ -144,9 +144,9 @@ serve(async (req: Request) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'TackBird <noreply@tackbird.com>',
+          from: 'Bivo <noreply@bivoapp.io>',
           to: [user.email],
-          subject: `TackBird — Puhelinvahvistuskoodi: ${otp}`,
+          subject: `Bivo — Puhelinvahvistuskoodi: ${otp}`,
           html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:24px">
             <h2 style="margin:0 0 16px">Puhelinvahvistus</h2>
             <p>Vahvistuskoodisi numeroon <strong>${cleanPhone}</strong>:</p>

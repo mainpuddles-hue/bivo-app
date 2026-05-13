@@ -12,7 +12,7 @@ function getEnvOrThrow(key: string): string {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.com',
+  'Access-Control-Allow-Origin': 'https://bivoapp.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -216,12 +216,12 @@ serve(async (req) => {
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F4F0;padding:32px 0"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%">
 <tr><td style="background:#2D6B5E;padding:28px 32px;border-radius:16px 16px 0 0">
-<h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;letter-spacing:1.7px">TACKBIRD</h1>
-<p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px">Naapurustosi ilmoitustaulu</p>
+<h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;letter-spacing:1.7px">BIVO</h1>
+<p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px">Naapurustosi markkinapaikka</p>
 </td></tr>
 <tr><td style="background:#fff;padding:36px 32px;font-size:15px;line-height:1.6;color:#1A1A2E">
 <h2 style="margin:0 0 16px;font-size:20px">${type === 'recovery' ? 'Nollaa salasanasi' : 'Vahvista sahkopostisi'}</h2>
-<p>${type === 'recovery' ? 'Syota tama koodi TackBird-sovellukseen:' : 'Tervetuloa TackBirdiin! Syota tama koodi sovellukseen:'}</p>
+<p>${type === 'recovery' ? 'Syota tama koodi Bivo-sovellukseen:' : 'Tervetuloa Bivoon! Syota tama koodi sovellukseen:'}</p>
 <div style="margin:28px 0;text-align:center;background:#F5F4F0;border-radius:12px;padding:24px">
 <span style="font-size:36px;font-weight:800;letter-spacing:8px;color:#2D6B5E">${code}</span>
 </div>
@@ -242,9 +242,9 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'TackBird <onboarding@resend.dev>',
+          from: 'Bivo <onboarding@resend.dev>',
           to: cleanEmail,
-          subject: type === 'recovery' ? 'TackBird — Nollaa salasanasi' : 'TackBird — Vahvistuskoodi',
+          subject: type === 'recovery' ? 'Bivo — Nollaa salasanasi' : 'Bivo — Vahvistuskoodi',
           html: emailHtml,
         }),
         signal: controller.signal,

@@ -305,8 +305,8 @@ export default function MessagesScreen() {
   // Also check if blocked users changed (flag set by profile/[userId].tsx after block/unblock)
   useFocusEffect(useCallback(() => {
     // Check if blocked list changed since last focus — if so, clear flag first so fetch uses fresh data
-    AsyncStorage.getItem('tackbird_blocked_changed').then((val) => {
-      if (val) AsyncStorage.removeItem('tackbird_blocked_changed')
+    AsyncStorage.getItem('bivo_blocked_changed').then((val) => {
+      if (val) AsyncStorage.removeItem('bivo_blocked_changed')
     }).catch((e) => { if (__DEV__) console.warn('Blocked list check failed:', e) })
     fetchConversations()
   }, [fetchConversations]))

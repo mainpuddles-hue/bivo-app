@@ -1,10 +1,10 @@
 ---
 name: Architecture snapshot March 2026
-description: COMPLETE app architecture — LOAD THIS FIRST in any conversation. Contains everything needed to understand TackBird.
+description: COMPLETE app architecture — LOAD THIS FIRST in any conversation. Contains everything needed to understand Bivo.
 type: project
 ---
 
-## What is TackBird
+## What is Bivo
 
 Neighborhood marketplace + community app for Finland. Users can:
 - Post listings (tarvitsen/tarjoan/ilmaista/nappaa/lainaa/tapahtuma)
@@ -29,7 +29,7 @@ Expo SDK 54 + Expo Router + TypeScript (strict) + Supabase + Stripe + StyleSheet
 - **Stripe test key:** sk_test_51T9TNo... (set as Edge Function secret)
 
 ## CRITICAL RULES
-- **MOBILE ONLY** — no web version. tackbird-v2 is dead. Never reference it as backend.
+- **MOBILE ONLY** — no web version. bivo-v2 is dead. Never reference it as backend.
 - **All backend = Supabase Edge Functions** (12 deployed) + Supabase DB
 - **Apple IAP required** for digital subscriptions (Pro, Business). Stripe hidden on iOS.
 - **Stripe allowed** for physical services/rentals (person-to-person transactions)

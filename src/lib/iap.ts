@@ -3,9 +3,9 @@ import type { BoostTier } from '@/lib/types'
 
 // Product definitions
 export const BOOST_PRODUCTS = [
-  { id: 'com.tackbird.boost_1', credits: 1, priceCents: 199, label: 'boost.boost1' },
-  { id: 'com.tackbird.boost_3', credits: 3, priceCents: 499, label: 'boost.boost3' },
-  { id: 'com.tackbird.boost_5', credits: 5, priceCents: 799, label: 'boost.boost5' },
+  { id: 'com.bivo.boost_1', credits: 1, priceCents: 199, label: 'boost.boost1' },
+  { id: 'com.bivo.boost_3', credits: 3, priceCents: 499, label: 'boost.boost3' },
+  { id: 'com.bivo.boost_5', credits: 5, priceCents: 799, label: 'boost.boost5' },
 ] as const
 
 type BoostProductId = (typeof BOOST_PRODUCTS)[number]['id']

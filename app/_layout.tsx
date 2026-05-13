@@ -4,7 +4,7 @@ import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { Alert, Platform, View } from 'react-native'
+import { Alert, Platform, View, StyleSheet as RNStyleSheet } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Notifications from 'expo-notifications'
 import * as SplashScreen from 'expo-splash-screen'
@@ -28,6 +28,7 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { useGlobalErrorRecovery } from '@/hooks/useGlobalErrorRecovery'
 import { useOTAUpdate } from '@/hooks/useOTAUpdate'
 import { useMemoryWarning } from '@/hooks/useMemoryWarning'
+import { BivoTextLogo } from '@/components/BivoTextLogo'
 
 import { LogBox } from 'react-native'
 
@@ -58,8 +59,8 @@ initSentry()
 // Keep splash screen visible until fonts are loaded
 SplashScreen.preventAutoHideAsync()
 
-const LANG_AUTO_SET_KEY = 'tackbird_lang_auto_set'
-const UNSUPPORTED_DISMISSED_KEY = 'tackbird_unsupported_dismissed'
+const LANG_AUTO_SET_KEY = 'bivo_lang_auto_set'
+const UNSUPPORTED_DISMISSED_KEY = 'bivo_unsupported_dismissed'
 
 /** Map detected ISO country code to a default locale */
 function countryToLocale(country: string | null): Locale | null {
@@ -681,11 +682,6 @@ function RootLayoutInner() {
         <Stack.Screen name="verification" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="invite/[code]" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="event-chat/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-        <Stack.Screen name="building/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-        <Stack.Screen name="building/chat/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-        <Stack.Screen name="building/announcement/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-        <Stack.Screen name="building/maintenance/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
-        <Stack.Screen name="city-admin" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="+not-found" options={{ headerShown: false, animation: 'fade' }} />
       </Stack>
     </View>
@@ -708,7 +704,13 @@ export default function RootLayout() {
     }
   }, [fontsLoaded])
 
-  if (!fontsLoaded) return null
+  if (!fontsLoaded) {
+    return (
+      <View style={splashStyles.container}>
+        <BivoTextLogo width={220} color="#E8E6E0" />
+      </View>
+    )
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -726,3 +728,12 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   )
 }
+
+const splashStyles = RNStyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1A1D1F',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+})

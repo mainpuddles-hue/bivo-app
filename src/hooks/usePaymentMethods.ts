@@ -52,7 +52,7 @@ export function usePaymentMethods(userId: string | null) {
         },
         body: JSON.stringify({
           user_id: userId,
-          return_url: 'tackbird://payment-settings',
+          return_url: 'bivo://payment-settings',
         }),
         signal: controller.signal,
       })

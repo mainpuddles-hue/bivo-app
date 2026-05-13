@@ -32,8 +32,8 @@ import type { Post, PostType } from '@/lib/types'
 
 const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''}/functions/v1`
 
-const HISTORY_KEY = 'tackbird_recent_searches'
-const SAVED_SEARCHES_KEY = 'tackbird-saved-searches'
+const HISTORY_KEY = 'bivo_recent_searches'
+const SAVED_SEARCHES_KEY = 'bivo-saved-searches'
 const MAX_HISTORY = 5
 
 type TimeFilter = 'all' | 'today' | 'week' | 'month'

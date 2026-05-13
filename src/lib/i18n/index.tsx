@@ -16,7 +16,7 @@ type TFunction = (key: string, params?: Record<string, string | number>) => stri
 
 type TranslationMap = Record<string, string | Record<string, unknown>>
 
-const STORAGE_KEY = 'tackbird-locale'
+const STORAGE_KEY = 'bivo-locale'
 
 function getNestedValue(obj: unknown, path: string): string | undefined {
   const keys = path.split('.')

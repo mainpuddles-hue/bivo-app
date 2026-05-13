@@ -169,7 +169,7 @@ serve(async (req) => {
         signal: controller.signal,
         headers: {
           'Accept': 'text/html',
-          'User-Agent': 'TackBird/1.0 (Helsinki neighborhood app)',
+          'User-Agent': 'Bivo/1.0 (Helsinki neighborhood app)',
         },
       })
     } catch (err: any) {

@@ -171,23 +171,7 @@ function CreateEventScreenInner() {
     setDescription(t(tmpl.descriptionKey) ?? '')
     setCategory(tmpl.category)
     if (tmpl.maxParticipants) setMaxParticipants(tmpl.maxParticipants)
-    // Pre-fill location from user's building address
-    if (currentUserId) {
-      Promise.resolve(
-        supabase
-          .from('user_buildings')
-          .select('building:buildings(street_address, lat, lng)')
-          .eq('user_id', currentUserId)
-          .single()
-      ).then(({ data }: any) => {
-        if (data?.building) {
-          setLocationName(data.building.street_address)
-          setLocationLat(data.building.lat)
-          setLocationLng(data.building.lng)
-        }
-      }).catch((e: any) => { if (__DEV__) console.warn('[create-event] building address fetch failed:', e?.message) })
-    }
-  }, [template, edit, t, currentUserId, supabase])
+  }, [template, edit, t])
 
   const pickImage = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()

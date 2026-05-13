@@ -1,6 +1,6 @@
 // Supabase Edge Function: verify-boost-purchase
 // Validates IAP receipts (Apple/Google/sandbox) and credits boost balance.
-// Products: com.tackbird.boost_1 (1), boost_3 (3), boost_5 (5)
+// Products: com.bivo.boost_1 (1), boost_3 (3), boost_5 (5)
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
@@ -12,14 +12,14 @@ function getEnvOrThrow(key: string): string {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.com',
+  'Access-Control-Allow-Origin': 'https://bivoapp.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 const PRODUCT_CREDITS: Record<string, number> = {
-  'com.tackbird.boost_1': 1,
-  'com.tackbird.boost_3': 3,
-  'com.tackbird.boost_5': 5,
+  'com.bivo.boost_1': 1,
+  'com.bivo.boost_3': 3,
+  'com.bivo.boost_5': 5,
 }
 
 const VALID_PLATFORMS = ['ios', 'android', 'sandbox'] as const
@@ -376,7 +376,7 @@ async function validateGooglePlayReceipt(
   purchaseToken: string,
   details: Record<string, unknown>,
 ): Promise<boolean> {
-  const PACKAGE_NAME = 'com.tackbird.app'
+  const PACKAGE_NAME = 'com.bivoapp.io'
 
   if (!purchaseToken || typeof purchaseToken !== 'string') {
     details.error = 'Missing or invalid purchase token'

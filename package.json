@@ -1,5 +1,5 @@
 {
-  "name": "tackbird-mobile",
+  "name": "bivo-app",
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
@@ -14,6 +14,7 @@
     "@expo/metro-runtime": "~6.1.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "11.4.1",
+    "@react-native-google-signin/google-signin": "^16.1.2",
     "@sentry/react-native": "~7.2.0",
     "@supabase/supabase-js": "^2.99.2",
     "expo": "~54.0.0",
@@ -22,7 +23,7 @@
     "expo-camera": "~17.0.10",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
-    "expo-dev-client": "~6.0.20",
+    "expo-dev-client": "~6.0.21",
     "expo-file-system": "~19.0.21",
     "expo-font": "~14.0.11",
     "expo-haptics": "~15.0.8",
@@ -47,6 +48,7 @@
     "react-native-gesture-handler": "~2.28.0",
     "react-native-map-clustering": "^4.0.0",
     "react-native-maps": "1.20.1",
+    "react-native-qrcode-svg": "^6.3.21",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",

@@ -31,7 +31,7 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
   follows: true,
 }
 
-const CACHE_KEY = 'tackbird-notification-prefs'
+const CACHE_KEY = 'bivo-notification-prefs'
 
 export function useNotificationPreferences() {
   const supabase = useSupabase()

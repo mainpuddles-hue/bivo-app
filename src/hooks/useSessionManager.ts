@@ -5,7 +5,7 @@ import { Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSupabase } from './useSupabase'
 
-const SESSION_KEY = 'tackbird_device_session'
+const SESSION_KEY = 'bivo_device_session'
 const MAX_SESSIONS = 3
 
 /**

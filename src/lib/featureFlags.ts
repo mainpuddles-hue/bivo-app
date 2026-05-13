@@ -15,7 +15,7 @@ const DEFAULTS = {
 
 type FeatureKey = keyof typeof DEFAULTS
 
-const CACHE_KEY = 'tackbird_feature_flags'
+const CACHE_KEY = 'bivo_feature_flags'
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 // Mutable runtime state (starts with defaults, updated from remote)

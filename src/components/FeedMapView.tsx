@@ -5,8 +5,8 @@
  * Uses onMarkerSelect (iOS native annotation event) for reliable tap handling
  * combined with custom View markers for visual distinction.
  */
-import { useCallback, useMemo, useRef, useState } from 'react'
-import { View, Text, StyleSheet, Pressable, Platform } from 'react-native'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { View, Text, StyleSheet } from 'react-native'
 import MapView, { Marker, Circle, Callout, PROVIDER_DEFAULT } from 'react-native-maps'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
@@ -42,13 +42,11 @@ const PIN_COLORS: Record<string, string> = {
 
 const EVENT_COLOR = '#2B8A62'
 
-// Category short labels
-const TYPE_LABELS: Record<string, string> = {
-  tarvitsen: 'TARVE',
-  tarjoan: 'TARJOUS',
-  ilmaista: 'ILMAINEN',
-  nappaa: 'NAPPAA',
-  lainaa: 'LAINAA',
+// Category short labels per locale
+const TYPE_LABELS: Record<string, Record<string, string>> = {
+  fi: { tarvitsen: 'TARVE', tarjoan: 'TARJOUS', ilmaista: 'ILMAINEN', nappaa: 'NAPPAA', lainaa: 'LAINAA' },
+  en: { tarvitsen: 'NEED', tarjoan: 'OFFER', ilmaista: 'FREE', nappaa: 'GRAB', lainaa: 'LEND' },
+  sv: { tarvitsen: 'BEHOV', tarjoan: 'ERBJUDER', ilmaista: 'GRATIS', nappaa: 'FÅNGA', lainaa: 'LÅN' },
 }
 
 /** Pin icon by category */
@@ -69,7 +67,8 @@ function deterministicOffset(id: string): { dLat: number; dLng: number } {
     hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0
   }
   const angle = ((hash & 0xffff) / 0xffff) * Math.PI * 2
-  const radius = 0.005 + ((hash >>> 16) & 0xfff) / 0xfff * 0.012
+  // Wider spread to prevent marker stacking (min ~1.5km, max ~4km)
+  const radius = 0.015 + ((hash >>> 16) & 0xfff) / 0xfff * 0.025
   return {
     dLat: Math.sin(angle) * radius,
     dLng: Math.cos(angle) * radius * 1.8,
@@ -101,6 +100,20 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
   const insets = useSafeAreaInsets()
   const mapRef = useRef<MapView | null>(null)
   const [selected, setSelected] = useState<SelectedItem | null>(null)
+  const deselectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasMounted = useRef(false)
+
+  // Clear stale selection when filter changes
+  useEffect(() => {
+    setSelected(null)
+  }, [activeFilter])
+
+  // Cleanup deselect timer on unmount
+  useEffect(() => {
+    return () => {
+      if (deselectTimer.current) clearTimeout(deselectTimer.current)
+    }
+  }, [])
 
   // Center on user or Helsinki
   const center = useMemo(() => {
@@ -114,8 +127,14 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
   const centerLat = center?.latitude ?? HELSINKI_CENTER.latitude
   const centerLng = center?.longitude ?? HELSINKI_CENTER.longitude
 
+  // Apply activeFilter to posts
+  const filteredPosts = useMemo(() => {
+    if (!activeFilter) return posts
+    return posts.filter(p => p.type === activeFilter)
+  }, [posts, activeFilter])
+
   const mappablePosts = useMemo(() => {
-    return posts.map((p): MappablePost => {
+    return filteredPosts.map((p): MappablePost => {
       if (p.latitude != null && p.longitude != null && p.latitude !== 0 && p.longitude !== 0) {
         return { post: p, latitude: p.latitude, longitude: p.longitude, approximate: false }
       }
@@ -127,14 +146,16 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         approximate: true,
       }
     })
-  }, [posts, centerLat, centerLng])
+  }, [filteredPosts, centerLat, centerLng])
 
-  const mappableEvents = useMemo(() =>
-    cityEvents.filter(e =>
+  // Only show events when no category filter or tapahtuma filter
+  const mappableEvents = useMemo(() => {
+    if (activeFilter && activeFilter !== 'tapahtuma') return []
+    return cityEvents.filter(e =>
       e.latitude != null && e.longitude != null &&
       e.latitude !== 0 && e.longitude !== 0
-    ),
-  [cityEvents])
+    )
+  }, [cityEvents, activeFilter])
 
   const initialRegion = useMemo(() => {
     if (center) {
@@ -157,7 +178,12 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
   }, [mappableEvents])
 
   // iOS native annotation selection — reliable even with custom views
+  // Cancel any pending deselect when a new marker is selected (prevents flash)
   const handleMarkerSelect = useCallback((e: any) => {
+    if (deselectTimer.current) {
+      clearTimeout(deselectTimer.current)
+      deselectTimer.current = null
+    }
     const id = e?.nativeEvent?.id ?? e?.nativeEvent?.identifier
     if (!id) return
     try { Haptics.selectionAsync() } catch {}
@@ -167,6 +193,14 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
     if (event) { setSelected({ kind: 'event', data: event }) }
   }, [postMap, eventMap])
 
+  // Debounced deselect — iOS fires deselect before select when switching markers
+  const handleMarkerDeselect = useCallback(() => {
+    deselectTimer.current = setTimeout(() => {
+      setSelected(null)
+      deselectTimer.current = null
+    }, 100)
+  }, [])
+
   const handleCardPress = useCallback(() => {
     if (!selected) return
     if (selected.kind === 'post') {
@@ -175,6 +209,34 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
       router.push(`/event/${selected.data.id}` as any)
     }
   }, [selected, router])
+
+  // Zoom to fit all markers — skip initial mount (uses initialRegion), run on filter changes
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true
+      return
+    }
+    if (!mapRef.current) return
+    const coords: { latitude: number; longitude: number }[] = []
+    mappablePosts.forEach(mp => coords.push({ latitude: mp.latitude, longitude: mp.longitude }))
+    mappableEvents.forEach(e => coords.push({ latitude: e.latitude!, longitude: e.longitude! }))
+    if (coords.length === 0) return
+    const timer = setTimeout(() => {
+      if (coords.length === 1) {
+        mapRef.current?.animateToRegion({
+          ...coords[0],
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        }, 300)
+      } else {
+        mapRef.current?.fitToCoordinates(coords, {
+          edgePadding: { top: 60, right: 40, bottom: 180, left: 40 },
+          animated: true,
+        })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [mappablePosts, mappableEvents])
 
   const totalCount = mappablePosts.length + mappableEvents.length
   // Bottom offset for preview card — above tab bar
@@ -192,7 +254,8 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         customMapStyle={isDark ? DARK_MAP_STYLE : undefined}
         onPress={() => setSelected(null)}
         onMarkerSelect={handleMarkerSelect}
-        onMarkerDeselect={() => setSelected(null)}
+        onMarkerDeselect={handleMarkerDeselect}
+        userInterfaceStyle={isDark ? 'dark' : 'light'}
       >
         {/* 10km radius circle — always show around center point */}
         <Circle
@@ -206,7 +269,8 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         {/* Post markers — custom colored pins */}
         {mappablePosts.map(mp => {
           const color = PIN_COLORS[mp.post.type] ?? '#888'
-          const label = TYPE_LABELS[mp.post.type] ?? ''
+          const labels = TYPE_LABELS[locale] ?? TYPE_LABELS.fi
+          const label = labels[mp.post.type] ?? ''
           return (
             <Marker
               key={`p-${mp.post.id}`}
@@ -240,7 +304,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
             <View style={s.markerWrap} pointerEvents="none">
               <View style={[s.markerBubble, { backgroundColor: EVENT_COLOR }]}>
                 <Calendar size={13} color="#fff" strokeWidth={2.5} />
-                <Text style={s.markerLabel}>EVENT</Text>
+                <Text style={s.markerLabel}>{locale === 'fi' ? 'TAPAHTUMA' : locale === 'sv' ? 'EVENEMANG' : 'EVENT'}</Text>
               </View>
               <View style={[s.markerArrow, { borderTopColor: EVENT_COLOR }]} />
             </View>
@@ -262,7 +326,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
       {/* Preview card when marker selected */}
       {selected && (
         <View style={[s.preview, { backgroundColor: colors.card, borderColor: colors.border, bottom: previewBottom }]}>
-          <Pressable onPress={handleCardPress} style={s.previewInner}>
+          <PressableOpacity onPress={handleCardPress} style={s.previewInner} accessibilityRole="button" accessibilityLabel={selected.kind === 'post' ? selected.data.title : selected.data.name_fi}>
             {selected.kind === 'post' && selected.data.image_url && (
               <Image
                 source={{ uri: getImageUrl(selected.data.image_url, 'thumbnail')! }}
@@ -304,7 +368,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
                 {t('feed.tapToOpen')}
               </Text>
             </View>
-          </Pressable>
+          </PressableOpacity>
           <PressableOpacity
             onPress={() => setSelected(null)}
             hitSlop={8}

@@ -25,16 +25,14 @@ import { PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/com
 import { trackEvent } from '@/lib/analytics'
 import { maybeRequestReview } from '@/lib/reviewPrompt'
 import { getCachedUserId } from '@/lib/authCache'
-import { checkRateLimit, recordRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
-import { uriToArrayBuffer } from '@/lib/uploadHelpers'
+import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { mapErrorToFinnish } from '@/lib/errorMessages'
 import { useToast } from '@/components/Toast'
 import { suggestTags } from '@/lib/autoCategory'
 import type { PostType, TrustLevel } from '@/lib/types'
 import { suggestExpirationDays } from '@/lib/expirePrediction'
-import { STORAGE_KEYS } from '@/lib/storageKeys'
 
-const DRAFT_KEY = STORAGE_KEYS.POST_DRAFT
+const DRAFT_KEY = 'bivo_post_draft'
 
 const TARJOAN_SERVICE_TAGS: { id: string; label: string }[] = [
   { id: 'kodinhoito', label: 'tags.kodinhoito' },
@@ -134,11 +132,11 @@ const POST_TAGS: Record<string, { id: string; label: string }[]> = {
 }
 
 const EXPIRATION_OPTIONS = [
-  { days: 0, label: 'create.noExpiration' },
-  { days: 3, label: 'create.expires3' },
   { days: 7, label: 'create.expires7' },
   { days: 14, label: 'create.expires14' },
   { days: 30, label: 'create.expires30' },
+  { days: 60, label: 'create.expires60' },
+  { days: 90, label: 'create.expires90' },
 ]
 
 const CATEGORY_PILLS: { type: PostType; label: string }[] = [
@@ -179,7 +177,7 @@ export default function CreateScreen() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [tarjoanType, setTarjoanType] = useState<'service' | 'item'>('service')
   const [itemCondition, setItemCondition] = useState<string | null>(null)
-  const [expirationDays, setExpirationDays] = useState(0)
+  const [expirationDays, setExpirationDays] = useState(30)
   const expirationSetByUser = useRef(false)
   const [images, setImages] = useState<string[]>([])
   const [latitude, setLatitude] = useState<number | null>(null)
@@ -336,7 +334,7 @@ export default function CreateScreen() {
     setDailyFee(''); setServicePrice(''); setEventDate('')
     setEventStartTime(''); setEventEndTime(''); setEventMaxCapacity('')
     setSelectedTags([]); setTarjoanType('service'); setItemCondition(null)
-    setExpirationDays(0); expirationSetByUser.current = false
+    setExpirationDays(30); expirationSetByUser.current = false
     setIsAnonymous(false); setIsUrgent(false)
     setLatitude(null); setLongitude(null)
   }, [])
@@ -453,7 +451,7 @@ export default function CreateScreen() {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${tempMapCoords.lat}&lon=${tempMapCoords.lng}&zoom=18&addressdetails=1`,
-        { headers: { 'Accept-Language': 'fi', 'User-Agent': 'TackBirdMobile/1.0' } }
+        { headers: { 'Accept-Language': 'fi', 'User-Agent': 'BivoMobile/1.0' } }
       )
       const data = await res.json()
       if (data?.display_name) {
@@ -566,7 +564,7 @@ export default function CreateScreen() {
       const mimeSubtype = mimeType.split('/')[1] ?? 'jpeg'
       const ext = mimeSubtype === 'jpeg' ? 'jpg' : mimeSubtype
       const path = `${userId}/${postId}/${i}.${ext}`
-      const arrayBuffer = await uriToArrayBuffer(uri)
+      const arrayBuffer = await blob.arrayBuffer()
       const success = await uploadSingleImageWithProgress(uri, path, mimeType, arrayBuffer, i)
       if (success) {
         const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path)
@@ -677,11 +675,10 @@ export default function CreateScreen() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { toast.show({ message: t('auth.loginRequired'), type: 'error' }); return }
+      const effectiveDays = expirationDays > 0 ? expirationDays : 30
       const expiresAt = isUrgent
         ? new Date(Date.now() + urgencyHours * 3600000).toISOString()
-        : expirationDays > 0
-          ? new Date(Date.now() + expirationDays * 86400000).toISOString()
-          : null
+        : new Date(Date.now() + effectiveDays * 86400000).toISOString()
       try {
         const { data: { session: modSession } } = await supabase.auth.getSession()
         const modHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -704,15 +701,6 @@ export default function CreateScreen() {
       if (selectedType === 'tarjoan') {
         finalTags.push(tarjoanType === 'item' ? 'tarjoan_item' : 'tarjoan_service')
         if (tarjoanType === 'item' && itemCondition) { finalTags.push(itemCondition) }
-      }
-      if (__DEV__) {
-        const { data: { session: dbgSession } } = await supabase.auth.getSession()
-        console.warn('[create] auth context:', {
-          userId: user.id?.substring(0, 8),
-          sessionUserId: dbgSession?.user?.id?.substring(0, 8),
-          jwtSub: dbgSession?.access_token ? JSON.parse(atob(dbgSession.access_token.split('.')[1])).sub?.substring(0, 8) : 'none',
-          jwtRole: dbgSession?.access_token ? JSON.parse(atob(dbgSession.access_token.split('.')[1])).role : 'none',
-        })
       }
       const { data: post, error } = await (supabase.from('posts') as any).insert({
         user_id: user.id, type: selectedType, title: title.trim(), description: description.trim(),
@@ -766,11 +754,12 @@ export default function CreateScreen() {
           }
         }
         const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null
-        const { error: eventError } = await (supabase.from('events') as any).insert({
+        const { error: eventError } = await (supabase.from('community_events') as any).insert({
           post_id: post.id, creator_id: user.id, title: title.trim(), description: description.trim(),
           event_date: eventDateISO, event_end_date: eventEndISO,
           location_name: location.trim() || null, location_lat: latitude ?? null, location_lng: longitude ?? null,
-          max_attendees: (maxAtt && maxAtt > 0) ? maxAtt : null, icon: 'CalendarDays',
+          max_attendees: (maxAtt && maxAtt > 0) ? maxAtt : null,
+          naapurusto: userNeighborhood ?? null,
         })
         if (eventError) {
           if (__DEV__) console.error('[create] event insert failed:', eventError.message)
@@ -793,7 +782,7 @@ export default function CreateScreen() {
         }).catch((err) => { if (__DEV__) console.warn('[create] embed-post failed:', err) })
       }
       if (isUrgent && post?.id) {
-        const URGENT_COOLDOWN_KEY = 'tackbird_last_urgent'
+        const URGENT_COOLDOWN_KEY = 'bivo_last_urgent'
         const URGENT_COOLDOWN_MS = 30 * 60 * 1000
         const lastUrgent = await AsyncStorage.getItem(URGENT_COOLDOWN_KEY)
         if (lastUrgent && Date.now() - parseInt(lastUrgent, 10) < URGENT_COOLDOWN_MS) {
@@ -804,7 +793,6 @@ export default function CreateScreen() {
         }
       }
       trackEvent('post_created', { type: selectedType, has_price: !!servicePrice })
-      recordRateLimit('post_create').catch(() => {}) // best-effort, don't block on quota
       const createdPostId = post?.id
       AsyncStorage.removeItem(DRAFT_KEY).catch((e) => { if (__DEV__) console.warn('Post-submit draft cleanup failed:', e) })
       if (!mountedRef.current) return
@@ -818,11 +806,7 @@ export default function CreateScreen() {
         successTimeoutRef.current = null; setShowSuccess(false); router.replace(`/post/${createdPostId}`)
       }, 2000)
     } catch (err: any) {
-      if (__DEV__) {
-        console.warn('[create] publish failed:', err?.message ?? err)
-        console.warn('[create] error code/status:', err?.code, err?.status, err?.details, err?.hint)
-        console.warn('[create] cleanup id:', createdPostIdForCleanup)
-      }
+      if (__DEV__) console.log('[create] error:', JSON.stringify(err))
       if (createdPostIdForCleanup) {
         try { await (supabase.from('posts') as any).delete().eq('id', createdPostIdForCleanup) } catch (e) { if (__DEV__) console.warn('Post cleanup after error failed:', e) }
       }
@@ -1400,7 +1384,7 @@ export default function CreateScreen() {
               <PressableOpacity onPress={async () => {
                 if (successTimeoutRef.current) { clearTimeout(successTimeoutRef.current); successTimeoutRef.current = null }
                 if (successPostId) {
-                  try { await Share.share({ message: `${t('create.published')} https://tackbird.com/post/${successPostId}` }) } catch (e) { if (__DEV__) console.warn('Share failed:', e) }
+                  try { await Share.share({ message: `${t('create.published')} https://bivoapp.io/post/${successPostId}` }) } catch (e) { if (__DEV__) console.warn('Share failed:', e) }
                   setShowSuccess(false); router.replace(`/post/${successPostId}`)
                 }
               }} style={[mk.shareBtn, { backgroundColor: colors.foreground }]}>

@@ -113,7 +113,7 @@ serve(async (req) => {
         const { error: paymentErr } = await supabase.from('payments').upsert({
           user_id: buyer_id,
           amount: session.amount_total ?? 0,
-          description: session.metadata?.description ?? `TackBird ${type}`,
+          description: session.metadata?.description ?? `Bivo ${type}`,
           status: 'paid',
           type,
           post_id: post_id || null,

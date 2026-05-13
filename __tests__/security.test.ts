@@ -77,21 +77,21 @@ describe('verify-boost-purchase: sandbox mode blocked in production', () => {
 describe('verify-boost-purchase: product validation', () => {
   // From verify-boost-purchase/index.ts lines 16-20:
   const PRODUCT_CREDITS: Record<string, number> = {
-    'com.tackbird.boost_1': 1,
-    'com.tackbird.boost_3': 3,
-    'com.tackbird.boost_5': 5,
+    'com.bivo.boost_1': 1,
+    'com.bivo.boost_3': 3,
+    'com.bivo.boost_5': 5,
   }
 
   const VALID_PLATFORMS = ['ios', 'android', 'sandbox'] as const
 
   test('Valid product IDs map to correct credit amounts', () => {
-    expect(PRODUCT_CREDITS['com.tackbird.boost_1']).toBe(1)
-    expect(PRODUCT_CREDITS['com.tackbird.boost_3']).toBe(3)
-    expect(PRODUCT_CREDITS['com.tackbird.boost_5']).toBe(5)
+    expect(PRODUCT_CREDITS['com.bivo.boost_1']).toBe(1)
+    expect(PRODUCT_CREDITS['com.bivo.boost_3']).toBe(3)
+    expect(PRODUCT_CREDITS['com.bivo.boost_5']).toBe(5)
   })
 
   test('Invalid product IDs return undefined (rejected)', () => {
-    expect(PRODUCT_CREDITS['com.tackbird.boost_10']).toBeUndefined()
+    expect(PRODUCT_CREDITS['com.bivo.boost_10']).toBeUndefined()
     expect(PRODUCT_CREDITS['com.other.boost_1']).toBeUndefined()
     expect(PRODUCT_CREDITS['']).toBeUndefined()
     expect(PRODUCT_CREDITS['boost_1']).toBeUndefined()

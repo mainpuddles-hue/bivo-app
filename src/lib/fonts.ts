@@ -1,5 +1,5 @@
 /**
- * TackBird Helsinki Monochrome typography
+ * Bivo Helsinki Monochrome typography
  *
  * Instrument Sans — single family for all text.
  * No secondary heading font.

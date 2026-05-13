@@ -11,7 +11,7 @@ function getEnvOrThrow(key: string): string {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.com',
+  'Access-Control-Allow-Origin': 'https://bivoapp.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -40,9 +40,9 @@ const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }
       <p><strong>${escapeHtml(data.post_title)}</strong></p>
       <p>Päivämäärä: ${escapeHtml(data.dates)}</p>
       <p>Summa: ${escapeHtml(data.amount)}€</p>
-      <p>Viesti palveluntarjoajalle löytyy TackBird-sovelluksesta.</p>
+      <p>Viesti palveluntarjoajalle löytyy Bivo-sovelluksesta.</p>
       <br>
-      <p>— TackBird</p>
+      <p>— Bivo</p>
     `,
   }),
   payment_receipt: (data) => ({
@@ -54,28 +54,28 @@ const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }
       <p>Päivämäärä: ${escapeHtml(data.date)}</p>
       <p>Stripe-viite: ${escapeHtml(data.stripe_id)}</p>
       <br>
-      <p>— TackBird</p>
+      <p>— Bivo</p>
     `,
   }),
   welcome: (data) => ({
-    subject: 'Tervetuloa TackBirdiin!',
+    subject: 'Tervetuloa Bivoon!',
     html: `
       <h2>Tervetuloa ${escapeHtml(data.name)}!</h2>
       <p>Naapurustosi odottaa sinua.</p>
       <p>Aloita luomalla ensimmäinen postaus tai selaamalla naapuruston ilmoituksia.</p>
       <br>
-      <p>— TackBird</p>
+      <p>— Bivo</p>
     `,
   }),
   password_reset: (data) => ({
-    subject: 'Vaihda salasanasi — TackBird',
+    subject: 'Vaihda salasanasi — Bivo',
     html: `
       <h2>Salasanan vaihto</h2>
       <p>Klikkaa alla olevaa linkkiä vaihtaaksesi salasanasi:</p>
       <p><a href="${escapeHtml(data.reset_url)}" style="display:inline-block;padding:12px 24px;background:#2D6B5E;color:#fff;text-decoration:none;border-radius:8px;">Vaihda salasana</a></p>
       <p>Jos et pyytänyt tätä, voit ohittaa tämän viestin.</p>
       <br>
-      <p>— TackBird</p>
+      <p>— Bivo</p>
     `,
   }),
   refund_confirmation: (data) => ({
@@ -86,7 +86,7 @@ const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }
       <p>Summa: ${escapeHtml(data.amount)}€</p>
       <p>Hyvitys näkyy tililläsi 5–10 arkipäivän kuluessa.</p>
       <br>
-      <p>— TackBird</p>
+      <p>— Bivo</p>
     `,
   }),
   booking_reminder: (data) => ({
@@ -96,9 +96,9 @@ const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }
       <p><strong>${escapeHtml(data.post_title)}</strong></p>
       <p>Päivämäärä: ${escapeHtml(data.date)}</p>
       <p>Muista palauttaa tavara sovittuna aikana.</p>
-      <p><a href="https://tackbird.com" style="display:inline-block;padding:12px 24px;background:#2D6B5E;color:#fff;text-decoration:none;border-radius:8px;">Avaa TackBird</a></p>
+      <p><a href="https://bivoapp.io" style="display:inline-block;padding:12px 24px;background:#2D6B5E;color:#fff;text-decoration:none;border-radius:8px;">Avaa Bivo</a></p>
       <br>
-      <p>— TackBird</p>
+      <p>— Bivo</p>
     `,
   }),
 }
@@ -234,7 +234,7 @@ serve(async (req) => {
       resendRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: 'TackBird <onboarding@resend.dev>', to: to_email, subject, html }),
+        body: JSON.stringify({ from: 'Bivo <onboarding@resend.dev>', to: to_email, subject, html }),
         signal: controller.signal,
       })
       clearTimeout(timeout)

@@ -17,7 +17,7 @@ import { fonts } from '@/lib/fonts'
  * iOS only — InputAccessoryView renders nothing on Android. On Android the
  * system keyboard already provides a dismiss affordance.
  */
-export const KEYBOARD_DONE_ID = 'tackbird-keyboard-done'
+export const KEYBOARD_DONE_ID = 'bivo-keyboard-done'
 
 export function KeyboardDoneAccessory() {
   const { colors, isDark } = useTheme()

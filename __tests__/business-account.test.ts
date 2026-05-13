@@ -1,7 +1,7 @@
 /**
  * Business/Organization Account Business Logic Tests
  *
- * Tests the core business logic for TackBird Business accounts:
+ * Tests the core business logic for Bivo Business accounts:
  * - Plan validation: only 'monthly', 'yearly', 'business_monthly' are valid
  * - Business badge display: is_business flag drives badge rendering
  * - PRH Y-tunnus format validation: regex /^\d{7}-\d$/

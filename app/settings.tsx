@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator, Platform, Modal, Linking, KeyboardAvoidingView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing, Home, Key, Landmark } from 'lucide-react-native'
+import { Globe, Bell, Trash2, LogOut, Sun, Moon, Smartphone, Eye, Download, Info, ChevronRight, ChevronLeft, Save, Bookmark, ShieldBan, Shield, FileText, Lock, CreditCard, HelpCircle, Mail, CheckCircle, AlertCircle, MapPin, CalendarDays, MessageCircle, Heart, MessageSquare, UserPlus, Zap, User, Pencil, Bug, Check, Banknote, Search, BellOff, BellRing, Key } from 'lucide-react-native'
 import { Image } from 'expo-image'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
@@ -21,11 +21,9 @@ import { FEATURES } from '@/lib/featureFlags'
 import { clearAuthCache } from '@/lib/authCache'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { NeighborhoodPicker } from '@/components/NeighborhoodPicker'
-import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import { PressableOpacity } from '@/components/ui'
 import { SettingsRow as Row, SettingsGroup as Group, SettingsSectionLabel as SectionLabel } from '@/components/SettingsUI'
 import { useReferral, type ApplyResult } from '@/hooks/useReferral'
-import { useCooperativeInvite, type CoopInviteResult } from '@/hooks/useCooperativeInvite'
 import type { Profile, ProfileVisibility, LocationAccuracy } from '@/lib/types'
 
 const THEME_OPTIONS = [
@@ -104,23 +102,44 @@ export default function SettingsScreen() {
   // Neighborhood picker
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
 
-  // Building (taloyhtiö)
-  const [userBuilding, setUserBuilding] = useState<{ id: string; street_address: string; member_count: number; org_id: string | null } | null>(null)
-  const [showBuildingModal, setShowBuildingModal] = useState(false)
-  const [buildingAddress, setBuildingAddress] = useState('')
-  const [selectedBuildingLocation, setSelectedBuildingLocation] = useState<import('@/components/LocationAutocomplete').LocationResult | null>(null)
-  const [savingBuilding, setSavingBuilding] = useState(false)
-
-  // Cooperative invite code
-  const coopInvite = useCooperativeInvite()
-  const [coopCode, setCoopCode] = useState('')
-  const [coopStatus, setCoopStatus] = useState<'idle' | 'checking' | 'applying' | 'applied' | 'invalid' | 'expired' | 'exhausted'>('idle')
-  const [coopOrgName, setCoopOrgName] = useState<string | null>(null)
-
   // Referral code
   const referral = useReferral(profile?.id ?? null)
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'loading' | ApplyResult>('idle')
+
+  // Feedback
+  const [feedbackVisible, setFeedbackVisible] = useState(false)
+  const [feedbackText, setFeedbackText] = useState('')
+  const [sendingFeedback, setSendingFeedback] = useState(false)
+
+  const handleSendFeedback = useCallback(async () => {
+    if (!feedbackText.trim() || sendingFeedback) return
+    setSendingFeedback(true)
+    try {
+      const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch(`${FUNCTIONS_URL}/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+          'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
+        },
+        body: JSON.stringify({
+          to: 'puddles@puddles.fi',
+          subject: `Bivo palaute — ${profile?.name ?? 'Käyttäjä'}`,
+          body: `${feedbackText.trim()}\n\n---\nKäyttäjä: ${profile?.name ?? '—'}\nEmail: ${userEmail ?? '—'}\nID: ${profile?.id ?? '—'}\nVersio: ${Constants.expoConfig?.version ?? '?'}`,
+        }),
+      })
+      toast.show({ message: t('settings.feedbackSent') ?? 'Palaute lähetetty!', type: 'success' })
+      setFeedbackText('')
+      setFeedbackVisible(false)
+    } catch {
+      toast.show({ message: t('common.error') ?? 'Virhe', type: 'error' })
+    } finally {
+      setSendingFeedback(false)
+    }
+  }, [feedbackText, sendingFeedback, supabase, profile, userEmail, toast, t])
 
   // Saved searches
   const [savedSearches, setSavedSearches] = useState<{ id: string; query: string; push_enabled: boolean }[]>([])
@@ -150,7 +169,7 @@ export default function SettingsScreen() {
         const providerName = identities[0]?.provider ?? null
         setOauthProvider(providerName)
       }
-      const { data } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto, profile_visibility, location_accuracy, is_pro, pro_expires_at, stripe_subscription_id, city_id, building_id').eq('id', user.id).maybeSingle()
+      const { data } = await supabase.from('profiles').select('id, name, avatar_url, naapurusto, profile_visibility, location_accuracy, is_pro, pro_expires_at, stripe_subscription_id, city_id').eq('id', user.id).maybeSingle()
       if (!mounted) return
       if (data) {
         // Pro expiry defense-in-depth: if Pro expired, clear it locally and in DB
@@ -587,7 +606,7 @@ export default function SettingsScreen() {
       }
 
       const jsonStr = JSON.stringify(exportData, null, 2)
-      const filename = `tackbird-export-${new Date().toISOString().slice(0, 10)}.json`
+      const filename = `bivo-export-${new Date().toISOString().slice(0, 10)}.json`
 
       // Try native file sharing via expo-file-system + expo-sharing
       if (Platform.OS !== 'web') {
@@ -846,7 +865,8 @@ export default function SettingsScreen() {
         <Group label={t('settings.sectionAccount')} colors={colors}>
           <Row
             icon={<User size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('profile.title') ?? 'Profile'}
+            label={t('settings.displayName') ?? 'Nimi'}
+            value={profile?.name ?? ''}
             onPress={() => {
               if (editingName) return
               setEditingName(true)
@@ -972,85 +992,6 @@ export default function SettingsScreen() {
             />
           )}
 
-          {/* Invite code entry — visible regardless of building status */}
-          <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}>
-            <Text style={{ fontFamily: fonts.bodySemi, fontSize: 13, color: colors.mutedForeground, marginBottom: 2 }}>
-              {t('settings.enterInviteCode') ?? 'Taloyhtiön kutsukoodi'}
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-              <TextInput
-                value={coopCode}
-                onChangeText={(v) => { setCoopCode(v.toUpperCase()); if (coopStatus !== 'idle' && coopStatus !== 'checking' && coopStatus !== 'applying') setCoopStatus('idle') }}
-                placeholder="ABCD1234"
-                placeholderTextColor={colors.tertiaryForeground}
-                style={{
-                  flex: 1,
-                  height: 44,
-                  borderWidth: 1,
-                  borderColor: (coopStatus === 'invalid' || coopStatus === 'expired' || coopStatus === 'exhausted') ? colors.destructive : coopStatus === 'applied' ? (colors.accent ?? colors.primary) : colors.border,
-                  borderRadius: 12,
-                  paddingHorizontal: 12,
-                  fontFamily: fonts.bodySemi,
-                  fontSize: 16,
-                  letterSpacing: 2,
-                  color: colors.foreground,
-                  backgroundColor: colors.muted,
-                }}
-                maxLength={12}
-                autoCapitalize="characters"
-                autoCorrect={false}
-              />
-              <PressableOpacity
-                onPress={handleApplyCoopCode}
-                disabled={!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying'}
-                style={{
-                  height: 44,
-                  paddingHorizontal: 14,
-                  borderRadius: 12,
-                  backgroundColor: (!coopCode.trim() || coopStatus === 'checking' || coopStatus === 'applying') ? colors.muted : colors.primary,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                {coopStatus === 'checking' || coopStatus === 'applying' ? (
-                  <ActivityIndicator size="small" color={colors.foreground} />
-                ) : (
-                  <Text style={{ fontFamily: fonts.bodySemi, fontSize: 14, color: (!coopCode.trim()) ? colors.tertiaryForeground : colors.primaryForeground }}>
-                    {t('settings.applyCode') ?? 'Liity'}
-                  </Text>
-                )}
-              </PressableOpacity>
-            </View>
-            {coopStatus === 'applied' && coopOrgName ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <CheckCircle size={14} color={colors.accent ?? colors.primary} strokeWidth={1.8} />
-                <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.accent ?? colors.primary }}>
-                  {coopOrgName}
-                </Text>
-              </View>
-            ) : coopStatus === 'invalid' ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
-                <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
-                  {t('settings.codeInvalid') ?? 'Virheellinen koodi'}
-                </Text>
-              </View>
-            ) : coopStatus === 'expired' ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
-                <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
-                  {t('settings.codeExpired') ?? 'Koodi on vanhentunut'}
-                </Text>
-              </View>
-            ) : coopStatus === 'exhausted' ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <AlertCircle size={14} color={colors.destructive} strokeWidth={1.8} />
-                <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.destructive }}>
-                  {t('settings.codeExhausted') ?? 'Koodi on käytetty loppuun'}
-                </Text>
-              </View>
-            ) : null}
-          </View>
         </Group>
 
         {/* ── Section: Yksityisyys (Privacy) ── */}
@@ -1088,8 +1029,8 @@ export default function SettingsScreen() {
           />
           <Row
             icon={<Mail size={16} color={colors.foreground} strokeWidth={1.8} />}
-            label={t('settings.feedback') ?? 'Contact us'}
-            onPress={() => Linking.openURL('mailto:tuki@tackbird.com?subject=TackBird%20palaute').catch((e) => { if (__DEV__) console.warn('Mailto link failed:', e) })}
+            label={t('settings.feedback') ?? 'Palaute'}
+            onPress={() => setFeedbackVisible(true)}
             colors={colors}
             isDark={isDark}
           />
@@ -1187,19 +1128,6 @@ export default function SettingsScreen() {
           </Group>
         )}
 
-        {/* ── City official panel ── */}
-        {(profile as any)?.is_city_official && (
-          <Group colors={colors}>
-            <Row
-              icon={<Landmark size={16} color={colors.foreground} strokeWidth={1.8} />}
-              label={t('settings.cityAdmin') ?? 'City administration'}
-              onPress={() => router.push('/city-admin' as any)}
-              colors={colors}
-              isDark={isDark}
-            />
-          </Group>
-        )}
-
         {/* ── Security section (expanded inline) ── */}
         <Group label={t('settings.security') ?? 'Turvallisuus'} colors={colors}>
           {isOAuthUser ? (
@@ -1270,71 +1198,6 @@ export default function SettingsScreen() {
           )}
         </Group>
 
-        {/* ── Referral code ── */}
-        {!referral.invitedBy && !referral.loading && (
-          <Group label={t('referral.applyCodeTitle') ?? 'Kutsukoodi'} colors={colors}>
-            <View style={s.referralBlock}>
-              <Text style={[s.referralDesc, { color: colors.mutedForeground }]}>
-                {t('referral.applyCodeDesc')}
-              </Text>
-              <View style={s.referralRow}>
-                <TextInput
-                  value={referralInput}
-                  onChangeText={(text) => { setReferralInput(text.toUpperCase()); setReferralStatus('idle') }}
-                  placeholder={t('referral.applyCodePlaceholder')}
-                  placeholderTextColor={colors.mutedForeground}
-                  style={[s.input, {
-                    flex: 1,
-                    backgroundColor: colors.muted,
-                    color: colors.foreground,
-                    borderColor: referralStatus === 'success' ? colors.success : referralStatus === 'invalid' || referralStatus === 'self' || referralStatus === 'error' ? colors.destructive : colors.border,
-                    letterSpacing: 2,
-                  }]}
-                  autoCapitalize="characters"
-                  autoCorrect={false}
-                  maxLength={12}
-                />
-                <PressableOpacity
-                  onPress={async () => {
-                    const code = referralInput.trim()
-                    if (code.length < 4) return
-                    setReferralStatus('loading')
-                    const result = await referral.applyInviteCode(code)
-                    setReferralStatus(result)
-                  }}
-                  disabled={referralInput.trim().length < 4 || referralStatus === 'loading'}
-                  style={[s.referralSubmitBtn, {
-                    backgroundColor: colors.foreground,
-                    opacity: referralInput.trim().length < 4 || referralStatus === 'loading' ? 0.5 : 1,
-                  }]}
-                >
-                  {referralStatus === 'loading' ? (
-                    <ActivityIndicator size="small" color={colors.primaryForeground} />
-                  ) : (
-                    <Text style={[s.referralSubmitText, { color: colors.primaryForeground }]}>
-                      {t('referral.applyCodeSubmit')}
-                    </Text>
-                  )}
-                </PressableOpacity>
-              </View>
-              {referralStatus === 'success' && (
-                <Text style={[s.referralFeedback, { color: colors.success }]}>{t('referral.applyCodeSuccess')}</Text>
-              )}
-              {referralStatus === 'already_referred' && (
-                <Text style={[s.referralFeedback, { color: colors.mutedForeground }]}>{t('referral.applyCodeAlreadyReferred')}</Text>
-              )}
-              {referralStatus === 'invalid' && (
-                <Text style={[s.referralFeedback, { color: colors.destructive }]}>{t('referral.applyCodeNotFound')}</Text>
-              )}
-              {referralStatus === 'self' && (
-                <Text style={[s.referralFeedback, { color: colors.destructive }]}>{t('referral.applyCodeSelfReferral')}</Text>
-              )}
-              {referralStatus === 'error' && (
-                <Text style={[s.referralFeedback, { color: colors.destructive }]}>{t('referral.applyCodeError')}</Text>
-              )}
-            </View>
-          </Group>
-        )}
 
         {/* ── Name editing modal inline ── */}
         {editingName && profile && (
@@ -1402,7 +1265,7 @@ export default function SettingsScreen() {
 
         {/* ── Version text ── */}
         <Text style={[s.versionText, { color: colors.tertiaryForeground }]}>
-          TackBird v{appVersion}
+          Bivo v{appVersion}
         </Text>
       </ScrollView>
 
@@ -1424,60 +1287,66 @@ export default function SettingsScreen() {
         }}
       />
 
-      {/* Building (Taloyhtiö) Address Modal */}
-      <Modal visible={showBuildingModal} transparent animationType="fade" onRequestClose={() => setShowBuildingModal(false)}>
-        <Pressable style={s.deleteBackdrop} onPress={() => setShowBuildingModal(false)}>
-          <Pressable style={[s.deleteCard, { backgroundColor: colors.card, gap: 12 }]} onPress={() => {}}>
-            <View style={s.deleteHeader}>
-              <Home size={24} color={colors.foreground} />
-              <Text style={[s.deleteTitle, { color: colors.foreground }]}>
-                {t('settings.addAddress')}
+      {/* Feedback Modal */}
+      <Modal visible={feedbackVisible} transparent animationType="fade" onRequestClose={() => setFeedbackVisible(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+          <Pressable style={s.deleteBackdrop} onPress={() => setFeedbackVisible(false)}>
+            <Pressable style={[s.deleteCard, { backgroundColor: colors.card, gap: 12 }]} onPress={() => {}}>
+              <Text style={{ fontFamily: fonts.heading, fontSize: 18, color: colors.foreground }}>
+                {t('settings.feedback') ?? 'Palaute'}
               </Text>
-            </View>
-            <Text style={[s.deleteDesc, { color: colors.mutedForeground }]}>
-              {t('settings.addAddressDesc')}
-            </Text>
-            <LocationAutocomplete
-              value={buildingAddress}
-              onChangeText={setBuildingAddress}
-              onSelect={(loc) => {
-                setSelectedBuildingLocation(loc)
-                setBuildingAddress(loc.name)
-              }}
-              placeholder={t('onboarding.addressPlaceholder') ?? 'Mannerheimintie 1'}
-              showIcon
-            />
-            {selectedBuildingLocation && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
-                <CheckCircle size={14} color={colors.foreground} />
-                <Text style={{ fontSize: 13, fontFamily: fonts.bodySemi, color: colors.foreground }} numberOfLines={1}>
-                  {selectedBuildingLocation.street
-                    ? `${selectedBuildingLocation.street}${selectedBuildingLocation.housenumber ? ` ${selectedBuildingLocation.housenumber}` : ''}, ${selectedBuildingLocation.city ?? 'Helsinki'}`
-                    : selectedBuildingLocation.name}
-                </Text>
+              <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.mutedForeground, lineHeight: 18 }}>
+                {t('settings.feedbackDesc') ?? 'Kerro meille palautteesi, ehdotuksesi tai ilmoita virheestä.'}
+              </Text>
+              <TextInput
+                value={feedbackText}
+                onChangeText={setFeedbackText}
+                placeholder={t('settings.feedbackPlaceholder') ?? 'Kirjoita palautteesi tähän...'}
+                placeholderTextColor={colors.mutedForeground}
+                multiline
+                numberOfLines={5}
+                textAlignVertical="top"
+                style={{
+                  minHeight: 120,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 12,
+                  padding: 12,
+                  fontFamily: fonts.body,
+                  fontSize: 14,
+                  color: colors.foreground,
+                  backgroundColor: colors.muted,
+                }}
+                maxLength={2000}
+                autoFocus
+              />
+              <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.tertiaryForeground, textAlign: 'right' }}>
+                {feedbackText.length}/2000
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <PressableOpacity
+                  onPress={() => { setFeedbackVisible(false); setFeedbackText('') }}
+                  style={{ flex: 1, height: 44, borderRadius: 12, backgroundColor: colors.muted, justifyContent: 'center', alignItems: 'center' }}
+                >
+                  <Text style={{ fontFamily: fonts.bodySemi, fontSize: 14, color: colors.foreground }}>{t('common.cancel')}</Text>
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={handleSendFeedback}
+                  disabled={!feedbackText.trim() || sendingFeedback}
+                  style={{ flex: 1, height: 44, borderRadius: 12, backgroundColor: colors.foreground, justifyContent: 'center', alignItems: 'center', opacity: !feedbackText.trim() || sendingFeedback ? 0.5 : 1 }}
+                >
+                  {sendingFeedback ? (
+                    <ActivityIndicator size="small" color={colors.primaryForeground} />
+                  ) : (
+                    <Text style={{ fontFamily: fonts.bodySemi, fontSize: 14, color: colors.primaryForeground }}>
+                      {t('settings.sendFeedback') ?? 'Lähetä'}
+                    </Text>
+                  )}
+                </PressableOpacity>
               </View>
-            )}
-            <View style={s.deleteActions}>
-              <PressableOpacity
-                onPress={() => { setShowBuildingModal(false); setBuildingAddress(''); setSelectedBuildingLocation(null) }}
-                style={[s.deleteCancelBtn, { backgroundColor: colors.muted }]}
-              >
-                <Text style={[s.deleteCancelText, { color: colors.foreground }]}>{t('common.cancel')}</Text>
-              </PressableOpacity>
-              <PressableOpacity
-                onPress={handleSaveBuilding}
-                disabled={!selectedBuildingLocation || savingBuilding}
-                style={[s.deleteConfirmBtn, { backgroundColor: colors.foreground, opacity: !selectedBuildingLocation || savingBuilding ? 0.5 : 1 }]}
-              >
-                {savingBuilding ? (
-                  <ActivityIndicator size="small" color={colors.primaryForeground} />
-                ) : (
-                  <Text style={[s.deleteConfirmText, { color: colors.primaryForeground }]}>{t('common.save') ?? 'Tallenna'}</Text>
-                )}
-              </PressableOpacity>
-            </View>
+            </Pressable>
           </Pressable>
-        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Delete Account Confirmation Modal */}

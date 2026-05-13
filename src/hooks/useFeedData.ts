@@ -24,7 +24,7 @@ import type { Post, PostType, CityEvent, LocalPlace } from '@/lib/types'
 export type FeedSortBy = 'recommended' | 'newest' | 'popular' | 'nearest' | 'cheapest'
 
 const PAGE_SIZE = 20
-const FEED_CACHE_KEY = 'tackbird_feed_cache'
+const FEED_CACHE_KEY = 'bivo_feed_cache'
 
 export function useFeedData() {
   const { t } = useI18n()

@@ -591,7 +591,7 @@ function PostDetailScreenInner() {
 
   const handleShare = () => {
     if (!post) return
-    shareContent({ title: post.title, text: post.title, url: `https://tackbird.com/post/${post.id}` })
+    shareContent({ title: post.title, text: post.title, url: `https://bivoapp.io/post/${post.id}` })
   }
 
   // Expiration info — must be before any early returns (React hooks rules)

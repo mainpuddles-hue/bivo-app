@@ -321,7 +321,7 @@ export default function PublicProfileScreen() {
               try {
                 await (supabase.from('blocked_users') as any).delete().eq('blocker_id', currentUserId).eq('blocked_id', userId)
                 clearBlockedCache()
-                await AsyncStorage.setItem('tackbird_blocked_changed', Date.now().toString())
+                await AsyncStorage.setItem('bivo_blocked_changed', Date.now().toString())
                 toast.show({ message: t('profile.unblocked'), type: 'success' })
               } catch (err) { setIsBlocked(true); if (__DEV__) console.warn('[profile] unblock failed:', err); toast.show({ message: t('common.error'), type: 'error' }) }
             } else {
@@ -329,7 +329,7 @@ export default function PublicProfileScreen() {
               try {
                 await (supabase.from('blocked_users') as any).insert({ blocker_id: currentUserId, blocked_id: userId })
                 clearBlockedCache()
-                await AsyncStorage.setItem('tackbird_blocked_changed', Date.now().toString())
+                await AsyncStorage.setItem('bivo_blocked_changed', Date.now().toString())
                 toast.show({ message: t('profile.blocked'), type: 'success' })
               } catch (err) { setIsBlocked(false); if (__DEV__) console.warn('[profile] block failed:', err); toast.show({ message: t('common.error'), type: 'error' }) }
             }

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSupabase } from './useSupabase'
 
-const HISTORY_KEY = 'tackbird_search_history'
+const HISTORY_KEY = 'bivo_search_history'
 const MAX_HISTORY = 20
 
 export interface SearchSuggestion {

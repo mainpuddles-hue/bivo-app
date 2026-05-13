@@ -24,7 +24,7 @@ import { NEIGHBORHOODS } from '@/lib/constants'
 import { useSupabase } from '@/hooks/useSupabase'
 import { getCachedUserId } from '@/lib/authCache'
 
-const STORAGE_KEY = 'tackbird_onboarding_completed'
+const STORAGE_KEY = 'bivo_onboarding_completed'
 
 const INTEREST_OPTIONS = [
   { key: 'tarvitsen', icon: Heart, labelKey: 'onboarding.purposeTarvitsen' },
@@ -71,7 +71,7 @@ export function OnboardingOverlay({ visible, onDone }: Props) {
       if (userId) {
         await (supabase.from('profiles') as any).update({ naapurusto: nh }).eq('id', userId)
       }
-      await AsyncStorage.setItem('tackbird_user_neighborhood', nh)
+      await AsyncStorage.setItem('bivo_user_neighborhood', nh)
     } catch (err) {
       if (__DEV__) console.warn('[onboarding] saveNeighborhood failed:', err)
     }

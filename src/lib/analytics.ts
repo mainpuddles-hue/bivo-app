@@ -73,7 +73,7 @@ export async function flushAnalyticsQueue() {
   } catch {} // Best effort
 }
 
-const RETENTION_TRACKED_KEY = 'tackbird_retention_last_tracked'
+const RETENTION_TRACKED_KEY = 'bivo_retention_last_tracked'
 
 /**
  * Track D1/D7/D30/D90 retention events.

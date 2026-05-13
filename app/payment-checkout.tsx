@@ -79,7 +79,7 @@ function PaymentCheckoutScreenInner() {
   const breakdown = [
     { label: t('checkout.loanPrice'), value: loanPrice === 0 ? t('checkout.free') : formatPrice(loanPrice, locale) },
     { label: t('checkout.deposit'), value: formatPrice(deposit, locale) },
-    { label: t('checkout.tackbirdFee'), value: formatPrice(serviceFee, locale) },
+    { label: t('checkout.bivoFee'), value: formatPrice(serviceFee, locale) },
   ]
 
   const stripePayment = useStripePayment()

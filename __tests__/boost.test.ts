@@ -1,7 +1,7 @@
 /**
  * Boost System Tests
  *
- * Tests the complete TackBird boost system:
+ * Tests the complete Bivo boost system:
  * - IAP product definitions and pricing
  * - Tier-based discounts (Free, Pro, Business)
  * - Boost duration by tier
@@ -113,9 +113,9 @@ describe('Boost Product Pricing', () => {
 // ══════════════════════════════════════════════════════
 
 describe('Boost Product IDs', () => {
-  test('all product IDs follow com.tackbird.boost_N pattern', () => {
+  test('all product IDs follow com.bivo.boost_N pattern', () => {
     for (const product of BOOST_PRODUCTS) {
-      expect(product.id).toMatch(/^com\.tackbird\.boost_\d+$/)
+      expect(product.id).toMatch(/^com\.bivo\.boost_\d+$/)
     }
   })
 

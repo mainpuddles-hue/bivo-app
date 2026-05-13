@@ -37,10 +37,10 @@ describe('BOOST_PRODUCTS', () => {
     expect(BOOST_PRODUCTS).toHaveLength(3)
   })
 
-  test('Product IDs follow com.tackbird.boost_N pattern', () => {
-    expect(BOOST_PRODUCTS[0].id).toBe('com.tackbird.boost_1')
-    expect(BOOST_PRODUCTS[1].id).toBe('com.tackbird.boost_3')
-    expect(BOOST_PRODUCTS[2].id).toBe('com.tackbird.boost_5')
+  test('Product IDs follow com.bivo.boost_N pattern', () => {
+    expect(BOOST_PRODUCTS[0].id).toBe('com.bivo.boost_1')
+    expect(BOOST_PRODUCTS[1].id).toBe('com.bivo.boost_3')
+    expect(BOOST_PRODUCTS[2].id).toBe('com.bivo.boost_5')
   })
 
   test('Credits match the product names (1, 3, 5)', () => {

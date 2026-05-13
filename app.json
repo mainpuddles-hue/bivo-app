@@ -1,44 +1,44 @@
 {
   "expo": {
-    "name": "TackBird",
-    "slug": "tackbird-mobile",
+    "name": "Bivo",
+    "slug": "bivo-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "tackbird",
+    "scheme": "bivo",
     "owner": "puddles",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1A1D1F"
+      "backgroundColor": "#0A0A0A"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.tackbird.mobile",
+      "bundleIdentifier": "io.bivoapp.app",
       "buildNumber": "1",
       "usesAppleSignIn": true,
       "config": {
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "TackBird needs camera access to take photos for posts.",
-        "NSPhotoLibraryUsageDescription": "TackBird needs photo library access to add images to posts.",
-        "NSPhotoLibraryAddUsageDescription": "TackBird saves photos to your gallery.",
-        "NSLocationWhenInUseUsageDescription": "TackBird shows nearby posts and places on the map."
+        "NSCameraUsageDescription": "Bivo needs camera access to take photos for posts.",
+        "NSPhotoLibraryUsageDescription": "Bivo needs photo library access to add images to posts.",
+        "NSPhotoLibraryAddUsageDescription": "Bivo saves photos to your gallery.",
+        "NSLocationWhenInUseUsageDescription": "Bivo shows nearby posts and places on the map."
       },
       "associatedDomains": [
-        "applinks:tackbird.com"
+        "applinks:bivoapp.io"
       ]
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#1A1D1F",
+        "backgroundColor": "#0A0A0A",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.tackbird.mobile",
+      "package": "io.bivoapp.app",
       "versionCode": 1,
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -58,42 +58,42 @@
           "data": [
             {
               "scheme": "https",
-              "host": "tackbird.com",
+              "host": "bivoapp.io",
               "pathPrefix": "/post"
             },
             {
               "scheme": "https",
-              "host": "tackbird.com",
+              "host": "bivoapp.io",
               "pathPrefix": "/events"
             },
             {
               "scheme": "https",
-              "host": "tackbird.com",
+              "host": "bivoapp.io",
               "pathPrefix": "/messages"
             },
             {
               "scheme": "https",
-              "host": "tackbird.com",
+              "host": "bivoapp.io",
               "pathPrefix": "/profile"
             },
             {
               "scheme": "https",
-              "host": "tackbird.com",
+              "host": "bivoapp.io",
               "pathPrefix": "/search"
             },
             {
               "scheme": "https",
-              "host": "tackbird.com",
+              "host": "bivoapp.io",
               "pathPrefix": "/settings"
             },
             {
               "scheme": "https",
-              "host": "tackbird.com",
+              "host": "bivoapp.io",
               "pathPrefix": "/bookings"
             },
             {
               "scheme": "https",
-              "host": "tackbird.com",
+              "host": "bivoapp.io",
               "pathPrefix": "/invite"
             }
           ],
@@ -109,6 +109,12 @@
       "bundler": "metro"
     },
     "plugins": [
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
       "expo-router",
       "expo-font",
       "expo-secure-store",
@@ -116,46 +122,47 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "TackBird shows nearby posts and places on the map."
+          "locationWhenInUsePermission": "Bivo shows nearby posts and places on the map."
         }
       ],
       [
         "expo-notifications",
         {
           "icon": "./assets/android-icon-monochrome.png",
-          "color": "#1A1D1F"
+          "color": "#0A0A0A"
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "TackBird needs photo library access to add images to posts.",
-          "cameraPermission": "TackBird needs camera access to take photos for posts."
+          "photosPermission": "Bivo needs photo library access to add images to posts.",
+          "cameraPermission": "Bivo needs camera access to take photos for posts."
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "TackBird needs camera access to take photos for posts."
+          "cameraPermission": "Bivo needs camera access to take photos for posts."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "@react-native-google-signin/google-signin"
+
     ],
     "extra": {
       "eas": {
         "projectId": "504a9107-9e8e-4e5d-90fe-ea7564166e33"
       },
-      "privacyPolicyUrl": "https://tackbird.com/privacy",
-      "termsOfServiceUrl": "https://tackbird.com/terms",
-      "supportEmail": "tuki@tackbird.com",
+      "privacyPolicyUrl": "https://bivoapp.io/privacy",
+      "termsOfServiceUrl": "https://bivoapp.io/terms",
+      "supportEmail": "tuki@bivoapp.io",
       "router": {}
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/504a9107-9e8e-4e5d-90fe-ea7564166e33",
       "fallbackToCacheTimeout": 0
-    }
+    },
+    "newArchEnabled": true
   }
 }

@@ -61,7 +61,7 @@ function ErrorFallbackUI({ error, onRetry }: { error: Error | null; onRetry: () 
 }
 
 /**
- * Root-level Error Boundary for TackBird.
+ * Root-level Error Boundary for Bivo.
  *
  * Uses hardcoded Finnish + English strings because this component wraps
  * ABOVE I18nProvider — if it crashes, we still need to show a recovery screen.

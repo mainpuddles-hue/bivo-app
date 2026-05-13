@@ -1,19 +1,19 @@
-# TackBird Mobile -- UX Strategy & Product Roadmap
+# Bivo Mobile -- UX Strategy & Product Roadmap
 
 **Author:** Product Strategy Analysis
 **Date:** March 2026
 **Version:** 1.0
-**Scope:** Comprehensive UX strategy to position TackBird as the leading hyperlocal neighborhood app in Finland, with a path to Nordic expansion.
+**Scope:** Comprehensive UX strategy to position Bivo as the leading hyperlocal neighborhood app in Finland, with a path to Nordic expansion.
 
 ---
 
 ## Executive Summary
 
-TackBird sits at a unique intersection in the neighborhood app space. It is neither a "give stuff away" app (Olio), nor a "complain about your neighborhood" feed (Nextdoor), nor a generic community overlay (Facebook Groups). TackBird is a **structured neighborhood bulletin board** with six clear categories, Finnish-first identity, and a trust system rooted in verified location.
+Bivo sits at a unique intersection in the neighborhood app space. It is neither a "give stuff away" app (Olio), nor a "complain about your neighborhood" feed (Nextdoor), nor a generic community overlay (Facebook Groups). Bivo is a **structured neighborhood bulletin board** with six clear categories, Finnish-first identity, and a trust system rooted in verified location.
 
-This document analyzes the current mobile app state, identifies critical gaps against competitors, and lays out a concrete 30-day roadmap to transform TackBird from a functional prototype into a product that users open daily.
+This document analyzes the current mobile app state, identifies critical gaps against competitors, and lays out a concrete 30-day roadmap to transform Bivo from a functional prototype into a product that users open daily.
 
-The single most important insight: **TackBird's magic is not in the content -- it is in the speed of connection between neighbors.** Every UX decision should be measured against one question: "Does this help a neighbor who needs something find a neighbor who has it, faster?"
+The single most important insight: **Bivo's magic is not in the content -- it is in the speed of connection between neighbors.** Every UX decision should be measured against one question: "Does this help a neighbor who needs something find a neighbor who has it, faster?"
 
 ---
 
@@ -31,7 +31,7 @@ The Community tab contains three sub-tabs (Groups, Forum, Events), making it a c
 
 **Community tab is structurally confused.** It tries to be three things at once: a social groups feature, a discussion forum, and an events listing. Users do not think in these buckets -- they think "what is happening near me?" and "who can I connect with?"
 
-**The Map is buried.** For a hyperlocal app, the spatial view should be a first-class citizen, not an icon in the header. Nextdoor puts the map one tap away. TackBird hides it behind a small icon that many users will never discover.
+**The Map is buried.** For a hyperlocal app, the spatial view should be a first-class citizen, not an icon in the header. Nextdoor puts the map one tap away. Bivo hides it behind a small icon that many users will never discover.
 
 **Events have no clear home.** They exist in Community > Events sub-tab, in the hidden `events.tsx` tab, as hero cards on the home feed, and on the map. This fragmentation means no single place gives the user a complete event picture.
 
@@ -49,7 +49,7 @@ Home | Explore | Create | Messages | Profile
 - Toggle to browse nearby places ("Cafes near me")
 - Sub-filters for all content types
 
-This mirrors how Apple Maps merges search + explore + guides into one tab. For TackBird, the Explore tab answers "What is around me?" -- the core question of any hyperlocal app.
+This mirrors how Apple Maps merges search + explore + guides into one tab. For Bivo, the Explore tab answers "What is around me?" -- the core question of any hyperlocal app.
 
 **Community features (Groups, Forum)** move to the Profile tab as sub-sections, or become accessible through the feed (group posts appear in the main feed). Groups are a social layer on top of the neighborhood, not a separate destination. Facebook understood this -- Groups are a filter on the feed, not a separate app section.
 
@@ -82,7 +82,7 @@ This is a major structural change. Implement incrementally:
 
 After onboarding, users land on a feed that may have zero posts in their neighborhood. The cold start message is: "Ei ilmoituksia. Ole Kallion ensimmainen!" (No posts. Be the first in Kallio!). This is the #1 killer of new user retention.
 
-**Nextdoor solves this** by requiring a critical mass of verified users before launching a neighborhood. TackBird cannot do this as an early-stage app.
+**Nextdoor solves this** by requiring a critical mass of verified users before launching a neighborhood. Bivo cannot do this as an early-stage app.
 
 **Olio solves this** by showing content from a wider radius (up to 50km) and using "Food Waste Heroes" to seed content.
 
@@ -90,7 +90,7 @@ After onboarding, users land on a feed that may have zero posts in their neighbo
 
 **Step 1: "Your Neighborhood is Alive" (before showing empty feed)**
 
-Even without user-generated posts, the neighborhood is not empty. TackBird already fetches Helsinki LinkedEvents and local places. Use this data to create an immediate sense of life:
+Even without user-generated posts, the neighborhood is not empty. Bivo already fetches Helsinki LinkedEvents and local places. Use this data to create an immediate sense of life:
 
 ```
 Good morning, Jesse!
@@ -168,7 +168,7 @@ This is already well-structured -- better than Nextdoor's chaotic algorithmic fe
 
 **A. Time-aware greeting header (highest impact, lowest effort)**
 
-Replace the static TackBird slogan with a contextual header:
+Replace the static Bivo slogan with a contextual header:
 
 ```
 Morning (06-12):  "Huomenta, Kallio"  + sunrise gradient accent
@@ -185,7 +185,7 @@ Below the greeting, show 1-2 contextual "nuggets":
 
 **B. Urgency section for Nappaa posts**
 
-Nappaa (grab it quick, 24h expiring items) is TackBird's most unique and time-sensitive category. Currently these posts are mixed into the general feed. They should get a dedicated section above the feed when any exist:
+Nappaa (grab it quick, 24h expiring items) is Bivo's most unique and time-sensitive category. Currently these posts are mixed into the general feed. They should get a dedicated section above the feed when any exist:
 
 ```
 Nappaa nyt! (3 expiring today)
@@ -216,7 +216,7 @@ The nearby places carousel belongs in the Explore tab, not the home feed. The ho
 ### The Core Loop
 
 ```
-Need something --> Open TackBird --> Find it (or post it) --> Get a response --> Transaction/help happens --> Rate the interaction --> Feel good --> Come back
+Need something --> Open Bivo --> Find it (or post it) --> Get a response --> Transaction/help happens --> Rate the interaction --> Feel good --> Come back
 ```
 
 ### What Makes Users Return (Ranked by Effectiveness)
@@ -236,7 +236,7 @@ Need something --> Open TackBird --> Find it (or post it) --> Get a response -->
 - Weekly email: "This week in Kallio: 45 posts, 8 events, 3 items given away"
 
 **Tier 4: Gamification (track your impact)**
-This is where TackBird should differentiate from Nextdoor (which has no gamification) and learn from Olio (which does impact tracking well).
+This is where Bivo should differentiate from Nextdoor (which has no gamification) and learn from Olio (which does impact tracking well).
 
 ### Recommended Engagement System: "Naapurustopisteet" (Neighborhood Points)
 
@@ -272,7 +272,7 @@ Your impact in Kallio:
   Current streak: 5 days
 ```
 
-Olio's "impact" screen is their most shared feature. TackBird should steal this idea but expand it beyond just waste reduction to include all forms of neighborly help.
+Olio's "impact" screen is their most shared feature. Bivo should steal this idea but expand it beyond just waste reduction to include all forms of neighborly help.
 
 ### Notification Strategy
 
@@ -295,9 +295,9 @@ The notification preferences screen already has 7 toggles. This is the right gra
 
 ## 5. Trust & Safety
 
-### TackBird's Trust Advantage
+### Bivo's Trust Advantage
 
-TackBird already has a location verification system (`useLocationVerification` hook). This is a significant competitive advantage over Facebook Groups (no verification) and even Nextdoor (which uses address verification but has been gamed).
+Bivo already has a location verification system (`useLocationVerification` hook). This is a significant competitive advantage over Facebook Groups (no verification) and even Nextdoor (which uses address verification but has been gamed).
 
 ### Making Trust Visible
 
@@ -318,7 +318,7 @@ Kallio -- responds within 2 hours
 Rating: 4.8 (12 reviews)
 ```
 
-Nextdoor does not show response rates. This is TackBird's chance to build a reputation system closer to Airbnb's host profiles.
+Nextdoor does not show response rates. This is Bivo's chance to build a reputation system closer to Airbnb's host profiles.
 
 **C. Review system visibility**
 
@@ -359,7 +359,7 @@ How it should feel: Like Tori.fi's "Nosta" (boost) feature, not like Facebook Ad
 
 Current implementation shows a gold crown badge and a pro banner. This is already visually distinct without being obnoxious. Recommendations:
 - Pro listings should appear at the top of the feed with a subtle "Promoted" label (not "Ad")
-- Limit to 1 pro listing per 10 organic posts (Facebook's ad frequency is 1:4 -- TackBird should be less aggressive)
+- Limit to 1 pro listing per 10 organic posts (Facebook's ad frequency is 1:4 -- Bivo should be less aggressive)
 - Pro listing benefits: pinned for 7 days, appears in all nearby neighborhoods (not just poster's), highlighted in search
 - Price: 4.99 EUR / listing
 
@@ -379,7 +379,7 @@ The `is_business`, `business_name`, and `business_vat_id` fields already exist i
 - Can create "tarjoan" posts that appear in the feed as business offers
 - Appear on the map as permanent pins (like Google Maps business listings)
 - Monthly fee: 29.99 EUR/month
-- Key differentiator from Nextdoor: TackBird business profiles feel like a neighbor, not an advertiser
+- Key differentiator from Nextdoor: Bivo business profiles feel like a neighbor, not an advertiser
 
 ### UX Integration Principles
 
@@ -437,7 +437,7 @@ The profile currently shows basic stats (posts, followers, following) and a tab 
 
 ### Map -- #1 Priority: Promote to tab-level navigation
 
-The map is a fully-developed feature (neighborhood filtering, detail panels, search, GPS) but hidden behind a header icon. Making it the centerpiece of the Explore tab gives it the prominence it deserves and aligns with TackBird's spatial identity.
+The map is a fully-developed feature (neighborhood filtering, detail panels, search, GPS) but hidden behind a header icon. Making it the centerpiece of the Explore tab gives it the prominence it deserves and aligns with Bivo's spatial identity.
 
 ---
 
@@ -511,9 +511,9 @@ The app already has excellent skeleton loading on the feed. Extend this pattern 
 
 ## 9. The Magic Moment
 
-### Defining TackBird's Aha Moment
+### Defining Bivo's Aha Moment
 
-TackBird's magic moment is: **"I posted that I need help moving, and my neighbor Mikko offered to help within 30 minutes."**
+Bivo's magic moment is: **"I posted that I need help moving, and my neighbor Mikko offered to help within 30 minutes."**
 
 This is the moment when the app transitions from "a tool I downloaded" to "my neighborhood network." It proves the app works, that neighbors are real and responsive, and that asking for help is safe and rewarded.
 
@@ -567,7 +567,7 @@ When a new user gets their first response, show a celebration overlay:
 Ensimmainen vastauksesi!
 Naapurisi Mikko tarjoutui auttamaan.
 
-Nain TackBird toimii -- naapurit auttavat toisiaan.
+Nain Bivo toimii -- naapurit auttavat toisiaan.
 
 [Avaa viesti]
 ```
@@ -630,7 +630,7 @@ This emotional moment cements the user's relationship with the app.
 
 ## Competitive Positioning Summary
 
-| Dimension | Nextdoor | Olio | FB Groups | TackBird (Current) | TackBird (Target) |
+| Dimension | Nextdoor | Olio | FB Groups | Bivo (Current) | Bivo (Target) |
 |-----------|----------|------|-----------|-------------------|-------------------|
 | Hyperlocal focus | Strong | Medium | Weak | Strong | Best-in-class |
 | Content structure | Weak (noise) | Strong (focused) | Weak (cluttered) | Strong (6 categories) | Strong |
@@ -657,9 +657,9 @@ This emotional moment cements the user's relationship with the app.
 
 ## Final Thought
 
-TackBird's greatest risk is not feature completeness -- the app is already more feature-complete than most Series A neighborhood apps. The risk is that users open it once, see an empty feed, and never return.
+Bivo's greatest risk is not feature completeness -- the app is already more feature-complete than most Series A neighborhood apps. The risk is that users open it once, see an empty feed, and never return.
 
-Every UX decision in this strategy is designed to answer one question: **"What will make a user in Kallio open TackBird tomorrow morning instead of checking Instagram?"**
+Every UX decision in this strategy is designed to answer one question: **"What will make a user in Kallio open Bivo tomorrow morning instead of checking Instagram?"**
 
 The answer is: because yesterday they posted that they need help with their bike, and this morning three neighbors offered to help. That moment of genuine human connection, facilitated by technology but powered by neighborliness -- that is what wins.
 

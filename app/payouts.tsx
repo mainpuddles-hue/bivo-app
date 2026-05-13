@@ -66,9 +66,9 @@ function PayoutsScreenInner() {
       if (!userId) { router.replace('/(auth)/login'); return }
 
       // Fetch completed bookings where user is the lender
-      const { data: bookings } = await supabase
-        .from('bookings')
-        .select('id, total_amount, service_fee, created_at, completed_at, post:posts(title, image_url), borrower:profiles!bookings_borrower_id_fkey(name)')
+      const { data: bookings } = await (supabase
+        .from('rental_bookings') as any)
+        .select('id, total_amount, service_fee, created_at, completed_at, post:posts!rental_bookings_post_id_fkey(title, image_url), borrower:profiles!rental_bookings_borrower_id_fkey(name)')
         .eq('lender_id', userId)
         .eq('status', 'completed')
         .order('completed_at', { ascending: false })
@@ -105,8 +105,8 @@ function PayoutsScreenInner() {
       setTransactions(txns)
 
       // Estimate next payout (pending completed bookings not yet paid out)
-      const { data: pending } = await supabase
-        .from('bookings')
+      const { data: pending } = await (supabase
+        .from('rental_bookings') as any)
         .select('total_amount, service_fee')
         .eq('lender_id', userId)
         .eq('status', 'completed')

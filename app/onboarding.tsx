@@ -28,7 +28,7 @@ import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
-import { TackBirdLogo } from '@/components/TackBirdLogo'
+import { BivoLogo } from '@/components/BivoLogo'
 import { LocationAutocomplete } from '@/components/LocationAutocomplete'
 import type { LocationResult } from '@/components/LocationAutocomplete'
 import { fonts, typeScale } from '@/lib/fonts'
@@ -36,7 +36,6 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { PressableOpacity } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { useReferral } from '@/hooks/useReferral'
-import { useCooperativeInvite, type CoopInviteResult } from '@/hooks/useCooperativeInvite'
 import { trackEvent } from '@/lib/analytics'
 
 const TOTAL_STEPS = 3
@@ -56,15 +55,11 @@ function OnboardingScreenInner() {
   const [saving, setSaving] = useState(false)
   const [referralInput, setReferralInput] = useState('')
   const [referralStatus, setReferralStatus] = useState<'idle' | 'applied' | 'invalid'>('idle')
-  const [coopInput, setCoopInput] = useState('')
-  const [coopStatus, setCoopStatus] = useState<'idle' | 'applied' | 'invalid' | 'expired' | 'exhausted'>('idle')
-  const [coopOrgName, setCoopOrgName] = useState<string | null>(null)
   const [onboardingUserId, setOnboardingUserId] = useState<string | null>(null)
   // Address-based onboarding state
   const [addressText, setAddressText] = useState('')
   const [selectedAddress, setSelectedAddress] = useState<LocationResult | null>(null)
   const { applyInviteCode } = useReferral(onboardingUserId)
-  const { applyCode: applyCoopCode, validateCode: validateCoopCode } = useCooperativeInvite()
 
   // Fetch user ID for referral system
   useEffect(() => {
@@ -113,74 +108,6 @@ function OnboardingScreenInner() {
         }
       }
 
-      // Apply cooperative (taloyhtiö) code if provided
-      if (coopInput.trim()) {
-        trackEvent('onboarding_coop_code', { hasCode: true })
-        const coopResult: CoopInviteResult = await applyCoopCode(coopInput.trim(), user.id)
-        if (coopResult === 'success' || coopResult === 'already_member') {
-          setCoopStatus('applied')
-        } else if (coopResult === 'expired') {
-          setCoopStatus('expired')
-          setSaving(false)
-          return
-        } else if (coopResult === 'exhausted') {
-          setCoopStatus('exhausted')
-          setSaving(false)
-          return
-        } else {
-          setCoopStatus('invalid')
-          setSaving(false)
-          return
-        }
-      }
-
-      // Build street address from Photon result. When the user skipped address
-      // entry (selectedAddress is null) we mark onboarding complete with no
-      // address payload — the RPC is bypassed and only the boolean flag is
-      // persisted. This is the "ohita testaus" escape hatch.
-      const streetAddress = selectedAddress
-        ? (selectedAddress.street
-            ? (selectedAddress.housenumber
-                ? `${selectedAddress.street} ${selectedAddress.housenumber}`
-                : selectedAddress.street)
-            : (selectedAddress.name || t('onboarding.unknownAddress')))
-        : null
-
-      if (selectedAddress) {
-        // Resolve building — atomically creates or finds building + links user.
-        // Tolerates missing RPC: in pivoted schemas the building infra may not be
-        // present, in which case onboarding still completes without the building link.
-        const { error: rpcError } = await (supabase as any).rpc('resolve_building', {
-          p_street_address: streetAddress,
-          p_postal_code: selectedAddress.postalCode ?? null,
-          p_city: selectedAddress.city ?? 'Helsinki',
-          p_neighborhood: selectedAddress.neighborhood ?? null,
-          p_lat: selectedAddress.lat,
-          p_lng: selectedAddress.lng,
-        })
-
-        // The building link is best-effort — when the RPC is absent (live schema
-        // pivoted away from buildings), onboarding still completes. We only treat
-        // truly unexpected RPC failures as fatal.
-        const rpcMissing =
-          !!rpcError && (
-            (rpcError as any).code === '42883' ||
-            (rpcError as any).code === 'PGRST202' ||
-            /function .* does not exist/i.test(rpcError.message ?? '') ||
-            /Could not find the function .* in the schema cache/i.test(rpcError.message ?? '')
-          )
-        if (rpcError && !rpcMissing) {
-          if (__DEV__) console.warn('[onboarding] resolve_building failed:', rpcError.message)
-          toast.show({ message: t('onboarding.saveFailed'), type: 'error' })
-          setSaving(false)
-          return
-        } else if (rpcMissing && __DEV__) {
-          console.warn('[onboarding] resolve_building RPC missing — skipping building link')
-        }
-      } else if (__DEV__) {
-        console.warn('[onboarding] address skipped — completing without building link')
-      }
-
       // Update profile: mark onboarding complete + save neighborhood when present.
       // Try the full update first; if it fails because of a missing column, retry
       // with a smaller payload so onboarding never gets permanently stuck.
@@ -221,7 +148,6 @@ function OnboardingScreenInner() {
       trackEvent('onboarding_completed', {
         city: selectedAddress?.city ?? selectedCity ?? null,
         neighborhood: selectedAddress?.neighborhood ?? null,
-        address: streetAddress,
         skipped_address: !selectedAddress,
       })
       router.replace('/')
@@ -230,7 +156,7 @@ function OnboardingScreenInner() {
     } finally {
       setSaving(false)
     }
-  }, [supabase, selectedAddress, selectedCity, referralInput, coopInput, router, t, toast, applyInviteCode, applyCoopCode])
+  }, [supabase, selectedAddress, selectedCity, referralInput, router, t, toast, applyInviteCode])
 
   // Skip handler — jumps to last step (address/neighborhood)
   const handleSkip = useCallback(() => {
@@ -278,7 +204,7 @@ function OnboardingScreenInner() {
         {/* Illustration slot */}
         <View style={[s.illustrationSlot, { backgroundColor: colors.warmTint }]}>
           <View style={[s.logoCircle, { backgroundColor: colors.foreground }]}>
-            <TackBirdLogo size={48} color={colors.primaryForeground} />
+            <BivoLogo size={48} color={colors.primaryForeground} />
           </View>
           {/* Floating decorative dots */}
           <View style={s.floatingAvatars}>
@@ -417,57 +343,6 @@ function OnboardingScreenInner() {
           )}
         </View>
 
-        {/* Cooperative (taloyhtiö) invite code */}
-        <View style={s.referralInputRow}>
-          <TextInput
-            value={coopInput}
-            onChangeText={(text) => { setCoopInput(text); setCoopStatus('idle'); setCoopOrgName(null) }}
-            onBlur={async () => {
-              if (coopInput.trim().length >= 4) {
-                const info = await validateCoopCode(coopInput.trim())
-                if (info) setCoopOrgName(info.org_name)
-              }
-            }}
-            placeholder={t('cooperativeInvite.codeInput')}
-            placeholderTextColor={colors.tertiaryForeground}
-            accessibilityLabel={t('cooperativeInvite.codeInput')}
-            style={[s.referralInput, {
-              backgroundColor: colors.muted,
-              borderWidth: coopStatus !== 'idle' ? 1 : 0,
-              borderColor: coopStatus === 'applied' ? colors.success : coopStatus !== 'idle' ? colors.destructive : 'transparent',
-              color: colors.foreground,
-              fontFamily: fonts.body,
-            }]}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            maxLength={12}
-          />
-          {coopOrgName && coopStatus === 'idle' && (
-            <Text style={[s.referralFeedback, { color: colors.success, fontFamily: fonts.body }]}>
-              {coopOrgName}
-            </Text>
-          )}
-          {coopStatus === 'applied' && (
-            <Text style={[s.referralFeedback, { color: colors.success, fontFamily: fonts.body }]}>
-              {t('cooperativeInvite.codeApplied')}
-            </Text>
-          )}
-          {coopStatus === 'invalid' && (
-            <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
-              {t('cooperativeInvite.invalidCode')}
-            </Text>
-          )}
-          {coopStatus === 'expired' && (
-            <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
-              {t('cooperativeInvite.expiredCode')}
-            </Text>
-          )}
-          {coopStatus === 'exhausted' && (
-            <Text style={[s.referralFeedback, { color: colors.destructive, fontFamily: fonts.body }]}>
-              {t('cooperativeInvite.exhaustedCode')}
-            </Text>
-          )}
-        </View>
       </View>
 
       {/* Sticky primary CTA — always enabled visually, disabled only while saving */}

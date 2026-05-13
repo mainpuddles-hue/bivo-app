@@ -40,7 +40,7 @@ export function OutOfAreaBanner({ visible, cityName }: OutOfAreaBannerProps) {
           {t('map.outOfArea')}
         </Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-          {t('map.outOfAreaDesc', { city: cityName ?? 'TackBird' })}
+          {t('map.outOfAreaDesc', { city: cityName ?? 'Bivo' })}
         </Text>
       </View>
       <Pressable

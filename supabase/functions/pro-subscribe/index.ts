@@ -14,7 +14,7 @@ function getEnvOrThrow(key: string): string {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://tackbird.com',
+  'Access-Control-Allow-Origin': 'https://bivoapp.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -27,9 +27,9 @@ const STRIPE_PRICES: Record<string, string | undefined> = {
 }
 
 const PRICE_FALLBACKS = {
-  monthly: { amount: 499, interval: 'month' as const, name: 'TackBird Pro Monthly' },
-  yearly: { amount: 3999, interval: 'year' as const, name: 'TackBird Pro Yearly' },
-  business_monthly: { amount: 2999, interval: 'month' as const, name: 'TackBird Business Monthly' },
+  monthly: { amount: 499, interval: 'month' as const, name: 'Bivo Pro Monthly' },
+  yearly: { amount: 3999, interval: 'year' as const, name: 'Bivo Pro Yearly' },
+  business_monthly: { amount: 2999, interval: 'month' as const, name: 'Bivo Business Monthly' },
 }
 
 serve(async (req) => {
@@ -106,7 +106,7 @@ serve(async (req) => {
         email: profile?.email ?? user.email,
         name: profile?.name,
         metadata: { supabase_user_id: user.id },
-      })
+      }, { idempotencyKey: `customer_create_${user.id}` })
       customerId = customer.id
       // If the profile update fails, the Stripe customer becomes orphaned —
       // next subscribe attempt will create yet another customer. Log loudly
@@ -145,8 +145,8 @@ serve(async (req) => {
       subscription_data: {
         metadata: { user_id: user.id, plan: plan ?? 'monthly' },
       },
-      success_url: 'tackbird://payment/success?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'tackbird://payment/cancel',
+      success_url: 'bivo://payment/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'bivo://payment/cancel',
     })
 
     return new Response(

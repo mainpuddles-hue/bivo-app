@@ -1,7 +1,7 @@
-// TackBird Mobile Service Worker
+// Bivo Mobile Service Worker
 // Push notifications + cache-first for static assets
 
-const CACHE_NAME = 'tackbird-mobile-v1'
+const CACHE_NAME = 'bivo-mobile-v1'
 const STATIC_ASSETS = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png']
 
 // INSTALL
@@ -61,15 +61,15 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data ? event.data.json() : {}
   } catch {
-    data = { title: 'TackBird', body: event.data ? event.data.text() : '' }
+    data = { title: 'Bivo', body: event.data ? event.data.text() : '' }
   }
 
-  const title = data.title || 'TackBird'
+  const title = data.title || 'Bivo'
   const options = {
     body: data.body || '',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    tag: data.tag || 'tackbird-notification',
+    tag: data.tag || 'bivo-notification',
     data: { url: data.url || '/', type: data.type || 'general' },
     vibrate: [200, 100, 200],
   }
