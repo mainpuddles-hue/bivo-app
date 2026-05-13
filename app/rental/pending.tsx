@@ -27,7 +27,11 @@ export default function PendingRequestScreen() {
           style: 'destructive',
           onPress: async () => {
             if (rentalId) {
-              await cancelRental(supabase, rentalId);
+              const res = await cancelRental(supabase, rentalId);
+              if (res.error) {
+                Alert.alert('Peruutus epäonnistui', res.error);
+                return;
+              }
             }
             router.replace('/(tabs)/loans');
           },

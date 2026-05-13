@@ -20,7 +20,7 @@ import { ReportModal } from '@/components/ReportModal'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { safeBack } from '@/lib/navigation'
 import { PressableOpacity } from '@/components/ui'
-import { formatEventDate } from '@/lib/format'
+import { formatEventDate, resolveLocale } from '@/lib/format'
 import { isValidUUID } from '@/lib/validation'
 import { getCachedUserId } from '@/lib/authCache'
 import { addMemberToChat, removeMemberFromChat } from '@/lib/eventChatHelpers'
@@ -372,7 +372,7 @@ function EventDetailScreenInner() {
   const eventDate = new Date(event.event_date)
   const isValidDate = !isNaN(eventDate.getTime())
   const timeStr = isValidDate
-    ? eventDate.toLocaleTimeString(locale === 'en' ? 'en-GB' : locale === 'sv' ? 'sv-SE' : 'fi-FI', {
+    ? eventDate.toLocaleTimeString(resolveLocale(locale), {
         hour: '2-digit',
         minute: '2-digit',
       })

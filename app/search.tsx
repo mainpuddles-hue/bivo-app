@@ -997,7 +997,10 @@ function SearchScreenInner() {
       const rawCount = (data ?? []).length
       newPosts = sortByDistance(newPosts, filters)
       setDbResultCount(prev => prev + rawCount)
-      setResults(prev => [...prev, ...newPosts])
+      setResults(prev => {
+        const existingIds = new Set(prev.map(p => p.id))
+        return [...prev, ...newPosts.filter(p => !existingIds.has(p.id))]
+      })
       setHasMore(rawCount >= 20)
     } catch (err) {
       if (__DEV__) console.warn('[search] loadMore error:', err)

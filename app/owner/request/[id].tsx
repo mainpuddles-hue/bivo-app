@@ -20,12 +20,14 @@ export default function OwnerRequestScreen() {
 
   useEffect(() => {
     if (!id) return;
+    let mounted = true;
     supabase
       .from('rental_bookings')
       .select('*, item:items(*), borrower:profiles!rental_bookings_borrower_id_fkey(*)')
       .eq('id', id)
       .single()
-      .then(({ data }) => { setRental(data); setLoading(false); });
+      .then(({ data }) => { if (mounted) { setRental(data); setLoading(false); } });
+    return () => { mounted = false; };
   }, [id]);
 
   const handleResponse = async (status: 'approved' | 'rejected') => {

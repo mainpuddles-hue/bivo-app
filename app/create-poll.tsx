@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -30,6 +30,7 @@ function CreatePollInner() {
   const [options, setOptions] = useState(['', ''])
   const [expiresIn, setExpiresIn] = useState<'1d' | '3d' | '7d'>('3d')
   const [submitting, setSubmitting] = useState(false)
+  const submittingRef = useRef(false)
 
   const canSubmit = question.trim().length >= 5 && options.filter(o => o.trim()).length >= MIN_OPTIONS
 
@@ -52,53 +53,56 @@ function CreatePollInner() {
   }, [])
 
   const handleSubmit = useCallback(async () => {
-    if (!canSubmit || submitting) return
+    if (!canSubmit || submitting || submittingRef.current) return
+    submittingRef.current = true
     setSubmitting(true)
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-    } catch {}
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+      } catch {}
 
-    const userId = await getCachedUserId()
-    if (!userId) {
-      toast.show({ message: t('common.loginRequired'), type: 'error' })
+      const userId = await getCachedUserId()
+      if (!userId) {
+        toast.show({ message: t('common.loginRequired'), type: 'error' })
+        return
+      }
+
+      // Calculate expiration
+      const hours = expiresIn === '1d' ? 24 : expiresIn === '3d' ? 72 : 168
+      const expiresAt = new Date(Date.now() + hours * 3600000).toISOString()
+
+      // Get user's neighborhood
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('naapurusto')
+        .eq('id', userId)
+        .maybeSingle()
+
+      const cleanOptions = options.map(o => o.trim()).filter(Boolean)
+      if (cleanOptions.length < MIN_OPTIONS) {
+        toast.show({ message: t('polls.minOptionsRequired') ?? 'Lisää vähintään 2 vaihtoehtoa', type: 'error' })
+        return
+      }
+
+      const { error } = await (supabase.from('polls') as any).insert({
+        creator_id: userId,
+        question: question.trim(),
+        options: cleanOptions,
+        naapurusto: (profile as any)?.naapurusto ?? null,
+        expires_at: expiresAt,
+      })
+
+      if (error) {
+        toast.show({ message: mapErrorToFinnish(error, t), type: 'error' })
+        return
+      }
+
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      safeBack(router, '/community-events')
+    } finally {
+      submittingRef.current = false
       setSubmitting(false)
-      return
     }
-
-    // Calculate expiration
-    const hours = expiresIn === '1d' ? 24 : expiresIn === '3d' ? 72 : 168
-    const expiresAt = new Date(Date.now() + hours * 3600000).toISOString()
-
-    // Get user's neighborhood
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('naapurusto')
-      .eq('id', userId)
-      .maybeSingle()
-
-    const cleanOptions = options.map(o => o.trim()).filter(Boolean)
-    if (cleanOptions.length < MIN_OPTIONS) {
-      toast.show({ message: t('polls.minOptionsRequired') ?? 'Lisää vähintään 2 vaihtoehtoa', type: 'error' })
-      setSubmitting(false)
-      return
-    }
-
-    const { error } = await (supabase.from('polls') as any).insert({
-      creator_id: userId,
-      question: question.trim(),
-      options: cleanOptions,
-      naapurusto: (profile as any)?.naapurusto ?? null,
-      expires_at: expiresAt,
-    })
-
-    if (error) {
-      toast.show({ message: mapErrorToFinnish(error, t), type: 'error' })
-      setSubmitting(false)
-      return
-    }
-
-    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-    safeBack(router, '/community-events')
   }, [canSubmit, submitting, question, options, expiresIn, supabase, t, toast, router])
 
   const DURATION_OPTIONS: { key: typeof expiresIn; label: string }[] = [

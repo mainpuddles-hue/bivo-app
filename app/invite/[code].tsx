@@ -38,8 +38,10 @@ function InviteScreenInner() {
       return
     }
     // Auto-apply the invite code
-    referral.applyInviteCode(code).then(result => setStatus(result))
-  }, [userId, code, isValidCode, referral.loading])
+    let mounted = true
+    referral.applyInviteCode(code).then(result => { if (mounted) setStatus(result) })
+    return () => { mounted = false }
+  }, [userId, code, isValidCode, referral.loading, referral.applyInviteCode])
 
   // Not logged in -- redirect to login, then they can enter code in onboarding
   useEffect(() => {

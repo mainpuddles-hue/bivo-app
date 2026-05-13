@@ -33,9 +33,6 @@ function PaymentSettingsScreenInner() {
     }
   }, [router])
 
-  // Early return — never render content when payments are off
-  if (!FEATURES.PAYMENTS) return null
-
   // Auth gate — redirect to login if not authenticated
   useEffect(() => {
     async function checkAuth() {
@@ -81,6 +78,9 @@ function PaymentSettingsScreenInner() {
   useEffect(() => {
     if (userId) refreshStatus()
   }, [userId, refreshStatus])
+
+  // Early return — never render content when payments are off (must be after all hooks)
+  if (!FEATURES.PAYMENTS) return null
 
   const handleStartConnect = async () => {
     setConnecting(true)

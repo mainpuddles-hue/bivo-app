@@ -27,10 +27,12 @@ export default function OwnerReturnScreen() {
 
   useEffect(() => {
     if (!id) return;
+    let mounted = true;
     supabase.from('rental_bookings')
       .select('*, item:items(title), borrower:profiles!rental_bookings_borrower_id_fkey(name)')
       .eq('id', id).single()
-      .then(({ data }) => setRental(data));
+      .then(({ data }) => { if (mounted) setRental(data); });
+    return () => { mounted = false; };
   }, [id]);
 
   const borrowerName = rental?.borrower?.name || 'Lainaaja';

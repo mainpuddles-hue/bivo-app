@@ -103,6 +103,7 @@ function NewListingScreenInner() {
     t('newListing.weekdaySun'),
   ], [t])
   const scrollRef = useRef<ScrollView>(null)
+  const publishingRef = useRef(false)
   const { width: SCREEN_WIDTH } = useWindowDimensions()
 
   const [currentStep, setCurrentStep] = useState(0)
@@ -241,10 +242,12 @@ function NewListingScreenInner() {
 
   // ── Publish ──
   const handlePublish = useCallback(async (isDraft: boolean) => {
+    if (publishingRef.current || publishing) return
     if (!title.trim()) {
       toast.show({ message: t('newListing.errorNoTitle'), type: 'error' })
       return
     }
+    publishingRef.current = true
     setPublishing(true)
     try {
       const userId = await getCachedUserId()
@@ -360,9 +363,10 @@ function NewListingScreenInner() {
       }
       toast.show({ message: t('newListing.errorPublishFailed'), type: 'error' })
     } finally {
+      publishingRef.current = false
       setPublishing(false)
     }
-  }, [title, description, photos, address, pricingModel, price, tags, selectedTemplate, supabase, router, toast])
+  }, [title, description, photos, address, pricingModel, price, tags, selectedTemplate, publishing, supabase, router, toast])
 
   // ════════════════════════════════════════════════════════════════════════════
   // SHARED CHROME — Wizard Header

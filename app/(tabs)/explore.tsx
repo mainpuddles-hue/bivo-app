@@ -318,7 +318,7 @@ function ExploreScreenInner() {
     } finally {
       setLoading(false)
     }
-  }, [supabase, fetchLocation])
+  }, [supabase, fetchLocation, t, isConnected])
 
   // ── Load on focus (refresh when navigating back) ──
   useFocusEffect(useCallback(() => {

@@ -23,9 +23,11 @@ export default function OwnerHandoverScreen() {
   const { booking, loading } = useRentalBooking(supabase, id);
 
   useEffect(() => {
+    let mounted = true;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id ?? null);
+      if (mounted) setUserId(session?.user?.id ?? null);
     });
+    return () => { mounted = false; };
   }, []);
 
   const [token, setToken] = useState<string | null>(null);
@@ -65,14 +67,18 @@ export default function OwnerHandoverScreen() {
   }, [booking?.status, id]);
 
   // Pysähdy/jatka kun app menee taustalle (säästä CPU:ta)
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+  const bookingStatusRef = useRef(booking?.status);
+  bookingStatusRef.current = booking?.status;
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
-      if (state === 'active' && !token && booking?.status === 'confirmed') {
+      if (state === 'active' && !tokenRef.current && bookingStatusRef.current === 'confirmed') {
         mintToken();
       }
     });
     return () => sub.remove();
-  }, [token, booking?.status]);
+  }, []);
 
   // Laske jäljellä oleva aika minuutin tarkkuudella
   useEffect(() => {

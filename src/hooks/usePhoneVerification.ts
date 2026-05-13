@@ -31,24 +31,26 @@ export function usePhoneVerification() {
     }
   }, [])
 
-  // Resend cooldown timer
+  // Resend cooldown timer — start a single interval when countdown goes positive,
+  // clear it when it reaches zero or on unmount.
   useEffect(() => {
     if (countdown <= 0) {
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
       return
     }
+    // Don't start a second interval if one is already running
+    if (timerRef.current) return
     timerRef.current = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current)
-          timerRef.current = null
+          if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
           return 0
         }
         return prev - 1
       })
     }, 1000)
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [countdown > 0]) // eslint-disable-line react-hooks/exhaustive-deps
+    return () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null } }
+  }, [countdown]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendOtp = useCallback(async () => {
     setLoading(true)

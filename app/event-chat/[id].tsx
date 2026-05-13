@@ -16,7 +16,7 @@ import { useSupabase } from '@/hooks/useSupabase'
 import { useEventChat } from '@/hooks/useEventChat'
 import { Avatar } from '@/components/Avatar'
 import { fonts } from '@/lib/fonts'
-import { formatTimeAgo } from '@/lib/format'
+import { formatTimeAgo, resolveLocale } from '@/lib/format'
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { isValidUUID } from '@/lib/validation'
 import { checkRateLimit, recordRateLimit } from '@/lib/rateLimiter'
@@ -117,7 +117,7 @@ function EventChatScreenInner() {
       setInput(text)
       toast.show({ message: t('messages.sendFailed') ?? 'Message failed to send', type: 'error' })
     }
-  }, [input, sending, sendMessage])
+  }, [input, sending, sendMessage, toast, t])
 
   const handlePickImage = useCallback(async () => {
     try {
@@ -166,7 +166,7 @@ function EventChatScreenInner() {
   const renderDaySeparator = useCallback((dateStr: string) => {
     const d = new Date(dateStr)
     const label = d.toLocaleDateString(
-      locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US',
+      resolveLocale(locale),
       { weekday: 'short', day: 'numeric', month: 'short' },
     )
     return (
@@ -287,7 +287,7 @@ function EventChatScreenInner() {
           </Text>
           <Text style={[s.eventBarDate, { color: colors.mutedForeground, fontFamily: fonts.body }]}>
             {new Date(eventInfo.event_date).toLocaleDateString(
-              locale === 'fi' ? 'fi-FI' : 'en-US',
+              resolveLocale(locale),
               { weekday: 'short', day: 'numeric', month: 'short' },
             )}
           </Text>

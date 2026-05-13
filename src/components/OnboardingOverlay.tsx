@@ -5,6 +5,8 @@
  * Step 3: Push notification permission request
  */
 
+declare const __DEV__: boolean
+
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Animated,

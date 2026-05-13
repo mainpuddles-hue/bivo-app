@@ -81,13 +81,14 @@ export default function PickupPhotosScreen() {
     setSubmitting(true);
     try {
       const photoUrls = await uploadPhotos();
-      await (supabase
+      const { error: updateError } = await (supabase
         .from('rental_bookings') as any)
         .update({
           pickup_photos: photoUrls,
           pickup_note: note.trim() || null,
         })
         .eq('id', rentalId);
+      if (updateError) throw new Error(updateError.message);
 
       router.replace({
         pathname: '/rental/pickup-confirmed',

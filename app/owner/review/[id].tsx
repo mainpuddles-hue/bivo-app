@@ -24,17 +24,21 @@ export default function OwnerReviewScreen() {
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
 
   useEffect(() => {
+    let mounted = true;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id ?? null);
+      if (mounted) setUserId(session?.user?.id ?? null);
     });
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
     if (!id) return;
+    let mounted = true;
     supabase.from('rental_bookings')
       .select('*, borrower:profiles!rental_bookings_borrower_id_fkey(display_name, name, avatar_url)')
       .eq('id', id).single()
-      .then(({ data }) => setRental(data));
+      .then(({ data }) => { if (mounted) setRental(data); });
+    return () => { mounted = false; };
   }, [id]);
 
   const borrowerName = rental?.borrower?.display_name || rental?.borrower?.name || 'Lainaaja';

@@ -35,6 +35,7 @@ export function useReferral(userId: string | null) {
   // Fetch user's invite code, count, and invited_by status
   useEffect(() => {
     if (!userId) return
+    let mounted = true
     async function load() {
       try {
         const { data: profile } = await supabase
@@ -42,7 +43,7 @@ export function useReferral(userId: string | null) {
           .select('invite_code, invite_count, invited_by')
           .eq('id', userId!)
           .maybeSingle()
-        if (profile) {
+        if (profile && mounted) {
           setInviteCode((profile as any).invite_code)
           setInviteCount((profile as any).invite_count ?? 0)
           setInvitedBy((profile as any).invited_by ?? null)
@@ -50,10 +51,11 @@ export function useReferral(userId: string | null) {
       } catch {
         // Intentional: network error or missing columns — use defaults
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
     load()
+    return () => { mounted = false }
   }, [userId, supabase])
 
   // Calculate tiers
