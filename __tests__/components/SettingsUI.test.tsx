@@ -35,6 +35,8 @@ const mockColors: ThemeColors = {
   onInkMuted: '#B8BCC0',
   borderStrong: '#C8CBCE',
   danger: '#C44536',
+  successBg: '#E6EFEA',
+  disabledForeground: '#D4D4D1',
   trustTier1: '#9CA3AF',
   trustTier2: '#3B82F6',
   trustTier3: '#2D7A4F',

@@ -620,9 +620,9 @@ const styles = StyleSheet.create({
   categoryBadgeText: { fontSize: 13, fontFamily: fonts.heading, letterSpacing: 0.2, lineHeight: 16 },
 
   // Image — full width, 16:10 aspect ratio for content-first feed
-  imageContainer: { borderRadius: 16, overflow: 'hidden', marginTop: 4 },
+  imageContainer: { borderRadius: 14, overflow: 'hidden', marginTop: 4 },
   image: { width: '100%', aspectRatio: 16 / 10 },
-  imageFallback: { width: '100%', aspectRatio: 16 / 10, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
+  imageFallback: { width: '100%', aspectRatio: 16 / 10, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   imageGradient: {
     position: 'absolute',
     left: 0,

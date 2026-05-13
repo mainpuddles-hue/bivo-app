@@ -28,6 +28,8 @@ export const colors = {
     onInkMuted: '#B8BCC0',
     borderStrong: '#D8D8D2',
     danger: '#C44536',
+    successBg: '#E6EFEA',
+    disabledForeground: '#D4D4D1',
     // Trust tier indicator colors. Tier 1 = bronze/neutral, Tier 2 = info-blue,
     // Tier 3 = success-green. Bound separately from `success` so trust remains
     // its own semantic axis; consumed by TrustBadge / TrustGate via `colors.trustTier{N}`.
@@ -60,6 +62,8 @@ export const colors = {
     onInkMuted: '#4A4D51',             // muted text on ink surfaces (dark mode)
     borderStrong: '#4A4D51',            // stronger border for emphasis (inputs, active states)
     danger: '#FF453A',                  // semantic danger — logout, destructive rows
+    successBg: '#1A3329',                   // dark success tint
+    disabledForeground: '#4A4D51',          // dark disabled text
     // Trust tier — dark-mode shifts for legibility on dark surfaces.
     trustTier1: '#B5BAC2',              // brighter neutral
     trustTier2: '#60A5FA',              // brighter info blue
@@ -100,6 +104,8 @@ export type ThemeColors = {
   onInkMuted: string
   borderStrong: string
   danger: string
+  successBg: string
+  disabledForeground: string
   trustTier1: string
   trustTier2: string
   trustTier3: string

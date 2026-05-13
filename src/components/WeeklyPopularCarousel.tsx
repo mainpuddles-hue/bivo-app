@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   freeBadge: {
-    backgroundColor: 'rgba(45, 122, 79, 0.9)',
+    backgroundColor: 'rgba(42, 95, 63, 0.9)',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
