@@ -637,25 +637,7 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 12 }]}>
-              {/* 0. Header row — display title + notification bell */}
-              <View style={styles.headerRow}>
-                <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} hitSlop={8}>
-                  <Text style={[styles.hTitle, { color: colors.foreground }]}>
-                    {t('feed.discover') ?? 'Löydä'}
-                  </Text>
-                </PressableOpacity>
-                <PressableOpacity
-                  onPress={() => router.push('/notifications')}
-                  style={[styles.iconBtn, { backgroundColor: colors.muted }]}
-                  accessibilityLabel={t('notifications.title') ?? 'Ilmoitukset'}
-                  accessibilityRole="button"
-                >
-                  <Bell size={20} color={colors.foreground} strokeWidth={1.8} />
-                  <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
-                </PressableOpacity>
-              </View>
-
-              {/* 1. Search + map — compact row */}
+              {/* 1. Search + map + bell — single compact row */}
               <View style={styles.searchRow}>
                 <PressableOpacity
                   onPress={() => router.push('/search')}
@@ -681,6 +663,15 @@ function FeedScreenInner() {
                   ) : (
                     <LayoutGrid size={20} color={colors.foreground} strokeWidth={1.8} />
                   )}
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={() => router.push('/notifications')}
+                  style={[styles.iconBtn, { backgroundColor: colors.muted }]}
+                  accessibilityLabel={t('notifications.title') ?? 'Ilmoitukset'}
+                  accessibilityRole="button"
+                >
+                  <Bell size={20} color={colors.foreground} strokeWidth={1.8} />
+                  <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
                 </PressableOpacity>
               </View>
 
@@ -878,21 +869,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
 
-  // ── Header row ──
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  hTitle: {
-    fontSize: 38,
-    fontWeight: '700',
-    fontFamily: fonts.displayBold,
-    letterSpacing: -2,
-    lineHeight: 38,
-  },
-
   // ── Search row ──
   searchRow: {
     flexDirection: 'row',
@@ -945,12 +921,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   eyebrowText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: 2.8,
     textTransform: 'uppercase',
-    lineHeight: 12,
+    lineHeight: 14,
   },
 
   // ── Category pills ──
@@ -974,11 +950,11 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   sectionTitle: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '700',
     fontFamily: fonts.displayBold,
-    letterSpacing: -1.2,
-    lineHeight: 30,
+    letterSpacing: -1.5,
+    lineHeight: 34,
   },
   sectionSub: {
     fontSize: 10,
