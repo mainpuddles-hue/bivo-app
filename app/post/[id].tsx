@@ -400,7 +400,7 @@ function PostDetailScreenInner() {
       } else {
         // Sync count from source of truth
         const { count: realCount } = await supabase.from('post_likes').select('id', { count: 'exact', head: true }).eq('post_id', id)
-        if (realCount !== null) {
+        if (realCount !== null && mountedRef.current) {
           setLikeCount(realCount)
           ;(supabase.from('posts') as any).update({ like_count: realCount }).eq('id', id).then(() => {}).catch((e: any) => { if (__DEV__) console.warn('[post] like count sync failed:', e?.message) })
         }
@@ -1503,7 +1503,10 @@ function PostDetailScreenInner() {
             {authorRating && authorRating.count > 0 && (
               <View style={[styles.ratingBars, { borderTopColor: colors.border }]}>
                 {[5, 4, 3, 2, 1].map(stars => {
-                  const pct = authorRating.count > 0 ? Math.random() * (stars >= 4 ? 0.8 : 0.2) : 0
+                  // Estimate bar width from avg: stars close to avg get a higher share.
+                  // We don't have per-star counts so we use a simple triangular weight.
+                  const dist = Math.max(0, 1 - Math.abs(stars - authorRating.avg) / 2)
+                  const pct = dist
                   return (
                     <View key={stars} style={styles.ratingRow}>
                       <Text style={[styles.ratingLabel, { color: colors.foreground }]}>{stars}</Text>

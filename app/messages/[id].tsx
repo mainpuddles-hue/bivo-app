@@ -77,9 +77,11 @@ function ConversationScreenInner() {
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const userIdRef = useRef<string | null>(null)
   userIdRef.current = userId
+  const showScrollBtnRef = useRef(false)
 
   const mountedRef = useRef(true)
   useEffect(() => { return () => { mountedRef.current = false } }, [])
+  showScrollBtnRef.current = showScrollBtn
 
   // Track if user modified input after a send attempt (CLICK-PATH-014)
   const inputModifiedSinceSendRef = useRef(false)
@@ -247,8 +249,8 @@ function ConversationScreenInner() {
           const next = [...prev, newMsg]
           return next.length > MAX_MESSAGES ? next.slice(-MAX_MESSAGES) : next
         })
-        // Increment unseen counter if scrolled up and message is from other user
-        if (userIdRef.current && newMsg.sender_id !== userIdRef.current) {
+        // Increment unseen counter only when scrolled up and message is from other user
+        if (userIdRef.current && newMsg.sender_id !== userIdRef.current && showScrollBtnRef.current) {
           setNewMsgCount(prev => prev + 1)
           // Auto-mark as read (use ref to avoid stale closure)
           ;(async () => { try { await (supabase.from('messages') as any).update({ is_read: true }).eq('id', newMsg.id) } catch (e) { if (__DEV__) console.warn('[conversation] mark-as-read failed:', e) } })()
@@ -267,7 +269,7 @@ function ConversationScreenInner() {
         if ((payload as any).payload?.userId !== userIdRef.current) {
           setOtherTyping(true)
           if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
-          typingTimerRef.current = setTimeout(() => setOtherTyping(false), 3000)
+          typingTimerRef.current = setTimeout(() => { if (mountedRef.current) setOtherTyping(false) }, 3000)
         }
       })
       .subscribe((status) => {

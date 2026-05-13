@@ -75,6 +75,7 @@ const [editingBio, setEditingBio] = useState(false)
   const identity = useIdentityVerification(profile?.id ?? null)
   const mountedRef = useRef(true)
   const avatarUploadingRef = useRef(false)
+  const savingBioRef = useRef(false)
 
   // ── Collapsible header scroll tracking ──
   const scrollY = useRef(new Animated.Value(0)).current
@@ -251,16 +252,21 @@ const [editingBio, setEditingBio] = useState(false)
   }, [profile, supabase, t, toast])
 
   const handleSaveBio = useCallback(async () => {
-    if (!profile) return
+    if (!profile || savingBioRef.current) return
+    savingBioRef.current = true
     const previousBio = profile.bio ?? ''
-    const { error } = await (supabase.from('profiles') as any).update({ bio: bioText.trim() }).eq('id', profile.id)
-    if (error) {
-      setBioText(previousBio)
-      toast.show({ message: t('profile.bioUpdateFailed'), type: 'error' })
-      return
+    try {
+      const { error } = await (supabase.from('profiles') as any).update({ bio: bioText.trim() }).eq('id', profile.id)
+      if (error) {
+        setBioText(previousBio)
+        toast.show({ message: t('profile.bioUpdateFailed'), type: 'error' })
+        return
+      }
+      setProfile(prev => prev ? { ...prev, bio: bioText.trim() } : null)
+      setEditingBio(false)
+    } finally {
+      savingBioRef.current = false
     }
-    setProfile(prev => prev ? { ...prev, bio: bioText.trim() } : null)
-    setEditingBio(false)
   }, [profile, bioText, supabase, t, toast])
 
   const openFollowList = useCallback(async (type: 'followers' | 'following') => {

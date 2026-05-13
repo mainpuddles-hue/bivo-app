@@ -33,7 +33,7 @@ export default function SplashScreen() {
       }),
     ]).start()
 
-    setTimeout(() => {
+    const dotTimer = setTimeout(() => {
       Animated.timing(dotOpacity, {
         toValue: 1,
         duration: 450,
@@ -42,13 +42,18 @@ export default function SplashScreen() {
       }).start()
     }, 900)
 
-    setTimeout(() => {
+    const taglineTimer = setTimeout(() => {
       Animated.timing(taglineOpacity, {
         toValue: 1,
         duration: 700,
         useNativeDriver: true,
       }).start()
     }, 1600)
+
+    return () => {
+      clearTimeout(dotTimer)
+      clearTimeout(taglineTimer)
+    }
   }, [])
 
   useEffect(() => {

@@ -462,7 +462,7 @@ function FeedScreenInner() {
       }
     }
     return items
-  }, [feed.activeFilter, categorySections, feedAds])
+  }, [feed.activeFilter, feed.loading, categorySections, feedAds, t])
 
   const renderFeedItem = useCallback(({ item }: { item: FeedItem }) => {
     const gCardWidth = (screenWidth - 44 - 12) / 2  // 22px padding each side, 12px gap

@@ -370,6 +370,7 @@ function NotificationsScreenInner() {
 
   useFocusEffect(useCallback(() => {
     mountedRef.current = true
+    isFetchingRef.current = false
     fetchNotifications()
     return () => { mountedRef.current = false }
   }, [fetchNotifications]))
@@ -414,16 +415,26 @@ function NotificationsScreenInner() {
   // Delete notification — optimistic with rollback, guarded against fetch resurrection
   const deleteNotification = useCallback(async (notifId: string) => {
     let deletedItem: PrioritizedNotification | undefined
+    let deletedIndex = -1
     pendingDeletesRef.current.add(notifId)
     setNotifications(p => {
-      deletedItem = p.find(n => n.id === notifId)
+      deletedIndex = p.findIndex(n => n.id === notifId)
+      deletedItem = p[deletedIndex]
       return p.filter(n => n.id !== notifId)
     })
     try {
       const { error } = await (supabase.from('notifications') as any).delete().eq('id', notifId)
       if (error) throw error
     } catch {
-      if (deletedItem) setNotifications(p => [...p, deletedItem!])
+      if (deletedItem) {
+        const item = deletedItem
+        const idx = deletedIndex
+        setNotifications(p => {
+          const next = [...p]
+          next.splice(idx < 0 || idx > next.length ? next.length : idx, 0, item)
+          return next
+        })
+      }
     } finally {
       pendingDeletesRef.current.delete(notifId)
     }

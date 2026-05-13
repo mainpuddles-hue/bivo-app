@@ -63,9 +63,11 @@ function OnboardingScreenInner() {
 
   // Fetch user ID for referral system
   useEffect(() => {
+    let mounted = true
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setOnboardingUserId(user.id)
+      if (mounted && user) setOnboardingUserId(user.id)
     }).catch((e) => { if (__DEV__) console.warn('Onboarding user sync failed:', e) })
+    return () => { mounted = false }
   }, [supabase])
 
   // Handle address selection from LocationAutocomplete

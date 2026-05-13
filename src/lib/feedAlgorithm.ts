@@ -55,8 +55,8 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   const isPro = post.is_pro_listing ? 0.2 : 0
   const social = Math.min(1, trustScore * 0.5 + isFollowed + isPro)
 
-  // Personalization: from collaborative filtering
-  const personalScore = ctx.personalScores?.get(post.id) ?? 0
+  // Personalization: from collaborative filtering (clamp to [0,1] — DB may return arbitrary scale)
+  const personalScore = Math.min(1, Math.max(0, ctx.personalScores?.get(post.id) ?? 0))
 
   // Time-of-day relevance
   const hour = new Date().getHours()

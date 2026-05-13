@@ -242,7 +242,8 @@ export function useFeedData() {
     }
   }, [userLocation, supabase])
 
-  useEffect(() => { prefetchHelsinkiEvents(); fetchExtraContent() }, [fetchExtraContent])
+  useEffect(() => { prefetchHelsinkiEvents() }, [])
+  useEffect(() => { fetchExtraContent() }, [fetchExtraContent])
 
   // ── Fetch posts ──
   const fetchPosts = useCallback(async (reset = false) => {

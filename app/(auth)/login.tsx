@@ -91,7 +91,6 @@ function LoginScreenInner() {
       }
     }).catch((e) => {
       if (__DEV__) console.warn('Session storage failed:', e)
-      Alert.alert(t('auth.sessionError'), t('auth.sessionErrorDetail'))
     })
   }, [])
 

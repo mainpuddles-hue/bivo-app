@@ -592,7 +592,7 @@ function BookingDetailScreenInner() {
     [updatePickupState],
   )
   const handleCancel = useCallback(() => {
-    Alert.alert(t('rental.cancelBooking'), t('rental.bookingCancelled'), [
+    Alert.alert(t('rental.cancelBooking'), t('rental.cancelBookingConfirm') ?? t('rental.cancelBooking'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.confirm'), style: 'destructive', onPress: () => updateBookingStatus('cancelled') },
     ])
@@ -602,6 +602,9 @@ function BookingDetailScreenInner() {
 
   const handleSubmitReview = useCallback(async () => {
     if (!booking?.other_user?.id || !userId) return
+    // Guard: do not insert a second review if one was already submitted for this booking
+    const myReviewAt = booking.my_role === 'lender' ? booking.lender_review_at : booking.borrower_review_at
+    if (myReviewAt) { safeBack(router, '/bookings'); return }
     setActionLoading(true)
     try {
       const { error: revError } = await (supabase.from('reviews') as any).insert({
@@ -639,6 +642,11 @@ function BookingDetailScreenInner() {
   const otherName = booking?.other_user?.name ?? ''
   const itemTitle = booking?.post?.title ?? ''
   const isRental = booking?.type === 'rental'
+
+  // Prevent re-submission: check whether this user already left a review for this booking.
+  const alreadyReviewed = booking
+    ? (booking.my_role === 'lender' ? !!booking.lender_review_at : !!booking.borrower_review_at)
+    : false
 
   // ─── Loading ───
   if (loading) {
@@ -1140,10 +1148,10 @@ function BookingDetailScreenInner() {
         </ScrollView>
         </KeyboardAvoidingView>
 
-        {/* Sticky CTA */}
+        {/* Sticky CTA — disabled once the user has already reviewed */}
         <StickyCTA
-          onPress={handleSubmitReview}
-          label={t('booking.submitReview')}
+          onPress={alreadyReviewed ? () => safeBack(router, '/bookings') : handleSubmitReview}
+          label={alreadyReviewed ? (t('booking.alreadyReviewed') ?? t('common.done')) : t('booking.submitReview')}
           colors={colors}
           insets={insets}
           loading={actionLoading}
