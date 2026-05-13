@@ -637,7 +637,7 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 12 }]}>
-              {/* 1. Search + map + bell — single compact row */}
+              {/* 1. Search + map + notifications — visual hierarchy: search dominant, icons secondary */}
               <View style={styles.searchRow}>
                 <PressableOpacity
                   onPress={() => router.push('/search')}
@@ -645,8 +645,8 @@ function FeedScreenInner() {
                   accessibilityLabel={t('common.search')}
                   accessibilityRole="button"
                 >
-                  <Search size={18} color={colors.mutedForeground} strokeWidth={2} />
-                  <Text style={[styles.searchPlaceholder, { color: colors.tertiaryForeground }]}>
+                  <Search size={17} color={colors.tertiaryForeground} strokeWidth={2.2} />
+                  <Text style={[styles.searchPlaceholder, { color: colors.tertiaryForeground }]} numberOfLines={1}>
                     {feed.userNeighborhood
                       ? `${t('feed.searchIn') ?? 'Hae tavaraa'} ${feed.userNeighborhood}sta…`
                       : (t('feed.searchPlaceholder') ?? 'Etsi naapurustosta…')}
@@ -654,23 +654,23 @@ function FeedScreenInner() {
                 </PressableOpacity>
                 <PressableOpacity
                   onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode(v => v === 'list' ? 'map' : 'list') }}
-                  style={[styles.iconBtn, { backgroundColor: colors.muted }]}
-                  accessibilityLabel={viewMode === 'list' ? (t('feed.mapView') ?? 'Map view') : (t('feed.listView') ?? 'List view')}
+                  style={styles.iconBtn}
+                  accessibilityLabel={viewMode === 'list' ? (t('feed.mapView') ?? 'Kartta') : (t('feed.listView') ?? 'Lista')}
                   accessibilityRole="button"
                 >
                   {viewMode === 'list' ? (
-                    <Map size={20} color={colors.foreground} strokeWidth={1.8} />
+                    <Map size={22} color={colors.foreground} strokeWidth={1.6} />
                   ) : (
-                    <LayoutGrid size={20} color={colors.foreground} strokeWidth={1.8} />
+                    <LayoutGrid size={22} color={colors.foreground} strokeWidth={1.6} />
                   )}
                 </PressableOpacity>
                 <PressableOpacity
                   onPress={() => router.push('/notifications')}
-                  style={[styles.iconBtn, { backgroundColor: colors.muted }]}
-                  accessibilityLabel={t('notifications.title') ?? 'Ilmoitukset'}
+                  style={styles.iconBtn}
+                  accessibilityLabel={`${t('notifications.title') ?? 'Ilmoitukset'}, ${t('notifications.new') ?? 'uusia ilmoituksia'}`}
                   accessibilityRole="button"
                 >
-                  <Bell size={20} color={colors.foreground} strokeWidth={1.8} />
+                  <Bell size={22} color={colors.foreground} strokeWidth={1.6} />
                   <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
                 </PressableOpacity>
               </View>
@@ -869,31 +869,32 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
 
-  // ── Search row ──
+  // ── Search row — search is primary (filled pill), icons are secondary (transparent) ──
   searchRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    gap: 4,
   },
   searchInput: {
     flex: 1,
-    height: 44,
-    borderRadius: 14,
+    height: 42,
+    borderRadius: 21,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     paddingHorizontal: 16,
   },
   searchPlaceholder: {
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: fonts.bodyMedium,
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '400',
+    fontFamily: fonts.body,
     lineHeight: 20,
-    letterSpacing: -0.2,
+    letterSpacing: -0.1,
   },
   iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 42,
+    height: 42,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -921,12 +922,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   eyebrowText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: 2.8,
     textTransform: 'uppercase',
-    lineHeight: 14,
+    lineHeight: 15,
   },
 
   // ── Category pills ──
@@ -957,10 +958,10 @@ const styles = StyleSheet.create({
     lineHeight: 34,
   },
   sectionSub: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    lineHeight: 14,
+    lineHeight: 15,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
@@ -997,6 +998,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    minHeight: 44,
   },
   sortBtnText: {
     fontSize: 12,
@@ -1042,7 +1044,7 @@ const styles = StyleSheet.create({
   allLoadedWrap: { alignItems: 'center', gap: 16, paddingVertical: 44 },
   allLoadedLine: { height: StyleSheet.hairlineWidth, width: '40%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  allLoadedText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 1.6, textTransform: 'uppercase' as const, lineHeight: 14 },
+  allLoadedText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 1.6, textTransform: 'uppercase' as const, lineHeight: 15 },
 })
 
 export default function FeedScreen() {

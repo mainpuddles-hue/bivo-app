@@ -111,11 +111,14 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
     const parts: string[] = []
     if (category) parts.push(t(category.label))
     parts.push(post.title)
+    if (post.daily_fee != null) parts.push(formatPrice(post.daily_fee, locale))
+    else if (post.service_price != null && post.service_price > 0) parts.push(formatPrice(post.service_price, locale))
+    if (isUrgent) parts.push(t('postCard.urgent'))
     if (authorName) parts.push(`${t('common.by') ?? ''} ${authorName}`.trim())
     if (post.location) parts.push(post.location)
     if (timeAgo) parts.push(timeAgo)
     return parts.filter(Boolean).join(', ')
-  }, [category, post, variant, authorName, timeAgo, t])
+  }, [category, post, variant, authorName, timeAgo, isUrgent, locale, t])
 
   const handlePress = () => {
     try { Haptics.selectionAsync() } catch {}
@@ -202,14 +205,14 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
         />
       ) : (
         <View style={[styles.miniAvatar, styles.miniAvatarFallback, { backgroundColor: `${metaColor}20` }]}>
-          <Text style={{ fontSize: 9, fontFamily: fonts.bodySemi, color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
+          <Text style={{ fontSize: 11, fontFamily: fonts.bodySemi, color: metaColor }}>{user?.name?.charAt(0)?.toUpperCase() ?? '?'}</Text>
         </View>
       )}
       <Text style={[styles.metaName, { color: nameColor ?? colors.foreground }]} numberOfLines={1}>
         {authorName}
       </Text>
       {(user as any)?.is_verified && (
-        <ShieldCheck size={11} color={colors.success} strokeWidth={2.4} />
+        <ShieldCheck size={11} color={colors.success} strokeWidth={2.4} accessibilityLabel={t('profile.verified') ?? 'Verified'} />
       )}
       <Text style={[styles.metaDivider, { color: colors.tertiaryForeground }]}>·</Text>
       <Text style={[styles.metaDistance, { color: metaColor }]} numberOfLines={1}>
@@ -280,7 +283,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             {/* Top row: availability badge + like/urgent chip */}
             <View style={styles.imgTopRow}>
               {!isExpired ? (
-                <View style={styles.availBadge}>
+                <View style={[styles.availBadge, isDark && styles.availBadgeDark]}>
                   <View style={[styles.availDot, { backgroundColor: colors.success }]} />
                   <Text style={[styles.availText, { color: colors.success }]}>{t('postCard.now') ?? 'Nyt'}</Text>
                 </View>
@@ -491,7 +494,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(30,30,30,0.92)',
   },
   catChipText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.6,
@@ -510,7 +513,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   urgentChipText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.6,
@@ -521,10 +524,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 999,
     backgroundColor: 'rgba(0,0,0,0.55)',
+    minHeight: 32,
   },
   countChipText: {
     fontSize: 11,
@@ -574,10 +578,10 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   pricePillUnit: {
-    fontSize: 8,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1.2,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
     marginTop: 2,
   },
@@ -608,17 +612,20 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.95)',
   },
+  availBadgeDark: {
+    backgroundColor: 'rgba(30,30,30,0.92)',
+  },
   availDot: {
     width: 5,
     height: 5,
     borderRadius: 999,
   },
   availText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1,
-    lineHeight: 12,
+    letterSpacing: 0.8,
+    lineHeight: 14,
   },
   imgContent: {
     padding: 14,
@@ -627,11 +634,11 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   imgTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     letterSpacing: -0.3,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   imgSubtitle: {
     fontSize: 11,
@@ -656,12 +663,12 @@ const styles = StyleSheet.create({
     ...Platform.select({ android: { elevation: 8 } }),
   },
   inkDay: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: 3,
     textTransform: 'uppercase',
-    lineHeight: 14,
+    lineHeight: 15,
   },
   inkDate: {
     fontSize: 52,
@@ -713,12 +720,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   tintCatLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: 2.4,
     textTransform: 'uppercase',
-    lineHeight: 14,
+    lineHeight: 15,
   },
   urgentInline: {
     paddingHorizontal: 8,
@@ -726,12 +733,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   urgentInlineText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-    lineHeight: 12,
+    lineHeight: 14,
   },
   tintTitle: {
     fontSize: 21,

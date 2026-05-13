@@ -659,7 +659,7 @@ function LoginScreenInner() {
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
     flexGrow: 1,
   },
 
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
   headline: {
     fontFamily: fonts.displayBold,
     fontSize: 40,
-    lineHeight: 40,
+    lineHeight: 44,
     letterSpacing: -2,
     marginBottom: 14,
     textAlign: 'center',
@@ -693,7 +693,7 @@ const styles = StyleSheet.create({
   // Section label — Meta style uppercase
   sectionLabel: {
     fontFamily: fonts.bodySemi,
-    fontSize: 10,
+    fontSize: 11,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 10,
@@ -845,7 +845,7 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dividerText: {
     fontFamily: fonts.bodySemi,
-    fontSize: 10,
+    fontSize: 11,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },

@@ -26,16 +26,18 @@ export const fonts = {
 
 /**
  * Type scale — consistent fontSize + lineHeight pairs.
- * Minimum body text: 12px. Scale: 12 / 13 / 14 / 16 / 18 / 20 / 24 / 28 / 32.
+ * Minimum text: 11px (iOS HIG). Scale: 11 / 12 / 13 / 15 / 16 / 18 / 20 / 24 / 28 / 32.
  */
 export const typeScale = {
-  /** 12/16 — smallest allowed text (pills, badges, captions) */
-  caption: { fontSize: 12, lineHeight: 16 },
+  /** 11/15 — absolute minimum (badges, status indicators) */
+  micro: { fontSize: 11, lineHeight: 15 },
+  /** 12/17 — small text (pills, captions) */
+  caption: { fontSize: 12, lineHeight: 17 },
   /** 13/18 — compact body text */
   bodySmall: { fontSize: 13, lineHeight: 18 },
-  /** 14/20 — default body */
-  body: { fontSize: 14, lineHeight: 20 },
-  /** 16/22 — emphasized body */
+  /** 15/21 — card titles, secondary body */
+  body: { fontSize: 15, lineHeight: 21 },
+  /** 16/22 — default body (iOS HIG: 17pt recommended) */
   bodyLarge: { fontSize: 16, lineHeight: 22 },
   /** 18/24 — small title */
   subtitle: { fontSize: 18, lineHeight: 24 },
@@ -47,8 +49,8 @@ export const typeScale = {
   display: { fontSize: 28, lineHeight: 34 },
   /** 32/38 — hero display */
   displayLarge: { fontSize: 32, lineHeight: 38 },
-  /** 44/44 — dramatic display for key screens */
-  displayXL: { fontSize: 44, lineHeight: 44 },
-  /** 64/62 — hero moment, viewport-commanding */
-  displayHero: { fontSize: 64, lineHeight: 62 },
+  /** 44/50 — dramatic display for key screens */
+  displayXL: { fontSize: 44, lineHeight: 50 },
+  /** 64/70 — hero moment, viewport-commanding */
+  displayHero: { fontSize: 64, lineHeight: 70 },
 } as const
