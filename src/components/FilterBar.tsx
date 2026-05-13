@@ -49,8 +49,8 @@ const FilterChip = memo(function FilterChip({ label, isActive, onPress, dotColor
         style={[
           styles.chip,
           isActive
-            ? { backgroundColor: colors.foreground, borderColor: colors.foreground }
-            : { backgroundColor: colors.muted, borderColor: colors.muted },
+            ? { backgroundColor: colors.foreground, borderWidth: 0 }
+            : { backgroundColor: colors.card, borderColor: colors.border },
         ]}
       >
         {/* Active chips show a 10px Check (matching slice 1's TagChipRow
@@ -63,8 +63,7 @@ const FilterChip = memo(function FilterChip({ label, isActive, onPress, dotColor
         ) : null}
         <Text style={[
           styles.chipText,
-          { color: isActive ? colors.background : colors.foreground },
-          isActive && { fontFamily: fonts.bodySemi, fontWeight: '600' },
+          { color: isActive ? colors.primaryForeground : colors.foreground },
         ]}>
           {label}
         </Text>
@@ -108,10 +107,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 38,
-    paddingHorizontal: 16,
-    gap: 7,
-    borderRadius: 14,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    gap: 6,
+    borderRadius: 999,
     borderWidth: 1,
   },
   // Small saturated dot (5px) — enough to read the category color at a
@@ -127,6 +126,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     lineHeight: 16,
-    letterSpacing: -0.1,
+    letterSpacing: -0.065,
   },
 })

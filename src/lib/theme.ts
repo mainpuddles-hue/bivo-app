@@ -8,7 +8,7 @@ export const colors = {
     primary: '#0A0A0A',
     accent: '#1A1A1A',
     secondary: '#FF9500',
-    background: '#FFFFFF',
+    background: '#F8F6F0',
     foreground: '#0A0A0A',
     card: '#FFFFFF',
     cardElevated: '#F3F1EB',

@@ -640,7 +640,7 @@ function FeedScreenInner() {
               <View style={styles.searchRow}>
                 <PressableOpacity
                   onPress={() => router.push('/search')}
-                  style={[styles.searchInput, { backgroundColor: colors.muted }]}
+                  style={[styles.searchInput, { backgroundColor: colors.card, borderColor: colors.border }]}
                   accessibilityLabel={t('common.search')}
                   accessibilityRole="button"
                 >
@@ -653,23 +653,23 @@ function FeedScreenInner() {
                 </PressableOpacity>
                 <PressableOpacity
                   onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode(v => v === 'list' ? 'map' : 'list') }}
-                  style={styles.iconBtn}
+                  style={[styles.iconBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
                   accessibilityLabel={viewMode === 'list' ? (t('feed.mapView') ?? 'Kartta') : (t('feed.listView') ?? 'Lista')}
                   accessibilityRole="button"
                 >
                   {viewMode === 'list' ? (
-                    <Map size={22} color={colors.foreground} strokeWidth={1.6} />
+                    <Map size={20} color={colors.foreground} strokeWidth={1.6} />
                   ) : (
-                    <LayoutGrid size={22} color={colors.foreground} strokeWidth={1.6} />
+                    <LayoutGrid size={20} color={colors.foreground} strokeWidth={1.6} />
                   )}
                 </PressableOpacity>
                 <PressableOpacity
                   onPress={() => router.push('/notifications')}
-                  style={styles.iconBtn}
+                  style={[styles.iconBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
                   accessibilityLabel={`${t('notifications.title') ?? 'Ilmoitukset'}, ${t('notifications.new') ?? 'uusia ilmoituksia'}`}
                   accessibilityRole="button"
                 >
-                  <Bell size={22} color={colors.foreground} strokeWidth={1.6} />
+                  <Bell size={20} color={colors.foreground} strokeWidth={1.6} />
                   <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
                 </PressableOpacity>
               </View>
@@ -861,26 +861,29 @@ const styles = StyleSheet.create({
 
   bellDot: {
     position: 'absolute',
-    top: 10,
-    right: 11,
+    top: 9,
+    right: 10,
     width: 7,
     height: 7,
     borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
 
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
   },
   searchInput: {
     flex: 1,
-    height: 42,
-    borderRadius: 21,
+    height: 48,
+    borderRadius: 14,
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
   },
   searchPlaceholder: {
     flex: 1,
@@ -893,6 +896,8 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 42,
     height: 42,
+    borderRadius: 999,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -921,22 +926,22 @@ const styles = StyleSheet.create({
   },
   eyebrowText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 2.8,
+    letterSpacing: 1.3,
     textTransform: 'uppercase',
     lineHeight: 15,
   },
 
   // ── Category pills ──
   pillRow: {
-    marginTop: 20,
+    marginTop: 14,
     marginBottom: 14,
   },
 
-  // ── Section heads (v3 Bricolage) ──
+  // ── Section heads ──
   categorySection: {
-    marginTop: 52,
+    marginTop: 32,
   },
   sectionHead: {
     flexDirection: 'row',
@@ -949,18 +954,18 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   sectionTitle: {
-    fontSize: 32,
-    fontWeight: '700',
-    fontFamily: fonts.displayBold,
-    letterSpacing: -1.5,
-    lineHeight: 34,
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: fonts.heading,
+    letterSpacing: -0.5,
+    lineHeight: 30,
   },
   sectionSub: {
     fontSize: 11,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 15,
-    letterSpacing: 0.8,
+    letterSpacing: 1.3,
     textTransform: 'uppercase',
   },
   seeAllRow: {

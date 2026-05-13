@@ -7,7 +7,7 @@
  *   TINT  → warm-tint bg, text-only posts, category label, large title
  */
 import { memo, useEffect, useMemo, useRef, useState, useCallback } from 'react'
-import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-native'
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
@@ -368,7 +368,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           style={[
             styles.card,
             styles.inkCard,
-            { backgroundColor: colors.foreground, shadowOpacity: isDark ? 0.22 : 0.10 },
+            { backgroundColor: colors.foreground },
             isExpired && { opacity: 0.55 },
           ]}
         >
@@ -445,22 +445,16 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
-    // Depth: soft shadow system for physical-object feel
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.07,
-    shadowRadius: 16,
-    ...Platform.select({ android: { elevation: 4 } }),
+    borderWidth: 1,
   },
 
   // ── IMAGE variant ──
   imageWrap: {
     position: 'relative',
     overflow: 'hidden',
-    aspectRatio: 4 / 5,
+    aspectRatio: 1,
   },
   image: {
     width: '100%',
@@ -476,9 +470,9 @@ const styles = StyleSheet.create({
   },
   imgTopRow: {
     position: 'absolute',
-    top: 10,
-    left: 10,
-    right: 10,
+    top: 8,
+    left: 8,
+    right: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -621,30 +615,28 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   availText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.8,
     lineHeight: 14,
   },
   imgContent: {
-    padding: 14,
-    paddingTop: 12,
-    paddingBottom: 16,
-    gap: 3,
+    paddingTop: 10,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    gap: 2,
   },
   imgTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: -0.3,
+    letterSpacing: -0.07,
     lineHeight: 20,
   },
   imgSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: fonts.body,
-    letterSpacing: 0.2,
-    lineHeight: 15,
+    lineHeight: 16,
     marginTop: 2,
   },
 
@@ -655,12 +647,6 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     gap: 12,
     minHeight: 280,
-    // Deeper shadow for ink cards — they sit forward
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    ...Platform.select({ android: { elevation: 8 } }),
   },
   inkDay: {
     fontSize: 11,

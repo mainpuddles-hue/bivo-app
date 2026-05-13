@@ -9,7 +9,6 @@ import {
   type NativeScrollEvent,
 } from 'react-native'
 import { Image } from 'expo-image'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import { Calendar, MapPin, ArrowRight } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -126,51 +125,62 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
           <PressableOpacity
             key={card.id}
             onPress={() => handlePress(card)}
-            style={[styles.card, { width: cardWidth }]}
+            style={[
+              styles.card,
+              {
+                width: cardWidth,
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+              },
+            ]}
             activeOpacity={0.92}
             accessibilityRole="button"
             accessibilityLabel={card.title}
           >
-            {card.imageUrl ? (
-              <>
+            {/* Image area — top of card */}
+            <View style={styles.imageArea}>
+              {card.imageUrl ? (
                 <Image
                   source={{ uri: getImageUrl(card.imageUrl, 'medium')! }}
                   style={StyleSheet.absoluteFill}
                   contentFit="cover"
                   cachePolicy="memory-disk"
                 />
-                <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0.7)']}
-                  locations={[0.3, 1]}
-                  style={StyleSheet.absoluteFill}
-                />
-              </>
-            ) : (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.foreground }]} />
-            )}
+              ) : (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.muted }]} />
+              )}
+            </View>
 
+            {/* Content area — below image */}
             <View style={styles.cardContent}>
-              <View style={styles.datePill}>
-                <Calendar size={12} color="#FFFFFF" strokeWidth={2.2} />
-                <Text style={styles.datePillText}>
+              {/* Date pill */}
+              <View style={[styles.datePill, { backgroundColor: colors.muted }]}>
+                <Calendar size={12} color={colors.mutedForeground} strokeWidth={2.2} />
+                <Text style={[styles.datePillText, { color: colors.mutedForeground }]}>
                   {formatDateHeader(card.dateIso, locale)} · {formatEventTime(card.dateIso, locale)}
                 </Text>
               </View>
 
-              <Text style={styles.cardTitle} numberOfLines={2}>
+              <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
                 {card.title}
               </Text>
 
               {card.location && (
                 <View style={styles.locationRow}>
-                  <MapPin size={12} color="rgba(255,255,255,0.7)" strokeWidth={2} />
-                  <Text style={styles.locationText} numberOfLines={1}>{card.location}</Text>
+                  <MapPin size={12} color={colors.mutedForeground} strokeWidth={2} />
+                  <Text style={[styles.locationText, { color: colors.mutedForeground }]} numberOfLines={1}>
+                    {card.location}
+                  </Text>
                 </View>
               )}
 
               <View style={styles.ctaRow}>
-                <Text style={styles.ctaText}>{t('postCard.viewEvent') ?? 'Katso tapahtuma'}</Text>
-                <ArrowRight size={14} color="#FFFFFF" strokeWidth={2.2} />
+                <Text style={[styles.ctaText, { color: colors.mutedForeground }]}>
+                  {t('postCard.viewEvent') ?? 'Katso tapahtuma'}
+                </Text>
+                <View style={[styles.ctaArrow, { backgroundColor: colors.foreground }]}>
+                  <ArrowRight size={13} color={colors.card} strokeWidth={2.2} />
+                </View>
               </View>
             </View>
           </PressableOpacity>
@@ -199,13 +209,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   card: {
-    height: 200,
     borderRadius: 20,
     overflow: 'hidden',
-    justifyContent: 'flex-end',
+    borderWidth: 1,
+  },
+  imageArea: {
+    height: 200,
   },
   cardContent: {
-    padding: 18,
+    padding: 20,
     gap: 6,
   },
   datePill: {
@@ -216,23 +228,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.18)',
     marginBottom: 4,
   },
   datePillText: {
     fontSize: 11,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    color: '#FFFFFF',
     letterSpacing: 0.2,
   },
   cardTitle: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 20,
     fontFamily: fonts.displayBold,
-    color: '#FFFFFF',
-    letterSpacing: -0.8,
-    lineHeight: 26,
+    letterSpacing: -0.3,
+    lineHeight: 25,
   },
   locationRow: {
     flexDirection: 'row',
@@ -242,21 +249,25 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 13,
     fontFamily: fonts.body,
-    color: 'rgba(255,255,255,0.7)',
-    lineHeight: 16,
+    lineHeight: 18,
   },
   ctaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
+    justifyContent: 'space-between',
+    marginTop: 8,
   },
   ctaText: {
     fontSize: 13,
-    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    color: '#FFFFFF',
     letterSpacing: 0.1,
+  },
+  ctaArrow: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dots: {
     flexDirection: 'row',
