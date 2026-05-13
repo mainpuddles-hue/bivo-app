@@ -664,11 +664,11 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   inkDate: {
-    fontSize: 46,
+    fontSize: 52,
     fontWeight: '700',
     fontFamily: fonts.displayBold,
-    letterSpacing: -2.5,
-    lineHeight: 42,
+    letterSpacing: -3,
+    lineHeight: 48,
     marginTop: 4,
   },
   inkTitle: {
@@ -713,12 +713,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   tintCatLabel: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
     letterSpacing: 2.4,
     textTransform: 'uppercase',
-    lineHeight: 12,
+    lineHeight: 14,
   },
   urgentInline: {
     paddingHorizontal: 8,

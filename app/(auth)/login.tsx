@@ -609,7 +609,7 @@ function LoginScreenInner() {
                 ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
                 : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
             }
-            cornerRadius={999}
+            cornerRadius={14}
             style={styles.appleBtn}
             onPress={handleAppleSignIn}
           />
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
 
   // Error
   errorBanner: {
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 12,
     marginTop: 8,
   },
@@ -838,7 +838,7 @@ const styles = StyleSheet.create({
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 10,
     marginTop: 24,
     marginBottom: 24,
   },
