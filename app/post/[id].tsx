@@ -2002,7 +2002,7 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 108, left: 16,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
   },
-  catChipHeroText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
+  catChipHeroText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: fonts.bodySemi },
   pageDots: { position: 'absolute', bottom: 14, alignSelf: 'center', flexDirection: 'row', gap: 5 },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)' },
   dotActive: { width: 16, backgroundColor: 'white' },
@@ -2022,7 +2022,7 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 },
   title: { fontSize: 28, fontFamily: fonts.displayMedium, lineHeight: 31, letterSpacing: -0.7, flex: 1 },
   pricePill: { flexShrink: 0, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
-  pricePillText: { fontSize: 16, fontWeight: '700', letterSpacing: -0.2, fontFamily: fonts.bodySemi },
+  pricePillText: { fontSize: 16, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.bodySemi },
 
   // v3 Meta row
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: -4 },
@@ -2231,7 +2231,7 @@ const ctaStyles = StyleSheet.create({
     borderWidth: 1, alignItems: 'center', justifyContent: 'center',
   },
   ctaPrimary: {
-    flex: 1, height: 52, borderRadius: 26,
+    flex: 1, height: 56, borderRadius: 26,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
   },
   ctaPrimaryText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },

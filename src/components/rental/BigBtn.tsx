@@ -34,8 +34,8 @@ export function BigBtn({ children, onPress, secondary, disabled, style }: BigBtn
 
 const styles = StyleSheet.create({
   btn: {
-    height: 52,
-    borderRadius: 14,
+    height: 56,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,

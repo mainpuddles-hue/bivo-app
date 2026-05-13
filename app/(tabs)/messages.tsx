@@ -832,7 +832,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 14,
   },
   headerLeft: { flex: 1, gap: 4 },

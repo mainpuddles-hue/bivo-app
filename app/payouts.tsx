@@ -324,7 +324,7 @@ const s = StyleSheet.create({
     width: 36, height: 36, alignItems: 'center', justifyContent: 'center',
   },
 
-  content: { paddingHorizontal: 16 },
+  content: { paddingHorizontal: 22 },
 
   /* Total */
   totalSection: { paddingVertical: 4, paddingHorizontal: 4, marginBottom: 24 },
@@ -339,7 +339,7 @@ const s = StyleSheet.create({
   totalMeta: { fontSize: 12, fontFamily: fonts.body, marginTop: 4 },
 
   /* Chart */
-  chartCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 16 },
+  chartCard: { borderRadius: 20, borderWidth: 1, padding: 16, marginBottom: 16 },
   chartHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'baseline', marginBottom: 12,
@@ -348,14 +348,14 @@ const s = StyleSheet.create({
   chartBars: { flexDirection: 'row', alignItems: 'flex-end', gap: 4, height: 100 },
   chartBarCol: { flex: 1, alignItems: 'center', gap: 4 },
   chartBarValueWrap: { height: 16, justifyContent: 'flex-end' },
-  chartBarValue: { fontSize: 12, fontWeight: '700', fontFamily: fonts.bodySemi },
+  chartBarValue: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   chartBar: { width: '100%', borderRadius: 3, minHeight: 4 },
   chartBarLabel: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   /* Next payout */
   nextPayoutCard: {
     flexDirection: 'row', alignItems: 'center',
-    borderRadius: 16, padding: 12, paddingHorizontal: 16,
+    borderRadius: 20, padding: 12, paddingHorizontal: 16,
     marginBottom: 20,
   },
   nextPayoutInfo: { flex: 1 },

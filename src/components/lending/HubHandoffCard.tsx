@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   body: { flex: 1, gap: 4 },
   eyebrow: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     letterSpacing: 0.8,

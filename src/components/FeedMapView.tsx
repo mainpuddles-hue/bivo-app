@@ -403,7 +403,7 @@ const s = StyleSheet.create({
   },
   markerLabel: {
     color: '#fff',
-    fontSize: 9,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     fontWeight: '700',
     letterSpacing: 0.8,

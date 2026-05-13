@@ -4,6 +4,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { PressableOpacity } from '@/components/ui/PressableOpacity'
 import { Home } from 'lucide-react-native'
+import { fonts } from '@/lib/fonts'
 
 export default function NotFoundScreen() {
   const { colors } = useTheme()
@@ -33,8 +34,8 @@ export default function NotFoundScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  code: { fontSize: 64, fontFamily: 'BricolageGrotesque_700Bold', marginBottom: 8 },
-  title: { fontSize: 18, fontFamily: 'InstrumentSans_400Regular', marginBottom: 24 },
+  code: { fontSize: 64, fontFamily: fonts.displayBold, marginBottom: 8 },
+  title: { fontSize: 18, fontFamily: fonts.body, marginBottom: 24 },
   button: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 999 },
-  buttonText: { fontSize: 16, fontFamily: 'InstrumentSans_600SemiBold' },
+  buttonText: { fontSize: 16, fontFamily: fonts.bodySemi },
 })

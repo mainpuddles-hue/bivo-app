@@ -5,10 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, BigBtn, Pill, Eyebrow, RoundBtn, ProductThumb, ChatIcon, ClockIcon } from '@/components/rental';
 import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { useSupabase } from '@/hooks/useSupabase';
 
 export default function OwnerActiveScreen() {
   const BIVO = useLegacyTokens();
+  const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -80,7 +82,7 @@ export default function OwnerActiveScreen() {
     },
     mgmtLabelDanger: {
       fontSize: 13, fontFamily: BIVO.sansSemiBold, fontWeight: '600',
-      color: '#A12424', textAlign: 'center',
+      color: colors.destructive, textAlign: 'center',
     },
     mgmtSub: {
       fontSize: 11, fontFamily: BIVO.sans, color: BIVO.ink2, marginTop: 3, textAlign: 'center',
@@ -94,7 +96,7 @@ export default function OwnerActiveScreen() {
       flex: 1, fontSize: 14, fontFamily: BIVO.sansMedium, fontWeight: '500', color: BIVO.ink,
     },
     weekSub: { fontSize: 12, fontFamily: BIVO.sans, color: BIVO.ink2 },
-  }), [BIVO]);
+  }), [BIVO, colors]);
 
   if (loading) {
     return (

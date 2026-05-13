@@ -1539,7 +1539,7 @@ const mk = StyleSheet.create({
   imgProgressOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', borderRadius: 20, gap: 6 },
   imgProgressTrack: { width: '70%' as any, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.3)', overflow: 'hidden' },
   imgProgressFill: { height: '100%' as any, borderRadius: 2 },
-  imgProgressText: { fontSize: 12, fontWeight: '700', fontFamily: fonts.bodySemi, lineHeight: 16 },
+  imgProgressText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 16 },
   imgCompleteOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center', borderRadius: 20 },
   imgCompleteCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   imgAddMore: { width: 100, height: 100, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
@@ -1584,12 +1584,12 @@ const mk = StyleSheet.create({
   urgencyWrap: { gap: 8 },
   urgencyOpts: { flexDirection: 'row', gap: 12, paddingHorizontal: 20 },
   urgencyOpt: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 999, borderWidth: 1.5, minHeight: 44 },
-  urgencyOptText: { fontSize: 14, fontWeight: '700', fontFamily: fonts.bodySemi },
+  urgencyOptText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // v3 Sticky publish
   stickyWrap: { position: 'absolute', left: 14, right: 14 },
   formError: { fontSize: 13, fontFamily: fonts.bodyMedium, textAlign: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, marginBottom: 8, overflow: 'hidden' },
-  publishBtn: { flex: 1, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
+  publishBtn: { flex: 1, height: 56, borderRadius: 26, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
   publishText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
   publishLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
@@ -1604,7 +1604,7 @@ const mk = StyleSheet.create({
   successTitle: { fontSize: 18, fontWeight: '500', fontFamily: fonts.displayMedium, textAlign: 'center', letterSpacing: -0.3 },
   successSub: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
   shareBtn: { borderRadius: 999, paddingHorizontal: 24, paddingVertical: 12, marginTop: 4 },
-  shareBtnText: { fontSize: 14, fontWeight: '700', fontFamily: fonts.bodySemi },
+  shareBtnText: { fontSize: 14, fontWeight: '700', fontFamily: fonts.displayBold },
 
   // Map modal
   modalContainer: { flex: 1 },

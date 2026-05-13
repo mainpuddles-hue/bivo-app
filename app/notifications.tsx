@@ -676,7 +676,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingBottom: 8,
   },
   headerLeft: {
@@ -743,7 +743,7 @@ const styles = StyleSheet.create({
 
   // --- v3 Section headers (inline time group labels) ---
   sectionHeader: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingBottom: 8,
     paddingTop: 16,
   },

@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
 
   // Segment control — mockup 26 style
   segmentWrap: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 14,
   },
   segmentContainer: {
@@ -602,14 +602,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 12,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     marginBottom: 10,
   },
   loanImage: {
     width: 60,
     height: 60,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   loanInfo: {
     flex: 1,

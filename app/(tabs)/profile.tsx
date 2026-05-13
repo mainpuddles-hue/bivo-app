@@ -893,7 +893,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },
-  content: { paddingHorizontal: 16, paddingTop: 4, gap: 18 },
+  content: { paddingHorizontal: 22, paddingTop: 4, gap: 18 },
 
   // Compact header overlay (collapsible)
   compactHeader: {
@@ -904,7 +904,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     zIndex: 10,
   },
@@ -998,7 +998,7 @@ const s = StyleSheet.create({
   loginBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
   modalContainer: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-  modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: fonts.display },
+  modalTitle: { fontSize: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
   followItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, minHeight: 56 },
   followName: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   // My Posts tab

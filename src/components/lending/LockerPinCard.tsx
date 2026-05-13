@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     letterSpacing: 1.2,

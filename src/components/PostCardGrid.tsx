@@ -289,7 +289,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
                 </View>
               ) : category ? (
                 <View style={[styles.catChip, isDark && styles.catChipDark]}>
-                  <Text style={[styles.catChipText, isDark && styles.catChipTextDark]}>{t(category.label)}</Text>
+                  <Text style={[styles.catChipText, isDark && styles.catChipTextDark, { color: colors.foreground }]}>{t(category.label)}</Text>
                 </View>
               ) : <View />}
               {isUrgent ? (
@@ -308,18 +308,18 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
               <View style={styles.imgBottomRow}>
                 {post.daily_fee != null && post.daily_fee === 0 ? (
                   <View style={[styles.pricePillFree, isDark && styles.pricePillDark]}>
-                    <Text style={[styles.pricePillFreeText, isDark && styles.pricePillTextDark]}>
+                    <Text style={[styles.pricePillFreeText, isDark && styles.pricePillTextDark, { color: colors.foreground }]}>
                       {t('common.free')}
                     </Text>
                   </View>
                 ) : (
                   <View style={[styles.pricePillStack, isDark && styles.pricePillDark]}>
-                    <Text style={[styles.pricePillAmount, isDark && styles.pricePillTextDark]}>
+                    <Text style={[styles.pricePillAmount, isDark && styles.pricePillTextDark, { color: colors.foreground }]}>
                       {post.daily_fee != null
                         ? formatPrice(post.daily_fee, locale)
                         : formatPrice(post.service_price ?? 0, locale)}
                     </Text>
-                    <Text style={[styles.pricePillUnit, { color: isDark ? '#9AA0A6' : '#535A60' }]}>
+                    <Text style={[styles.pricePillUnit, { color: colors.mutedForeground }]}>
                       {post.daily_fee != null
                         ? (t('rental.perDayUnit') ?? 'PER PÄIVÄ')
                         : (t('service.perTaskUnit') ?? 'PER TYÖ')}
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   availText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 14,

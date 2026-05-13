@@ -572,7 +572,7 @@ const s = StyleSheet.create({
   card: {
     flexDirection: 'row',
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
     position: 'relative',
   },

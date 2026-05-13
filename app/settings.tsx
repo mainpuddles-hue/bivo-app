@@ -628,7 +628,7 @@ export default function SettingsScreen() {
   const joinedYear = accountCreatedAt ? new Date(accountCreatedAt).getFullYear().toString() : null
 
   // Warm tint for logout icon bg per mockup 22
-  const warmTintBg = isDark ? 'rgba(240,238,233,0.08)' : '#F0EEE9'
+  const warmTintBg = isDark ? colors.surfaceTinted : colors.warmTint
 
   // Verification count for display
   const verificationCount = [emailVerified, !!profile?.naapurusto, !!profile?.avatar_url].filter(Boolean).length
@@ -1435,7 +1435,7 @@ const s = StyleSheet.create({
     fontSize: 18,
     lineHeight: 24,
     fontWeight: '700',
-    fontFamily: fonts.display,
+    fontFamily: fonts.displayBold,
   },
   deleteDesc: {
     fontSize: 14,

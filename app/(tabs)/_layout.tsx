@@ -345,7 +345,7 @@ const s = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },

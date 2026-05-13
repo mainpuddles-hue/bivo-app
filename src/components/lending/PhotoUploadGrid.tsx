@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   addLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
   },

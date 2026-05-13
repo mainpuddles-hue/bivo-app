@@ -908,7 +908,7 @@ const s = StyleSheet.create({
   },
   ctaButton: {
     borderRadius: 999,
-    height: 54,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },

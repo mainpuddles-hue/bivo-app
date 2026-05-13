@@ -305,7 +305,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   starsLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     letterSpacing: 1,

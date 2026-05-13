@@ -1193,7 +1193,7 @@ const s = StyleSheet.create({
   scrollContent: { paddingBottom: 120 },
 
   // ── Wizard header ──
-  wizHeader: { paddingHorizontal: 16 },
+  wizHeader: { paddingHorizontal: 22 },
   wizHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   circleBtn: { width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   wizStepLabel: { flex: 1, fontSize: 12, letterSpacing: 0.6, fontWeight: '500', fontFamily: fonts.bodyMedium },
@@ -1205,25 +1205,25 @@ const s = StyleSheet.create({
   // ── CTA ──
   ctaArea: { position: 'absolute', left: 16, right: 16, bottom: 0 },
   ctaRow: { flexDirection: 'row', gap: 8 },
-  ctaPrimary: { flex: 1, height: 54, borderRadius: 999, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  ctaPrimary: { flex: 1, height: 56, borderRadius: 999, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   ctaPrimaryText: { fontSize: 15, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
-  ctaSecondary: { paddingHorizontal: 20, height: 54, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  ctaSecondary: { paddingHorizontal: 20, height: 56, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   ctaSecondaryText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // ── Section ──
-  section: { paddingHorizontal: 16, marginBottom: 16 },
+  section: { paddingHorizontal: 22, marginBottom: 16 },
   sectionLabel: { fontSize: 12, letterSpacing: 0.9, textTransform: 'uppercase', fontWeight: '600', fontFamily: fonts.bodySemi, paddingHorizontal: 4, paddingBottom: 8 },
 
   // ── Step 1: Templates ──
   templateGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  templateCard: { width: '48%', borderRadius: 16, padding: 16, minHeight: 110, justifyContent: 'space-between' },
+  templateCard: { width: '48%', borderRadius: 20, padding: 16, minHeight: 110, justifyContent: 'space-between' },
   templateIcon: { fontSize: 24, lineHeight: 28 },
   templateIconWrap: { marginBottom: 8 },
   templateName: { fontSize: 14, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
   templateCat: { fontSize: 12, marginTop: 4, fontFamily: fonts.body },
 
   // ── Fields card ──
-  fieldsCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  fieldsCard: { borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
   fieldRow: { paddingHorizontal: 16, paddingVertical: 12 },
   fieldLabel: { fontSize: 12, fontWeight: '500', marginBottom: 4, fontFamily: fonts.bodyMedium },
   fieldValue: { fontSize: 15, fontWeight: '500', fontFamily: fonts.bodyMedium, padding: 0, minHeight: 24 },

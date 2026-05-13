@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   eyebrow: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: fonts.bodyMedium,
     fontWeight: '500',
     letterSpacing: 0.4,
