@@ -110,10 +110,10 @@ async function fetchPage(url: string): Promise<{ events: CityEvent[]; next: stri
     return { events: [], next: null }
   }
   const json: LinkedEventResponse = await res.json()
-  const events = json.data
+  const events = (json.data ?? [])
     .filter(e => e.name?.fi || e.name?.en)
     .map(mapEvent)
-  return { events, next: json.meta.next }
+  return { events, next: json.meta?.next ?? null }
 }
 
 /**
@@ -235,14 +235,14 @@ export async function fetchNearbyEvents(
     clearTimeout(timeoutId)
     if (!res.ok) return []
     const json: LinkedEventResponse = await res.json()
-    const events = json.data
+    const events = (json.data ?? [])
       .filter(e => (e.name?.fi || e.name?.en) && e.location?.name?.fi !== 'Internet')
       .map(mapEvent)
 
     nearbyState.set(key, {
       events,
-      nextUrl: json.meta.next,
-      totalCount: json.meta.count,
+      nextUrl: json.meta?.next ?? null,
+      totalCount: json.meta?.count ?? 0,
       fetchedAt: Date.now(),
       loading: false,
     })
@@ -271,12 +271,12 @@ export async function loadMoreNearbyEvents(lat: number, lng: number): Promise<Ci
     clearTimeout(timeoutId)
     if (!res.ok) { state.loading = false; return null }
     const json: LinkedEventResponse = await res.json()
-    const newEvents = json.data
+    const newEvents = (json.data ?? [])
       .filter(e => (e.name?.fi || e.name?.en) && e.location?.name?.fi !== 'Internet')
       .map(mapEvent)
 
     state.events = [...state.events, ...newEvents]
-    state.nextUrl = json.meta.next
+    state.nextUrl = json.meta?.next ?? null
     state.loading = false
     return state.events
   } catch (err) {

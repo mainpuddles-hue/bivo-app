@@ -293,7 +293,7 @@ export function useMapData(t: (key: string, params?: Record<string, string | num
     } catch (err) {
       if (__DEV__) console.log('[map] global fetch error:', err)
     }
-  }, [supabase, center, cityBounds, cityCenter])
+  }, [supabase, cityBounds, cityCenter])
 
   const fetchPlaces = useCallback(async () => {
     try {

@@ -47,6 +47,7 @@ export default function RentalExtendScreen() {
 
   useEffect(() => {
     if (!rentalId) return;
+    let mounted = true;
     (supabase
       .from('rental_bookings') as any)
       .select(`
@@ -57,6 +58,7 @@ export default function RentalExtendScreen() {
       .eq('id', rentalId)
       .maybeSingle()
       .then(({ data }: { data: any }) => {
+        if (!mounted) return;
         if (!data) { setLoading(false); return; }
         const item = data.item as any;
         const images = (item?.images ?? []) as any[];
@@ -72,6 +74,7 @@ export default function RentalExtendScreen() {
         });
         setLoading(false);
       });
+    return () => { mounted = false; };
   }, [rentalId, supabase]);
 
   const maxExtend = rental ? Math.max(0, MAX_RENTAL_DAYS - rental.currentDays) : 0;

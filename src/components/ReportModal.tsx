@@ -27,7 +27,14 @@ export const ReportModal = memo(function ReportModal({ visible, onClose, type, t
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const mountedRef = useRef(true)
-  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (successTimerRef.current) clearTimeout(successTimerRef.current)
+    }
+  }, [])
 
   // Reset state when modal opens
   useEffect(() => {
@@ -71,12 +78,13 @@ export const ReportModal = memo(function ReportModal({ visible, onClose, type, t
       if (error) throw error
 
       setSuccess(true)
-      setTimeout(() => {
+      successTimerRef.current = setTimeout(() => {
+        successTimerRef.current = null
         if (!mountedRef.current) return
         setSuccess(false)
         setReason(null)
         setDescription('')
-        if (mountedRef.current) onClose()
+        onClose()
       }, 1500)
     } catch {
       Alert.alert(t('common.error'), t('report.submitFailed'))

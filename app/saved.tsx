@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useMemo, useRef } from 'react'
 import {
   View, Text, ScrollView, RefreshControl, Pressable,

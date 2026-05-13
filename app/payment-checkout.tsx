@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useEffect } from 'react'
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
@@ -166,7 +168,7 @@ function PaymentCheckoutScreenInner() {
       if (__DEV__) {
         console.warn('[checkout] DEV MODE: Simulating payment (LENDING_PAYMENTS=false)')
       }
-      const { error: payError } = await (supabase.from('bookings') as any).update({
+      const { error: payError } = await (supabase.from('rental_bookings') as any).update({
         status: 'paid',
         payment_method: selectedMethod,
         paid_at: new Date().toISOString(),

@@ -161,13 +161,15 @@ export async function fetchHelsinkiPlaces(
       let url: string | null = `${BASE_URL}/unit/?lat=${lat}&lon=${lng}&distance=${radiusMeters}&page_size=100&format=json&include=location`
 
       for (let page = 0; page < 2 && url; page++) {
-        const res = await fetch(url)
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 15000)
+        const res = await fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timeoutId))
         if (!res.ok) {
           if (__DEV__) console.log(`[palvelukartta] pagination failed: ${res.status} ${res.statusText}, page ${page}`)
           break
         }
         const json: PalvelukarttaResponse = await res.json()
-        for (const unit of json.results) {
+        for (const unit of (json.results ?? [])) {
           const place = mapUnit(unit)
           if (place && place.name) allPlaces.push(place)
         }

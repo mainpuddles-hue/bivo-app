@@ -19,9 +19,11 @@ export default function ReviewScreen() {
 
   const [userId, setUserId] = useState<string | null>(null);
   useEffect(() => {
+    let mounted = true;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id ?? null);
+      if (mounted) setUserId(session?.user?.id ?? null);
     });
+    return () => { mounted = false; };
   }, []);
 
   const { booking, loading } = useRentalBooking(supabase, id);

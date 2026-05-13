@@ -33,10 +33,12 @@ function PaymentSuccessScreenInner() {
 
   useEffect(() => {
     if (!session_id) return
+    let cancelled = false
 
     async function fetchBooking() {
       // Verify auth before making queries
       const { data: { user } } = await supabase.auth.getUser()
+      if (cancelled) return
       if (!user) {
         setNotFound(true)
         setLoading(false)
@@ -52,6 +54,7 @@ function PaymentSuccessScreenInner() {
           .eq('stripe_session_id', session_id!)
           .maybeSingle()
 
+        if (cancelled) return
         if (data) {
           if ((data as any).borrower_id !== user.id) { setNotFound(true); setLoading(false); return }
           setBooking({
@@ -77,6 +80,7 @@ function PaymentSuccessScreenInner() {
             .eq('stripe_session_id', session_id!)
             .maybeSingle()
 
+          if (cancelled) return
           if (serviceData) {
             if ((serviceData as any).buyer_id !== user.id) { setNotFound(true); setLoading(false); return }
             setBooking({
@@ -101,6 +105,7 @@ function PaymentSuccessScreenInner() {
             .select('id, title, status, budget_cents, user_id')
             .eq('stripe_session_id', session_id!)
             .maybeSingle()
+          if (cancelled) return
           if (adData) {
             if (adData.user_id !== user.id) { setNotFound(true); setLoading(false); return }
             setBooking({
@@ -116,11 +121,13 @@ function PaymentSuccessScreenInner() {
         } catch {} // Intentional: ad table may not exist
       }
 
+      if (cancelled) return
       if (!found) setNotFound(true)
       setLoading(false)
     }
 
     fetchBooking()
+    return () => { cancelled = true }
   }, [session_id, supabase])
 
   const localeStr = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'

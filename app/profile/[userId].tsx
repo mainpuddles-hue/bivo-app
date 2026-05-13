@@ -451,6 +451,7 @@ export default function PublicProfileScreen() {
       .order('created_at', { ascending: false })
       .limit(1)
       .then(({ data }) => {
+        if (!mountedRef.current) return
         if (data && data.length > 0) {
           const newReview = data[0] as unknown as Review
           setReviews(prev => {

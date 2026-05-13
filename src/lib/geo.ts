@@ -22,7 +22,9 @@ export function boundingBox(lat: number, lng: number, radiusKm: number) {
   // 1° latitude ≈ 111 km everywhere
   const dLat = radiusKm / 111
   // 1° longitude ≈ 111 * cos(latitude) km
-  const dLng = radiusKm / (111 * Math.cos(lat * Math.PI / 180))
+  // Clamp cos to a minimum to avoid division by zero at the poles (lat ≈ ±90°)
+  const cosLat = Math.max(Math.cos(lat * Math.PI / 180), 1e-10)
+  const dLng = radiusKm / (111 * cosLat)
   return {
     minLat: lat - dLat,
     maxLat: lat + dLat,

@@ -28,7 +28,14 @@ export const ReviewModal = memo(function ReviewModal({ visible, onClose, reviewe
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const mountedRef = useRef(true)
-  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (successTimerRef.current) clearTimeout(successTimerRef.current)
+    }
+  }, [])
 
   const handleSubmit = useCallback(async () => {
     if (rating === 0) {
@@ -94,7 +101,8 @@ export const ReviewModal = memo(function ReviewModal({ visible, onClose, reviewe
       awardPoints(user.id, 'review_written', reviewedUserId).catch(() => {})
 
       setSuccess(true)
-      setTimeout(() => {
+      successTimerRef.current = setTimeout(() => {
+        successTimerRef.current = null
         if (!mountedRef.current) return
         setSuccess(false)
         setRating(0)

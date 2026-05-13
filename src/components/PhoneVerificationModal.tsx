@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useRef, useEffect } from 'react'
 import { View, Text, Modal, Pressable, TextInput, StyleSheet, ActivityIndicator } from 'react-native'
 import { Phone, X, CheckCircle, ArrowLeft } from 'lucide-react-native'
 import { PressableOpacity } from '@/components/ui'
@@ -18,6 +18,10 @@ export const PhoneVerificationModal = memo(function PhoneVerificationModal({
 }: PhoneVerificationModalProps) {
   const { colors } = useTheme()
   const { t } = useI18n()
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (successTimerRef.current) clearTimeout(successTimerRef.current)
+  }, [])
   const {
     step, phone, setPhone, code, setCode,
     loading, error, countdown, delivery,
@@ -38,7 +42,8 @@ export const PhoneVerificationModal = memo(function PhoneVerificationModal({
   const handleVerify = async () => {
     const ok = await verifyOtp()
     if (ok) {
-      setTimeout(() => {
+      successTimerRef.current = setTimeout(() => {
+        successTimerRef.current = null
         onVerified?.()
         handleClose()
       }, 1500)

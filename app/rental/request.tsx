@@ -69,10 +69,13 @@ export default function RequestScreen() {
   const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setUserId(session?.user?.id ?? null);
       setUserName(session?.user?.user_metadata?.name ?? null);
     });
+    return () => { mounted = false; };
   }, []);
 
   const [item, setItem] = useState<ItemData | null>(null);

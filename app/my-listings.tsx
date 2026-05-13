@@ -1,3 +1,5 @@
+declare const __DEV__: boolean
+
 import { useState, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pressable, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'

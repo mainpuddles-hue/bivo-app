@@ -122,7 +122,7 @@ export async function fetchMetelihEvents(): Promise<CityEvent[]> {
       return cache?.events ?? []
     }
     const json: MetelihResponse = await res.json()
-    const events = json.events
+    const events = (json.events ?? [])
       .map(mapEvent)
       .filter((e): e is CityEvent => e !== null)
 

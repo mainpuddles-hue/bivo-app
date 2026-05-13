@@ -38,10 +38,12 @@ export default function ProductScreen() {
 
   const [userId, setUserId] = useState<string | null>(null);
   useEffect(() => {
+    let mounted = true;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id ?? null);
+      if (mounted) setUserId(session?.user?.id ?? null);
     });
-  }, []);
+    return () => { mounted = false; };
+  }, [supabase]);
 
   const [item, setItem] = useState<ItemData | null>(null);
   const [loading, setLoading] = useState(true);
