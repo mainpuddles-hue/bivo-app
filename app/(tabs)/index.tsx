@@ -25,6 +25,7 @@ import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary'
 import { EmptyState } from '@/components/EmptyState'
 import { OnboardingOverlay } from '@/components/OnboardingOverlay'
 import { WeeklyPopularCarousel } from '@/components/WeeklyPopularCarousel'
+import { EventHeroCarousel } from '@/components/EventHeroCarousel'
 import { FeedMapView } from '@/components/FeedMapView'
 import { useSupabase } from '@/hooks/useSupabase'
 import { FEATURES } from '@/lib/featureFlags'
@@ -408,6 +409,11 @@ function FeedScreenInner() {
 
   const visiblePosts = filteredPosts
 
+  const heroEventPosts = useMemo(
+    () => [...filteredPosts.filter(p => p.type === 'tapahtuma'), ...inlineEvents],
+    [filteredPosts, inlineEvents],
+  )
+
   // ── Category sections (Wolt-style horizontal scrolling) ──
   const categorySections = useMemo(() => {
     const posts = visiblePosts
@@ -631,7 +637,25 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 12 }]}>
-              {/* 1. Search + map + notifications — single compact row */}
+              {/* 0. Header row — display title + notification bell */}
+              <View style={styles.headerRow}>
+                <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} hitSlop={8}>
+                  <Text style={[styles.hTitle, { color: colors.foreground }]}>
+                    {t('feed.discover') ?? 'Löydä'}
+                  </Text>
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={() => router.push('/notifications')}
+                  style={[styles.iconBtn, { backgroundColor: colors.muted }]}
+                  accessibilityLabel={t('notifications.title') ?? 'Ilmoitukset'}
+                  accessibilityRole="button"
+                >
+                  <Bell size={20} color={colors.foreground} strokeWidth={1.8} />
+                  <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
+                </PressableOpacity>
+              </View>
+
+              {/* 1. Search + map — compact row */}
               <View style={styles.searchRow}>
                 <PressableOpacity
                   onPress={() => router.push('/search')}
@@ -657,15 +681,6 @@ function FeedScreenInner() {
                   ) : (
                     <LayoutGrid size={20} color={colors.foreground} strokeWidth={1.8} />
                   )}
-                </PressableOpacity>
-                <PressableOpacity
-                  onPress={() => router.push('/notifications')}
-                  style={[styles.iconBtn, { backgroundColor: colors.muted }]}
-                  accessibilityLabel={t('notifications.title') ?? 'Ilmoitukset'}
-                  accessibilityRole="button"
-                >
-                  <Bell size={20} color={colors.foreground} strokeWidth={1.8} />
-                  <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
                 </PressableOpacity>
               </View>
 
@@ -749,11 +764,20 @@ function FeedScreenInner() {
             )}
 
             {/* ── 5. Events hero carousel ── */}
-            {(feed.cityEvents.length > 0 || heroCommunityEvents.length > 0) && (
+            {(heroEventPosts.length > 0 || heroCommunityEvents.length > 0) && (
+              <FadeIn>
+                <EventHeroCarousel
+                  eventPosts={heroEventPosts}
+                  communityEvents={heroCommunityEvents}
+                  locale={locale}
+                />
+              </FadeIn>
+            )}
+            {feed.cityEvents.length > 0 && (
               <FadeIn>
                 <WeeklyPopularCarousel
                   cityEvents={feed.cityEvents}
-                  communityEvents={heroCommunityEvents}
+                  communityEvents={[]}
                   locale={locale}
                 />
               </FadeIn>
@@ -854,6 +878,21 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
 
+  // ── Header row ──
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  hTitle: {
+    fontSize: 38,
+    fontWeight: '700',
+    fontFamily: fonts.displayBold,
+    letterSpacing: -2,
+    lineHeight: 38,
+  },
+
   // ── Search row ──
   searchRow: {
     flexDirection: 'row',
@@ -862,7 +901,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -878,7 +917,7 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },

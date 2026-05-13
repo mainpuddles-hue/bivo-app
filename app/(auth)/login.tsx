@@ -699,11 +699,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // Input field — soft rounded shape
+  // Input field — unified control radius
   inputField: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 16,
+    borderRadius: 14,
     paddingHorizontal: 18,
     minHeight: 52,
   },
@@ -804,7 +804,7 @@ const styles = StyleSheet.create({
 
   // Primary CTA — bold rounded, 56px height
   primaryBtn: {
-    borderRadius: 16,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     height: 56,
@@ -865,7 +865,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 14,
     height: 52,
     minHeight: 48,
     marginBottom: 10,

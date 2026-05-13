@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   tagline: {
     fontSize: 11,
     fontFamily: fonts.bodySemi,
-    color: 'rgba(255,255,255,0.30)',
+    color: 'rgba(255,255,255,0.40)',
     marginTop: 36,
     letterSpacing: 4.5,
     textTransform: 'uppercase',

@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     height: 34,
     paddingHorizontal: 16,
     gap: 7,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
   },
   // Small saturated dot (5px) — enough to read the category color at a

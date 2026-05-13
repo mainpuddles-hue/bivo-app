@@ -365,7 +365,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           style={[
             styles.card,
             styles.inkCard,
-            { backgroundColor: colors.foreground },
+            { backgroundColor: colors.foreground, shadowOpacity: isDark ? 0.22 : 0.10 },
             isExpired && { opacity: 0.55 },
           ]}
         >
@@ -465,13 +465,11 @@ const styles = StyleSheet.create({
   },
   imgGradient: {
     position: 'absolute',
-    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    // Linear gradient approximation using overlapping transparent views
-    // RN doesn't support CSS gradients, using semi-transparent overlay at bottom
-    backgroundColor: 'transparent',
+    height: '55%',
+    backgroundColor: 'rgba(0,0,0,0.28)',
   },
   imgTopRow: {
     position: 'absolute',
