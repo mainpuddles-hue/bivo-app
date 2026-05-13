@@ -51,9 +51,6 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
   const [activeIndex, setActiveIndex] = useState(0)
   const scrollRef = useRef<ScrollView>(null)
 
-  const cardWidth = screenWidth - H_PAD * 2
-  const snapInterval = cardWidth + CARD_GAP
-
   const cards = useMemo<HeroCard[]>(() => {
     const postCards: HeroCard[] = eventPosts
       .filter(p => p.event_date)
@@ -81,6 +78,9 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
       .sort((a, b) => a.date.getTime() - b.date.getTime())
       .slice(0, MAX_CARDS)
   }, [eventPosts, communityEvents])
+
+  const cardWidth = cards.length > 1 ? screenWidth - H_PAD * 2 - 24 : screenWidth - H_PAD * 2
+  const snapInterval = cardWidth + CARD_GAP
 
   const handleScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
