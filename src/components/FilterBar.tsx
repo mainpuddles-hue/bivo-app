@@ -50,7 +50,7 @@ const FilterChip = memo(function FilterChip({ label, isActive, onPress, dotColor
           styles.chip,
           isActive
             ? { backgroundColor: colors.foreground, borderColor: colors.foreground }
-            : { backgroundColor: 'transparent', borderColor: colors.border },
+            : { backgroundColor: colors.muted, borderColor: colors.muted },
         ]}
       >
         {/* Active chips show a 10px Check (matching slice 1's TagChipRow

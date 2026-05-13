@@ -47,4 +47,8 @@ export const typeScale = {
   display: { fontSize: 28, lineHeight: 34 },
   /** 32/38 — hero display */
   displayLarge: { fontSize: 32, lineHeight: 38 },
+  /** 44/44 — dramatic display for key screens */
+  displayXL: { fontSize: 44, lineHeight: 44 },
+  /** 64/62 — hero moment, viewport-commanding */
+  displayHero: { fontSize: 64, lineHeight: 62 },
 } as const

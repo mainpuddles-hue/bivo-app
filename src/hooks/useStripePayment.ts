@@ -16,6 +16,7 @@ interface PaymentOptions {
   type: 'rental' | 'service' | 'ad_campaign'
   postId?: string
   sellerId?: string
+  manualCapture?: boolean
 }
 
 /**

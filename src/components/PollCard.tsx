@@ -14,7 +14,6 @@ export interface Poll {
   creator_id: string
   question: string
   options: string[]
-  building_id: string | null
   naapurusto: string | null
   vote_count: number
   expires_at: string | null

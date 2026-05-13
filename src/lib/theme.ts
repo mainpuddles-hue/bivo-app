@@ -1,38 +1,39 @@
-// Helsinki Monochrome — a quiet, confident frame where content brings color.
-// No brand emerald, no accent hue. Ink + warm neutrals only.
+// BIVO warm palette — design handoff tokens mapped to Helsinki Monochrome semantics.
 
 export const colors = {
   light: {
-    // Helsinki Monochrome: ink-on-warm-neutral canvas
-    primary: '#1A1D1F',            // ink — primary text, active states, CTA fill
-    accent: '#2A2D30',             // ink-soft — hover/press on ink surfaces
+    // BIVO tokens: ink=#0A0A0A, ink2=#5E5E58, ink3=#8E8E88,
+    // hair=#EAEAE5, hair2=#D8D8D2, surface=#FFF, surface2=#F3F1EB,
+    // bg=#F8F6F0, live=#2A5F3F
+    primary: '#0A0A0A',
+    accent: '#1A1A1A',
     secondary: '#FF9500',
-    background: '#F5F6F7',         // warm-neutral canvas
-    foreground: '#1A1D1F',         // near-black text
-    card: '#FFFFFF',               // white cards stand out against gray bg
-    cardElevated: '#FAFAFB',       // slightly recessed blocks
-    border: '#E8EAEC',             // hairline separator
-    muted: '#EEF0F2',              // wash/tint fill
-    mutedForeground: '#535A60',    // meta, captions — WCAG AA 4.6:1 on #F5F6F7
-    tertiaryForeground: '#848B93', // placeholder, disabled
-    destructive: '#C44536',        // muted red
+    background: '#F8F6F0',
+    foreground: '#0A0A0A',
+    card: '#FFFFFF',
+    cardElevated: '#F3F1EB',
+    border: '#EAEAE5',
+    muted: '#F3F1EB',
+    mutedForeground: '#5E5E58',
+    tertiaryForeground: '#8E8E88',
+    destructive: '#C44536',
     pro: '#F59E0B',
-    success: '#2D7A4F',            // muted green
+    success: '#2A5F3F',
     info: '#3B82F6',
     purple: '#7C5CBF',
     purpleMuted: '#F4F0FF',
-    primaryForeground: '#FFFFFF',  // on-ink text (white on ink buttons)
-    surfaceTinted: 'rgba(26,29,31,0.04)', // ink tint
-    warmTint: '#F0EEE9',               // warm neutral for text-only cards, suggestion banners
-    onInkMuted: '#B8BCC0',             // muted text on ink surfaces (subtitles on selected items)
-    borderStrong: '#C8CBCE',            // stronger border for emphasis (inputs, active states)
-    danger: '#C44536',                  // semantic danger — logout, destructive rows
+    primaryForeground: '#FFFFFF',
+    surfaceTinted: 'rgba(10,10,10,0.04)',
+    warmTint: '#F3F1EB',
+    onInkMuted: '#B8BCC0',
+    borderStrong: '#D8D8D2',
+    danger: '#C44536',
     // Trust tier indicator colors. Tier 1 = bronze/neutral, Tier 2 = info-blue,
     // Tier 3 = success-green. Bound separately from `success` so trust remains
     // its own semantic axis; consumed by TrustBadge / TrustGate via `colors.trustTier{N}`.
     trustTier1: '#9CA3AF',              // neutral grey — Tier 1 (basic verified)
     trustTier2: '#3B82F6',              // info blue — Tier 2 (phone + address)
-    trustTier3: '#2D7A4F',              // success green — Tier 3 (ID verified)
+    trustTier3: '#2A5F3F',              // live green — Tier 3 (ID verified)
   },
   dark: {
     // Helsinki Monochrome dark: inverted ink palette

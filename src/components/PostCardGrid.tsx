@@ -41,9 +41,10 @@ interface PostCardGridProps {
   index?: number
   sortBy?: string
   followedIds?: string[]
+  viewCount?: number
 }
 
-export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds }: PostCardGridProps) {
+export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInteraction, index = 0, sortBy, followedIds, viewCount }: PostCardGridProps) {
   const { colors, isDark } = useTheme()
   const reduceMotion = useReduceMotion()
   const { t, locale } = useI18n()
@@ -266,13 +267,18 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             />
             {/* Gradient overlay */}
             <View style={styles.imgGradient} />
-            {/* Top row: category chip + like/urgent chip */}
+            {/* Top row: availability badge + like/urgent chip */}
             <View style={styles.imgTopRow}>
-              {category && (
+              {!isExpired ? (
+                <View style={styles.availBadge}>
+                  <View style={[styles.availDot, { backgroundColor: colors.success }]} />
+                  <Text style={[styles.availText, { color: colors.success }]}>{t('postCard.now') ?? 'Nyt'}</Text>
+                </View>
+              ) : category ? (
                 <View style={[styles.catChip, isDark && styles.catChipDark]}>
                   <Text style={[styles.catChipText, isDark && styles.catChipTextDark]}>{t(category.label)}</Text>
                 </View>
-              )}
+              ) : <View />}
               {isUrgent ? (
                 <View style={[styles.urgentChip, { backgroundColor: colors.destructive }]}>
                   <Clock size={10} color="#FFFFFF" strokeWidth={2.5} />
@@ -312,18 +318,15 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
           </View>
           {/* Content below image */}
           <View style={styles.imgContent}>
-            <Text style={[styles.imgTitle, { color: colors.foreground }]} numberOfLines={2}>
+            <Text style={[styles.imgTitle, { color: colors.foreground }]} numberOfLines={1}>
               {post.title}
             </Text>
-            {!!post.description && (
-              <Text style={[styles.descSnippet, { color: colors.mutedForeground }]} numberOfLines={2}>
-                {post.description}
-              </Text>
-            )}
-            {post.is_seed && (
-              <Text style={[styles.seedLabel, { color: colors.mutedForeground }]}>{t('feed.examplePost')}</Text>
-            )}
-            {MetaFooter(colors.mutedForeground)}
+            <Text style={[styles.imgSubtitle, { color: colors.mutedForeground }]} numberOfLines={1}>
+              {[
+                post.location ?? timeAgo,
+                post.daily_fee != null ? formatPrice(post.daily_fee, locale) : post.service_price != null && post.service_price > 0 ? formatPrice(post.service_price, locale) : null,
+              ].filter(Boolean).join(' · ')}
+            </Text>
           </View>
         </Pressable>
       </Animated.View>
@@ -429,20 +432,16 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
+    borderRadius: 22,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
   },
 
   // ── IMAGE variant ──
-  // Fixed image height (170) gives the IMAGE card a predictable total height
-  // close to TINT/INK (170 image + ~80 meta = ~250). Aspect-ratio'd images
-  // (4:5 or 1:1) made image cards 1.5–2x taller than text-only neighbours
-  // and broke the row rhythm — fixed height is the simplest equalizer here.
   imageWrap: {
     position: 'relative',
     overflow: 'hidden',
-    height: 170,
+    aspectRatio: 1,
   },
   image: {
     width: '100%',
@@ -552,11 +551,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(30,30,30,0.92)',
   },
   pricePillAmount: {
-    fontSize: 17,
-    fontWeight: '600',
-    fontFamily: fonts.heading,
-    letterSpacing: -0.3,
-    lineHeight: 19,
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: fonts.displayBold,
+    letterSpacing: -0.5,
+    lineHeight: 20,
     color: '#1A1D1F',
     fontVariant: ['tabular-nums'],
   },
@@ -586,47 +585,74 @@ const styles = StyleSheet.create({
   pricePillTextDark: {
     color: '#E8E6E0',
   },
+  availBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  availDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 999,
+  },
+  availText: {
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 13,
+  },
   imgContent: {
     padding: 14,
-    gap: 4,
+    paddingTop: 11,
+    gap: 2,
   },
   imgTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: fonts.displayMedium,
-    letterSpacing: -0.3,
-    lineHeight: 20,
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.2,
+    lineHeight: 19,
+  },
+  imgSubtitle: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+    marginTop: 2,
   },
 
   // ── INK variant (events) ──
   inkCard: {
     borderWidth: 0,
-    padding: 14,
+    padding: 18,
     gap: 10,
-    minHeight: 250,
+    minHeight: 260,
   },
   inkDay: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1,
+    letterSpacing: 1.8,
     textTransform: 'uppercase',
     lineHeight: 14,
   },
   inkDate: {
-    fontSize: 32,
-    fontWeight: '500',
-    fontFamily: fonts.displayMedium,
-    letterSpacing: -1,
-    lineHeight: 32,
+    fontSize: 40,
+    fontWeight: '700',
+    fontFamily: fonts.displayBold,
+    letterSpacing: -2,
+    lineHeight: 38,
     marginTop: 2,
   },
   inkTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: fonts.displayMedium,
-    letterSpacing: -0.3,
-    lineHeight: 19,
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: fonts.display,
+    letterSpacing: -0.5,
+    lineHeight: 22,
     flex: 1,
   },
   inkBottom: {
@@ -647,9 +673,9 @@ const styles = StyleSheet.create({
   // minHeight aligned with INK (250) so a TINT card sitting next to an INK
   // event card or a square IMAGE card occupies the same visual slot.
   tintCard: {
-    padding: 14,
-    gap: 4,
-    minHeight: 250,
+    padding: 18,
+    gap: 6,
+    minHeight: 260,
   },
   tintTopRow: {
     flexDirection: 'row',
@@ -662,7 +688,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1,
+    letterSpacing: 1.8,
     textTransform: 'uppercase',
     lineHeight: 14,
   },
@@ -680,11 +706,11 @@ const styles = StyleSheet.create({
     lineHeight: 12,
   },
   tintTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    fontFamily: fonts.displayMedium,
-    letterSpacing: -0.4,
-    lineHeight: 22,
+    fontSize: 20,
+    fontWeight: '600',
+    fontFamily: fonts.display,
+    letterSpacing: -0.6,
+    lineHeight: 24,
     flex: 1,
   },
 

@@ -6,11 +6,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Eye, EyeOff, Check, X } from 'lucide-react-native'
-import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import * as Haptics from 'expo-haptics'
 import { GoogleLogo } from '@/components/GoogleLogo'
+import { BivoTextLogo } from '@/components/BivoTextLogo'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -273,81 +273,35 @@ function LoginScreenInner() {
     setErrorMsg('')
     setLoading(true)
     try {
-      if (Platform.OS === 'web') {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: (typeof window !== 'undefined' ? window.location.origin : 'https://tackbird.com') + '/auth/callback',
-            queryParams: { prompt: 'select_account' },
-            skipBrowserRedirect: false,
-          },
-        })
-        if (error) toast.show({ message: t('auth.googleFailed'), type: 'error' })
-      } else {
-        // Native: use WebBrowser to open OAuth flow and capture redirect
-        const redirectTo = 'tackbird://auth/callback'
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo,
-            queryParams: { prompt: 'select_account' },
-            skipBrowserRedirect: true,
-          },
-        })
-        if (error) throw error
-        if (!data?.url) {
-          toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
-          return
-        }
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
-        if (result.type !== 'success' || !result.url) return // user dismissed
-        const url = result.url
-        const fragment = url.split('#')[1] || ''
-        const query = url.split('?')[1]?.split('#')[0] || ''
-        const raw = fragment || query
-        const params = new URLSearchParams(raw)
-        const accessToken = params.get('access_token')
-        const refreshToken = params.get('refresh_token')
-        const code = params.get('code')
-        const finishOAuth = async (sessionUser: any) => {
-          // setSession / exchangeCodeForSession can return user: null when the
-          // OAuth callback URL parsed but the token exchange did not actually
-          // create a session (expired code, mismatched redirect, etc.). Without
-          // this guard the user saw a misleading "Welcome back" toast and a
-          // redirect to /, which then bounced them straight back to login.
-          if (!sessionUser) {
-            toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
-            return false
-          }
-          // Ban check is fail-open: a missing `is_banned` column or an RLS error
-          // on profiles must not lock legitimate users out of login. RLS itself
-          // enforces access on protected resources; this check is a UX safety net.
-          const { data: oauthProfile, error: banErr } = await supabase.from('profiles').select('is_banned').eq('id', sessionUser.id).maybeSingle()
-          if (__DEV__ && banErr) console.warn('[google-oauth] ban check skipped:', banErr.message, (banErr as any).code)
-          if ((oauthProfile as any)?.is_banned === true) {
-            await supabase.auth.signOut()
-            toast.show({ message: t('auth.accountBannedDesc'), type: 'error' })
-            return false
-          }
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
-          toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
-          router.replace('/')
-          return true
-        }
-        if (accessToken && refreshToken) {
-          const { data: { user } } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-          await finishOAuth(user)
-          return
-        }
-        if (code) {
-          const { data: { user } } = await supabase.auth.exchangeCodeForSession(code)
-          await finishOAuth(user)
-          return
-        }
-        toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
+      const { GoogleSignin } = await import('@react-native-google-signin/google-signin')
+      GoogleSignin.configure({
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+        iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+      })
+
+      await GoogleSignin.hasPlayServices()
+      const result = await GoogleSignin.signIn()
+      const idToken = result.data?.idToken
+      if (!idToken) throw new Error('No ID token from Google')
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken,
+      })
+      if (error) throw error
+      if (!data?.user) throw new Error('No user returned from Supabase')
+
+      if (await isBannedAndSignedOut(supabase, data.user.id)) {
+        setErrorMsg(t('auth.accountBannedDesc') ?? t('auth.accountBanned'))
+        return
       }
+
+      trackEvent('auth_login_success')
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) } catch {}
+      toast.show({ message: t('auth.welcomeBack') ?? 'Tervetuloa takaisin!', type: 'success' })
+      router.replace('/')
     } catch (err: any) {
-      if (__DEV__) console.warn('[google-oauth] failed:', err?.message ?? err, err?.status, err?.code)
+      if (err?.code === 'SIGN_IN_CANCELLED' || err?.code === 'ERR_CANCELED') return
       toast.show({ message: t('auth.googleFailedNetwork'), type: 'error' })
     } finally {
       setLoading(false)
@@ -434,15 +388,15 @@ function LoginScreenInner() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo mark — 48x48 ink rounded square with italic "tb" */}
-        <View style={[styles.logoMark, { backgroundColor: colors.foreground }]}>
-          <Text style={[styles.logoText, { color: colors.primaryForeground }]}>tb</Text>
+        {/* Bivo text logo */}
+        <View style={styles.logoWrap}>
+          <BivoTextLogo width={200} color={colors.foreground} />
         </View>
 
         {/* Headline */}
         <Text style={[styles.headline, { color: colors.foreground }]}>
           {mode === 'register'
-            ? t('auth.joinTackBird')
+            ? t('auth.joinBivo')
             : mode === 'forgot'
               ? t('auth.resetPassword')
               : t('auth.tagline')}
@@ -709,40 +663,27 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
-  // Logo mark — 48x48 ink rounded square
-  logoMark: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 44,
+  logoWrap: {
     alignSelf: 'center',
-  },
-  logoText: {
-    fontFamily: fonts.heading,
-    fontSize: 28,
-    fontStyle: 'italic',
-    lineHeight: 30,
-    marginTop: -2,
+    marginBottom: 56,
   },
 
-  // Headline — H1 size, centered
+  // Headline — dramatic display, centered
   headline: {
-    fontFamily: fonts.heading,
-    fontSize: 24,
-    lineHeight: 30,
-    letterSpacing: -0.5,
-    marginBottom: 10,
+    fontFamily: fonts.displayBold,
+    fontSize: 36,
+    lineHeight: 36,
+    letterSpacing: -1.5,
+    marginBottom: 12,
     textAlign: 'center',
   },
 
   // Subtitle
   subtitle: {
     fontFamily: fonts.body,
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 36,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 44,
     textAlign: 'center',
     alignSelf: 'center',
     maxWidth: 280,
@@ -751,10 +692,10 @@ const styles = StyleSheet.create({
   // Section label — Meta style uppercase
   sectionLabel: {
     fontFamily: fonts.bodySemi,
-    fontSize: 12,
-    letterSpacing: 1,
+    fontSize: 11,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
-    marginBottom: 8,
+    marginBottom: 10,
   },
 
   // Input field — pill shape
@@ -860,20 +801,20 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  // Primary CTA — pill, 54px height, 15px 600
+  // Primary CTA — pill, 56px height, bold
   primaryBtn: {
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 54,
-    minHeight: 54,
-    marginTop: 18,
+    height: 56,
+    minHeight: 56,
+    marginTop: 20,
   },
   primaryBtnText: {
     fontFamily: fonts.bodySemi,
     fontSize: 16,
     lineHeight: 20,
-    letterSpacing: 0,
+    letterSpacing: -0.2,
   },
 
   // Back to login

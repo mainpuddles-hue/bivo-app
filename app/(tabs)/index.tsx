@@ -3,11 +3,10 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, ScrollView, ActionShe
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, ChevronRight } from 'lucide-react-native'
+import { Sparkles, RefreshCw, Plus, Search, CheckCircle, X as XIcon, Map, LayoutGrid, ChevronRight, Bell } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity, MagneticPressable } from '@/components/ui'
 import { BoardIllustration } from '@/components/illustrations'
-import { BivoPin } from '@/components/BivoPin'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -38,6 +37,7 @@ type FeedItem =
   | { _kind: 'gridRow'; key: string; posts: Post[] }
   | { _kind: 'sortRow'; key: string; count: number }
   | { _kind: 'ad'; key: string; ad: Ad }
+  | { _kind: 'eyebrow'; key: string; label: string }
 
 function FeedScreenInner() {
   const { colors, isDark } = useTheme()
@@ -206,7 +206,7 @@ function FeedScreenInner() {
       const { data, error } = await Promise.resolve(
         supabase
           .from('polls')
-          .select('id, creator_id, question, options, building_id, naapurusto, vote_count, expires_at, created_at, is_active')
+          .select('id, creator_id, question, options, naapurusto, vote_count, expires_at, created_at, is_active')
           .eq('is_active', true)
           .or(`expires_at.is.null,expires_at.gt."${now}"`)
           .order('created_at', { ascending: false })
@@ -447,7 +447,7 @@ function FeedScreenInner() {
     // Unfiltered: 2-column grid (Bivo discover style)
     const allPosts = categorySections.flatMap(s => s.posts)
     const items: FeedItem[] = [
-      { _kind: 'sortRow', key: 'sort-row', count: allPosts.length },
+      { _kind: 'eyebrow', key: 'eyebrow-avail', label: t('feed.availableNow') ?? 'Vapaana nyt' },
     ]
     for (let i = 0; i < allPosts.length; i += 2) {
       items.push({ _kind: 'gridRow', key: `row-${i}`, posts: allPosts.slice(i, i + 2) })
@@ -459,8 +459,15 @@ function FeedScreenInner() {
   }, [feed.activeFilter, categorySections, feedAds])
 
   const renderFeedItem = useCallback(({ item }: { item: FeedItem }) => {
-    const gCardWidth = (screenWidth - 40 - 10) / 2  // 20px padding each side, 10px gap
+    const gCardWidth = (screenWidth - 44 - 10) / 2  // 22px padding each side, 10px gap
 
+    if (item._kind === 'eyebrow') {
+      return (
+        <View style={styles.eyebrowRow}>
+          <Text style={[styles.eyebrowText, { color: colors.mutedForeground }]}>{item.label}</Text>
+        </View>
+      )
+    }
     if (item._kind === 'sortRow') {
       return (
         <View style={styles.sortRow}>
@@ -498,7 +505,7 @@ function FeedScreenInner() {
     }
     if (item._kind === 'ad') {
       return (
-        <View style={{ paddingHorizontal: 20 }}>
+        <View style={{ paddingHorizontal: 22 }}>
           <AdCard ad={item.ad} />
         </View>
       )
@@ -552,7 +559,7 @@ function FeedScreenInner() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: 22, gap: 10 }}
           snapToInterval={230 + 10}
           decelerationRate="fast"
         >
@@ -624,30 +631,37 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
-              {/* 1. v3 Header — location eyebrow + Bricolage title + pulse row */}
-              <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} style={styles.header} hitSlop={8}>
-                <Text style={[styles.hLocText, { color: colors.mutedForeground }]}>
-                  {t('feed.yourNeighborhood') ?? 'Naapurustosi'}
-                </Text>
-                <View style={styles.hTitleRow}>
-                  <BivoPin size={28} color={colors.foreground} />
+              {/* 1. Header — "Löydä" + bell (Grid variant) */}
+              <View style={styles.headerRow}>
+                <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} hitSlop={8}>
                   <Text style={[styles.hTitle, { color: colors.foreground }]}>
-                    {feed.userNeighborhood ?? 'Helsinki'}
+                    {t('feed.discover') ?? 'Löydä'}
                   </Text>
-                </View>
-              </PressableOpacity>
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={() => router.push('/notifications')}
+                  style={[styles.iconBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  accessibilityLabel={t('notifications.title') ?? 'Ilmoitukset'}
+                  accessibilityRole="button"
+                >
+                  <Bell size={20} color={colors.foreground} strokeWidth={1.8} />
+                  <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
+                </PressableOpacity>
+              </View>
 
-              {/* 2. Search input pill + map button */}
+              {/* 2. Search bar */}
               <View style={styles.searchRow}>
                 <PressableOpacity
                   onPress={() => router.push('/search')}
-                  style={[styles.searchInput, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  style={[styles.searchInput, { backgroundColor: colors.card, borderColor: colors.borderStrong }]}
                   accessibilityLabel={t('common.search')}
                   accessibilityRole="button"
                 >
                   <Search size={18} color={colors.mutedForeground} strokeWidth={2} />
                   <Text style={[styles.searchPlaceholder, { color: colors.mutedForeground }]}>
-                    {t('feed.searchPlaceholder') ?? 'Etsi naapurustosta…'}
+                    {feed.userNeighborhood
+                      ? `${t('feed.searchIn') ?? 'Hae tavaraa'} ${feed.userNeighborhood}sta…`
+                      : (t('feed.searchPlaceholder') ?? 'Etsi naapurustosta…')}
                   </Text>
                 </PressableOpacity>
                 <PressableOpacity
@@ -664,11 +678,11 @@ function FeedScreenInner() {
                 </PressableOpacity>
               </View>
 
-              {/* 3. Category pills */}
+              {/* 3. Category chips */}
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 6, paddingVertical: 4 }}
+                contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
                 style={styles.pillRow}
               >
                 <FilterBar activeFilter={feed.activeFilter} onFilterChange={handleFilterChangeWithHaptics} />
@@ -677,7 +691,7 @@ function FeedScreenInner() {
 
             {/* ── Active sort indicator ── */}
             {feed.sortBy !== 'recommended' && (
-              <View style={[styles.sortIndicator, { paddingHorizontal: 20, marginTop: 4 }]}>
+              <View style={[styles.sortIndicator, { paddingHorizontal: 22, marginTop: 4 }]}>
                 <Text style={[styles.sortIndicatorText, { color: colors.tertiaryForeground }]}>
                   {SORT_OPTIONS.find(o => o.key === feed.sortBy)?.label}
                 </Text>
@@ -693,7 +707,7 @@ function FeedScreenInner() {
             )}
 
             {/* ── Banner slot (max 1 — priority: error → newPosts → missed → poll) ── */}
-            <View style={{ paddingHorizontal: 20 }}>
+            <View style={{ paddingHorizontal: 22 }}>
               {feed.error ? (
                 <PressableOpacity
                   onPress={feed.handleRefresh}
@@ -736,19 +750,15 @@ function FeedScreenInner() {
 
             {/* ── Active polls ── */}
             {FEATURES.POLLS && feedPolls.length > 0 && (
-              <View style={{ paddingHorizontal: 20, gap: 10, marginTop: 8 }}>
+              <View style={{ paddingHorizontal: 22, gap: 10, marginTop: 8 }}>
                 {feedPolls.map(poll => (
                   <PollCard key={poll.id} poll={poll} userId={feed.currentUserId} />
                 ))}
               </View>
             )}
 
-            {/* ── 5. Hero — 3-tier fallback: events → popular posts → cold start CTA ── */}
-            {feed.loading && visiblePosts.length === 0 ? (
-              <View style={{ paddingHorizontal: 12, gap: 16, paddingTop: 16 }}>
-                {[0, 1, 2, 3].map(i => <PostCardSkeleton key={i} />)}
-              </View>
-            ) : (feed.cityEvents.length > 0 || heroCommunityEvents.length > 0) ? (
+            {/* ── 5. Events hero carousel ── */}
+            {(feed.cityEvents.length > 0 || heroCommunityEvents.length > 0) && (
               <FadeIn>
                 <WeeklyPopularCarousel
                   cityEvents={feed.cityEvents}
@@ -756,44 +766,14 @@ function FeedScreenInner() {
                   locale={locale}
                 />
               </FadeIn>
-            ) : visiblePosts.length > 0 ? (
-              <FadeIn>
-                <View style={styles.categorySection}>
-                  <View style={styles.sectionHead}>
-                    <View style={styles.sectionTitleWrap}>
-                      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                        {t('feed.popularThisWeek') ?? 'Suositut'}
-                      </Text>
-                    </View>
-                  </View>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-                    snapToInterval={230 + 10}
-                    decelerationRate="fast"
-                  >
-                    {visiblePosts
-                      .slice()
-                      .sort((a, b) => (b.like_count ?? 0) - (a.like_count ?? 0))
-                      .slice(0, 6)
-                      .map((post, index) => (
-                        <View key={post.id} style={{ width: 230 }}>
-                          <PostCardGrid
-                            post={post}
-                            userId={feed.currentUserId}
-                            onInteraction={trackInteraction}
-                            index={index}
-                            sortBy={feed.sortBy}
-                            followedIds={feed.followedIds}
-                            viewCount={viewCounts[post.id]}
-                          />
-                        </View>
-                      ))}
-                  </ScrollView>
-                </View>
-              </FadeIn>
-            ) : !feed.loading ? (
+            )}
+
+            {/* ── 6. Loading / cold start ── */}
+            {feed.loading && visiblePosts.length === 0 ? (
+              <View style={{ paddingHorizontal: 12, gap: 16, paddingTop: 16 }}>
+                {[0, 1, 2, 3].map(i => <PostCardSkeleton key={i} />)}
+              </View>
+            ) : visiblePosts.length === 0 && !feed.loading ? (
               <View style={styles.coldStart}>
                 <BoardIllustration size={80} />
                 <Text style={[styles.coldStartTitle, { color: colors.foreground }]}>{t('feed.noPosts')}</Text>
@@ -871,69 +851,41 @@ const styles = StyleSheet.create({
 
   // ── Top area ──
   topArea: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
   },
 
-  // ── v3 Header ──
-  header: {
-    marginBottom: 4,
-  },
-  hLocText: {
-    fontSize: 12,
-    fontWeight: '500',
-    fontFamily: fonts.bodyMedium,
-    letterSpacing: -0.1,
-    lineHeight: 16,
-    marginBottom: 4,
-  },
-  hTitleRow: {
+  // ── Grid header ──
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
+    justifyContent: 'space-between',
+    marginBottom: 14,
   },
   hTitle: {
-    fontSize: 38,
-    fontWeight: '600',
-    fontFamily: fonts.display,
+    fontSize: 34,
+    fontWeight: '700',
+    fontFamily: fonts.displayBold,
     letterSpacing: -1.4,
-    lineHeight: 38,
+    lineHeight: 36,
   },
-  hPulse: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
-  },
-  pulseGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  pulseText: {
-    fontSize: 13,
-    fontFamily: fonts.body,
-    lineHeight: 18,
-  },
-  pulseDivider: {
-    fontSize: 13,
-    lineHeight: 18,
+  bellDot: {
+    position: 'absolute',
+    top: 10,
+    right: 11,
+    width: 7,
+    height: 7,
+    borderRadius: 999,
   },
 
   // ── Search row ──
   searchRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 16,
+    marginTop: 18,
   },
   searchInput: {
     flex: 1,
-    height: 48,
+    height: 50,
     borderRadius: 999,
     borderWidth: 1,
     flexDirection: 'row',
@@ -942,15 +894,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   searchPlaceholder: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
+    letterSpacing: -0.1,
   },
   iconBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -972,6 +925,20 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
 
+  // ── Eyebrow ──
+  eyebrowRow: {
+    paddingHorizontal: 22,
+    marginBottom: 4,
+  },
+  eyebrowText: {
+    fontSize: 10,
+    fontWeight: '700',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    lineHeight: 14,
+  },
+
   // ── Category pills ──
   pillRow: {
     marginTop: 20,
@@ -980,30 +947,31 @@ const styles = StyleSheet.create({
 
   // ── Section heads (v3 Bricolage) ──
   categorySection: {
-    marginTop: 28,
+    marginTop: 44,
   },
   sectionHead: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     marginBottom: 14,
   },
   sectionTitleWrap: {
     gap: 3,
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: '500',
-    fontFamily: fonts.displayMedium,
-    letterSpacing: -0.7,
-    lineHeight: 24,
+    fontSize: 26,
+    fontWeight: '700',
+    fontFamily: fonts.displayBold,
+    letterSpacing: -0.8,
+    lineHeight: 28,
   },
   sectionSub: {
-    fontSize: 12,
-    fontWeight: '500',
-    fontFamily: fonts.bodyMedium,
-    lineHeight: 16,
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 14,
+    letterSpacing: 0.3,
   },
   seeAllRow: {
     flexDirection: 'row',
@@ -1023,7 +991,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     marginBottom: 14,
   },
   sortLabel: {
@@ -1052,7 +1020,7 @@ const styles = StyleSheet.create({
   gridRow: {
     flexDirection: 'row',
     gap: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
   },
 
   // ── Banners ──
@@ -1073,11 +1041,11 @@ const styles = StyleSheet.create({
   missedBannerText: { fontSize: 14, fontWeight: '600', flex: 1, fontFamily: fonts.bodySemi, lineHeight: 20 },
 
   // ── Cold start / empty ──
-  coldStart: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32, gap: 12 },
-  coldStartTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.18, fontFamily: fonts.display, lineHeight: 24 },
-  coldStartHint: { fontSize: 14, textAlign: 'center', lineHeight: 20, fontFamily: fonts.body },
-  coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999, marginTop: 8, minHeight: 48 },
-  coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22 },
+  coldStart: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 16 },
+  coldStartTitle: { fontSize: 24, fontWeight: '700', letterSpacing: -0.8, fontFamily: fonts.displayBold, lineHeight: 28 },
+  coldStartHint: { fontSize: 15, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
+  coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 999, marginTop: 12, minHeight: 52 },
+  coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22, letterSpacing: -0.2 },
 
   // ── Footer ──
   allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },

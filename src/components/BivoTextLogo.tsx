@@ -1,4 +1,5 @@
 import { Text, StyleSheet } from 'react-native'
+import { fonts } from '@/lib/fonts'
 
 interface BivoTextLogoProps {
   width?: number
@@ -22,8 +23,9 @@ export function BivoTextLogo({ width = 180, color = '#1A1A1A' }: BivoTextLogoPro
 
 const styles = StyleSheet.create({
   logo: {
+    fontFamily: fonts.displayBold,
     fontWeight: '700',
-    letterSpacing: -2.5,
+    letterSpacing: -3,
     includeFontPadding: false,
   },
 })
