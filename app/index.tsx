@@ -12,7 +12,7 @@ export default function SplashScreen() {
   const router = useRouter()
 
   const wordOpacity = useRef(new Animated.Value(0)).current
-  const wordScale = useRef(new Animated.Value(0.92)).current
+  const wordScale = useRef(new Animated.Value(0.88)).current
   const dotOpacity = useRef(new Animated.Value(0)).current
   const taglineOpacity = useRef(new Animated.Value(0)).current
   const screenOpacity = useRef(new Animated.Value(1)).current
@@ -21,13 +21,13 @@ export default function SplashScreen() {
     Animated.parallel([
       Animated.timing(wordOpacity, {
         toValue: 1,
-        duration: 1000,
+        duration: 1100,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(wordScale, {
         toValue: 1,
-        duration: 1200,
+        duration: 1400,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -36,19 +36,19 @@ export default function SplashScreen() {
     setTimeout(() => {
       Animated.timing(dotOpacity, {
         toValue: 1,
-        duration: 500,
+        duration: 450,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start()
-    }, 800)
+    }, 900)
 
     setTimeout(() => {
       Animated.timing(taglineOpacity, {
         toValue: 1,
-        duration: 600,
+        duration: 700,
         useNativeDriver: true,
       }).start()
-    }, 1400)
+    }, 1600)
   }, [])
 
   useEffect(() => {
@@ -128,14 +128,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: fonts.displayBold,
     color: '#fff',
-    letterSpacing: -6,
+    letterSpacing: -7,
   },
   tagline: {
-    fontSize: 13,
-    fontFamily: fonts.bodyMedium,
-    color: 'rgba(255,255,255,0.35)',
-    marginTop: 28,
-    letterSpacing: 3.5,
+    fontSize: 11,
+    fontFamily: fonts.bodySemi,
+    color: 'rgba(255,255,255,0.30)',
+    marginTop: 36,
+    letterSpacing: 4.5,
     textTransform: 'uppercase',
   },
 })

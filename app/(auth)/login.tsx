@@ -665,16 +665,16 @@ const styles = StyleSheet.create({
 
   logoWrap: {
     alignSelf: 'center',
-    marginBottom: 56,
+    marginBottom: 64,
   },
 
   // Headline — dramatic display, centered
   headline: {
     fontFamily: fonts.displayBold,
-    fontSize: 36,
-    lineHeight: 36,
-    letterSpacing: -1.5,
-    marginBottom: 12,
+    fontSize: 40,
+    lineHeight: 40,
+    letterSpacing: -2,
+    marginBottom: 14,
     textAlign: 'center',
   },
 
@@ -683,35 +683,36 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 15,
     lineHeight: 22,
-    marginBottom: 44,
+    marginBottom: 48,
     textAlign: 'center',
     alignSelf: 'center',
-    maxWidth: 280,
+    maxWidth: 260,
+    letterSpacing: 0.1,
   },
 
   // Section label — Meta style uppercase
   sectionLabel: {
     fontFamily: fonts.bodySemi,
-    fontSize: 11,
-    letterSpacing: 1.5,
+    fontSize: 10,
+    letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 10,
   },
 
-  // Input field — pill shape
+  // Input field — soft rounded shape
   inputField: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 999,
+    borderRadius: 16,
     paddingHorizontal: 18,
-    minHeight: 48,
+    minHeight: 52,
   },
   inputText: {
     fontFamily: fonts.bodyMedium,
     fontSize: 16,
-    letterSpacing: 0,
+    letterSpacing: -0.1,
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 15,
   },
 
   // Eye toggle inside password field
@@ -801,20 +802,20 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  // Primary CTA — pill, 56px height, bold
+  // Primary CTA — bold rounded, 56px height
   primaryBtn: {
-    borderRadius: 999,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     height: 56,
     minHeight: 56,
-    marginTop: 20,
+    marginTop: 24,
   },
   primaryBtnText: {
     fontFamily: fonts.bodySemi,
     fontSize: 16,
     lineHeight: 20,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
 
   // Back to login
@@ -837,35 +838,35 @@ const styles = StyleSheet.create({
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginTop: 18,
-    marginBottom: 18,
+    gap: 14,
+    marginTop: 24,
+    marginBottom: 24,
   },
-  dividerLine: { flex: 1, height: 1 },
+  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dividerText: {
     fontFamily: fonts.bodySemi,
-    fontSize: 12,
-    letterSpacing: 1.4,
+    fontSize: 10,
+    letterSpacing: 2,
     textTransform: 'uppercase',
   },
 
-  // Apple button — pill, 50px height
+  // Apple button — rounded, 52px height
   appleBtn: {
     width: '100%',
-    height: 50,
+    height: 52,
     minHeight: 48,
     marginBottom: 10,
   },
 
-  // Social button — pill, surface bg, 1px border, 48-52px height
+  // Social button — rounded, surface bg, 1px border, 52px height
   socialBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1,
-    borderRadius: 999,
-    height: 50,
+    borderRadius: 16,
+    height: 52,
     minHeight: 48,
     marginBottom: 10,
   },

@@ -459,7 +459,7 @@ function FeedScreenInner() {
   }, [feed.activeFilter, categorySections, feedAds])
 
   const renderFeedItem = useCallback(({ item }: { item: FeedItem }) => {
-    const gCardWidth = (screenWidth - 44 - 10) / 2  // 22px padding each side, 10px gap
+    const gCardWidth = (screenWidth - 44 - 12) / 2  // 22px padding each side, 12px gap
 
     if (item._kind === 'eyebrow') {
       return (
@@ -626,39 +626,21 @@ function FeedScreenInner() {
         data={feedItems}
         renderItem={renderFeedItem}
         keyExtractor={item => item.key}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 100, gap: 8 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 100, gap: 14 }}
         ListHeaderComponent={
           <View>
             {/* ── Top area with safe area padding ── */}
-            <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
-              {/* 1. Header — "Löydä" + bell (Grid variant) */}
-              <View style={styles.headerRow}>
-                <PressableOpacity onPress={() => feed.setShowNeighborhoodPicker(true)} hitSlop={8}>
-                  <Text style={[styles.hTitle, { color: colors.foreground }]}>
-                    {t('feed.discover') ?? 'Löydä'}
-                  </Text>
-                </PressableOpacity>
-                <PressableOpacity
-                  onPress={() => router.push('/notifications')}
-                  style={[styles.iconBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-                  accessibilityLabel={t('notifications.title') ?? 'Ilmoitukset'}
-                  accessibilityRole="button"
-                >
-                  <Bell size={20} color={colors.foreground} strokeWidth={1.8} />
-                  <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
-                </PressableOpacity>
-              </View>
-
-              {/* 2. Search bar */}
+            <View style={[styles.topArea, { paddingTop: insets.top + 12 }]}>
+              {/* 1. Search + map + notifications — single compact row */}
               <View style={styles.searchRow}>
                 <PressableOpacity
                   onPress={() => router.push('/search')}
-                  style={[styles.searchInput, { backgroundColor: colors.card, borderColor: colors.borderStrong }]}
+                  style={[styles.searchInput, { backgroundColor: colors.muted }]}
                   accessibilityLabel={t('common.search')}
                   accessibilityRole="button"
                 >
                   <Search size={18} color={colors.mutedForeground} strokeWidth={2} />
-                  <Text style={[styles.searchPlaceholder, { color: colors.mutedForeground }]}>
+                  <Text style={[styles.searchPlaceholder, { color: colors.tertiaryForeground }]}>
                     {feed.userNeighborhood
                       ? `${t('feed.searchIn') ?? 'Hae tavaraa'} ${feed.userNeighborhood}sta…`
                       : (t('feed.searchPlaceholder') ?? 'Etsi naapurustosta…')}
@@ -666,7 +648,7 @@ function FeedScreenInner() {
                 </PressableOpacity>
                 <PressableOpacity
                   onPress={() => { try { Haptics.selectionAsync() } catch {} setViewMode(v => v === 'list' ? 'map' : 'list') }}
-                  style={[styles.iconBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  style={[styles.iconBtn, { backgroundColor: colors.muted }]}
                   accessibilityLabel={viewMode === 'list' ? (t('feed.mapView') ?? 'Map view') : (t('feed.listView') ?? 'List view')}
                   accessibilityRole="button"
                 >
@@ -675,6 +657,15 @@ function FeedScreenInner() {
                   ) : (
                     <LayoutGrid size={20} color={colors.foreground} strokeWidth={1.8} />
                   )}
+                </PressableOpacity>
+                <PressableOpacity
+                  onPress={() => router.push('/notifications')}
+                  style={[styles.iconBtn, { backgroundColor: colors.muted }]}
+                  accessibilityLabel={t('notifications.title') ?? 'Ilmoitukset'}
+                  accessibilityRole="button"
+                >
+                  <Bell size={20} color={colors.foreground} strokeWidth={1.8} />
+                  <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
                 </PressableOpacity>
               </View>
 
@@ -854,20 +845,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
   },
 
-  // ── Grid header ──
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  hTitle: {
-    fontSize: 34,
-    fontWeight: '700',
-    fontFamily: fonts.displayBold,
-    letterSpacing: -1.4,
-    lineHeight: 36,
-  },
   bellDot: {
     position: 'absolute',
     top: 10,
@@ -881,30 +858,27 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 18,
   },
   searchInput: {
     flex: 1,
-    height: 50,
-    borderRadius: 999,
-    borderWidth: 1,
+    height: 44,
+    borderRadius: 22,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
   },
   searchPlaceholder: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
     lineHeight: 20,
-    letterSpacing: -0.1,
+    letterSpacing: -0.2,
   },
   iconBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 1,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -928,50 +902,52 @@ const styles = StyleSheet.create({
   // ── Eyebrow ──
   eyebrowRow: {
     paddingHorizontal: 22,
-    marginBottom: 4,
+    marginBottom: 6,
+    marginTop: 8,
   },
   eyebrowText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 2,
+    letterSpacing: 2.8,
     textTransform: 'uppercase',
-    lineHeight: 14,
+    lineHeight: 12,
   },
 
   // ── Category pills ──
   pillRow: {
     marginTop: 20,
-    marginBottom: 8,
+    marginBottom: 14,
   },
 
   // ── Section heads (v3 Bricolage) ──
   categorySection: {
-    marginTop: 44,
+    marginTop: 52,
   },
   sectionHead: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     paddingHorizontal: 22,
-    marginBottom: 14,
+    marginBottom: 18,
   },
   sectionTitleWrap: {
-    gap: 3,
+    gap: 5,
   },
   sectionTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
     fontFamily: fonts.displayBold,
-    letterSpacing: -0.8,
-    lineHeight: 28,
+    letterSpacing: -1.2,
+    lineHeight: 30,
   },
   sectionSub: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 14,
-    letterSpacing: 0.3,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   seeAllRow: {
     flexDirection: 'row',
@@ -1019,7 +995,7 @@ const styles = StyleSheet.create({
   // ── Filtered grid rows ──
   gridRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
     paddingHorizontal: 22,
   },
 
@@ -1048,10 +1024,10 @@ const styles = StyleSheet.create({
   coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22, letterSpacing: -0.2 },
 
   // ── Footer ──
-  allLoadedWrap: { alignItems: 'center', gap: 12, paddingVertical: 24 },
-  allLoadedLine: { height: 1, width: '100%' },
+  allLoadedWrap: { alignItems: 'center', gap: 16, paddingVertical: 44 },
+  allLoadedLine: { height: StyleSheet.hairlineWidth, width: '40%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  allLoadedText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium, lineHeight: 16 },
+  allLoadedText: { fontSize: 10, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 1.6, textTransform: 'uppercase' as const, lineHeight: 14 },
 })
 
 export default function FeedScreen() {

@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   logo: {
     fontFamily: fonts.displayBold,
     fontWeight: '700',
-    letterSpacing: -3,
+    letterSpacing: -4.2,
     includeFontPadding: false,
   },
 })

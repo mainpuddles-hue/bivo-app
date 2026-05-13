@@ -33,8 +33,8 @@ const FilterChip = memo(function FilterChip({ label, isActive, onPress, dotColor
     if (isFirstRun.current) { isFirstRun.current = false; return }
     if (reduceMotion) return
     Animated.sequence([
-      Animated.spring(scale, { toValue: 0.92, friction: 6, tension: 180, useNativeDriver: true }),
-      Animated.spring(scale, { toValue: 1, friction: 4, tension: 140, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 0.90, friction: 5, tension: 200, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, friction: 3, tension: 120, useNativeDriver: true }),
     ]).start()
   }, [isActive, reduceMotion, scale])
 
@@ -108,24 +108,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 36,
-    paddingHorizontal: 14,
-    gap: 6,
-    borderRadius: 999,
+    height: 34,
+    paddingHorizontal: 16,
+    gap: 7,
+    borderRadius: 12,
     borderWidth: 1,
   },
-  // Small saturated dot (6px) — enough to read the category color at a
+  // Small saturated dot (5px) — enough to read the category color at a
   // glance without turning the chip into a pastel tile. Skipped on the
   // "Kaikki" all-filter chip since it has no color of its own.
   chipDot: {
-    width: 6,
-    height: 6,
+    width: 5,
+    height: 5,
     borderRadius: 3,
   },
   chipText: {
     fontSize: 13,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
-    lineHeight: 18,
+    lineHeight: 16,
+    letterSpacing: -0.1,
   },
 })

@@ -60,10 +60,20 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const mountedRef = useRef(true)
   const likeAnim = useRef(new Animated.Value(1)).current
   const shimmerAnim = useRef(new Animated.Value(0.4)).current
+  const entryOpacity = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current
+  const entryTranslateY = useRef(new Animated.Value(reduceMotion ? 0 : 22)).current
 
   useEffect(() => {
     mountedRef.current = true
-    return () => { mountedRef.current = false }
+    if (reduceMotion) return
+    const delay = Math.min(index * 60, 300)
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(entryOpacity, { toValue: 1, duration: 420, useNativeDriver: true }),
+        Animated.spring(entryTranslateY, { toValue: 0, friction: 7, tension: 65, useNativeDriver: true }),
+      ]).start()
+    }, delay)
+    return () => { mountedRef.current = false; clearTimeout(timer) }
   }, [])
 
   useEffect(() => {
@@ -170,12 +180,12 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   // Spring-physics press feedback
   const cardScale = useRef(new Animated.Value(1)).current
   const handleCardPressIn = useCallback(() => {
-    if (reduceMotion) { cardScale.setValue(0.97); return }
-    Animated.spring(cardScale, { toValue: 0.97, friction: 4, tension: 200, useNativeDriver: true }).start()
+    if (reduceMotion) { cardScale.setValue(0.965); return }
+    Animated.spring(cardScale, { toValue: 0.965, friction: 5, tension: 220, useNativeDriver: true }).start()
   }, [cardScale, reduceMotion])
   const handleCardPressOut = useCallback(() => {
     if (reduceMotion) { cardScale.setValue(1); return }
-    Animated.spring(cardScale, { toValue: 1, friction: 3, tension: 300, useNativeDriver: true }).start()
+    Animated.spring(cardScale, { toValue: 1, friction: 3.5, tension: 280, useNativeDriver: true }).start()
   }, [cardScale, reduceMotion])
 
   // ── Mini avatar + meta footer ──
@@ -236,7 +246,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   // ─── IMAGE: photo-first, 4:5 aspect ratio ───
   if (variant === 'image') {
     return (
-      <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
+      <Animated.View style={{ flex: 1, opacity: entryOpacity, transform: [{ scale: cardScale }, { translateY: entryTranslateY }] }}>
         <Pressable
           onPress={handlePress}
           onPressIn={handleCardPressIn}
@@ -345,7 +355,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
       : ''
 
     return (
-      <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
+      <Animated.View style={{ flex: 1, opacity: entryOpacity, transform: [{ scale: cardScale }, { translateY: entryTranslateY }] }}>
         <Pressable
           onPress={handlePress}
           onPressIn={handleCardPressIn}
@@ -382,7 +392,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 
   // ─── TINT: warm-tint background, text-only posts ───
   return (
-    <Animated.View style={{ flex: 1, transform: [{ scale: cardScale }] }}>
+    <Animated.View style={{ flex: 1, opacity: entryOpacity, transform: [{ scale: cardScale }, { translateY: entryTranslateY }] }}>
       <Pressable
         onPress={handlePress}
         onPressIn={handleCardPressIn}
@@ -432,16 +442,22 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
+    // Depth: soft shadow system for physical-object feel
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.07,
+    shadowRadius: 16,
+    ...Platform.select({ android: { elevation: 4 } }),
   },
 
   // ── IMAGE variant ──
   imageWrap: {
     position: 'relative',
     overflow: 'hidden',
-    aspectRatio: 1,
+    aspectRatio: 4 / 5,
   },
   image: {
     width: '100%',
@@ -535,10 +551,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.94)',
   },
   pricePillStack: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.94)',
+    backgroundColor: 'rgba(255,255,255,0.96)',
     alignItems: 'flex-start',
   },
   pricePillFree: {
@@ -551,21 +567,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(30,30,30,0.92)',
   },
   pricePillAmount: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '700',
     fontFamily: fonts.displayBold,
-    letterSpacing: -0.5,
-    lineHeight: 20,
+    letterSpacing: -0.8,
+    lineHeight: 24,
     color: '#1A1D1F',
     fontVariant: ['tabular-nums'],
   },
   pricePillUnit: {
-    fontSize: 9.5,
-    fontWeight: '600',
+    fontSize: 8,
+    fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.8,
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
-    marginTop: 1,
+    marginTop: 2,
   },
   pricePillFreeText: {
     fontSize: 12,
@@ -588,11 +604,11 @@ const styles = StyleSheet.create({
   availBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(255,255,255,0.95)',
   },
   availDot: {
     width: 5,
@@ -600,82 +616,96 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   availText: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 9,
+    fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    lineHeight: 13,
+    letterSpacing: 1,
+    lineHeight: 12,
   },
   imgContent: {
     padding: 14,
-    paddingTop: 11,
-    gap: 2,
+    paddingTop: 12,
+    paddingBottom: 16,
+    gap: 3,
   },
   imgTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: -0.2,
-    lineHeight: 19,
+    letterSpacing: -0.3,
+    lineHeight: 18,
   },
   imgSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: fonts.body,
-    lineHeight: 16,
+    letterSpacing: 0.2,
+    lineHeight: 15,
     marginTop: 2,
   },
 
   // ── INK variant (events) ──
   inkCard: {
     borderWidth: 0,
-    padding: 18,
-    gap: 10,
-    minHeight: 260,
+    padding: 22,
+    paddingTop: 24,
+    gap: 12,
+    minHeight: 280,
+    // Deeper shadow for ink cards — they sit forward
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    ...Platform.select({ android: { elevation: 8 } }),
   },
   inkDay: {
     fontSize: 10,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1.8,
+    letterSpacing: 3,
     textTransform: 'uppercase',
     lineHeight: 14,
   },
   inkDate: {
-    fontSize: 40,
+    fontSize: 46,
     fontWeight: '700',
     fontFamily: fonts.displayBold,
-    letterSpacing: -2,
-    lineHeight: 38,
-    marginTop: 2,
+    letterSpacing: -2.5,
+    lineHeight: 42,
+    marginTop: 4,
   },
   inkTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     fontFamily: fonts.display,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
     lineHeight: 22,
     flex: 1,
+    marginTop: 4,
   },
   inkBottom: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingTop: 10,
+    paddingTop: 14,
     borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: 'auto',
   },
   inkBottomText: {
     fontSize: 11,
     fontFamily: fonts.body,
     lineHeight: 14,
+    letterSpacing: 0.2,
     flex: 1,
   },
 
   // ── TINT variant (text-only) ──
-  // minHeight aligned with INK (250) so a TINT card sitting next to an INK
-  // event card or a square IMAGE card occupies the same visual slot.
+  // minHeight aligned with INK (280) so a TINT card sitting next to an INK
+  // event card or a 4:5 IMAGE card occupies the same visual slot.
   tintCard: {
-    padding: 18,
-    gap: 6,
-    minHeight: 260,
+    padding: 20,
+    paddingTop: 22,
+    gap: 8,
+    minHeight: 280,
   },
   tintTopRow: {
     flexDirection: 'row',
@@ -685,12 +715,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   tintCatLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1.8,
+    letterSpacing: 2.4,
     textTransform: 'uppercase',
-    lineHeight: 14,
+    lineHeight: 12,
   },
   urgentInline: {
     paddingHorizontal: 8,
@@ -706,11 +736,11 @@ const styles = StyleSheet.create({
     lineHeight: 12,
   },
   tintTitle: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: '600',
     fontFamily: fonts.display,
-    letterSpacing: -0.6,
-    lineHeight: 24,
+    letterSpacing: -0.7,
+    lineHeight: 26,
     flex: 1,
   },
 
