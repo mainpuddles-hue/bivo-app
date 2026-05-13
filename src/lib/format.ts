@@ -129,6 +129,12 @@ export function formatDateHeader(dateStr: string, locale: string): string {
   })
 }
 
+export function formatEventTime(dateStr: string, locale = 'fi'): string {
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return ''
+  return date.toLocaleTimeString(resolveLocale(locale), { hour: '2-digit', minute: '2-digit' })
+}
+
 export function formatDateRange(start: string, end: string, locale: string): string {
   if (!start || !end) return '\u2013'
   const startDate = new Date(start)

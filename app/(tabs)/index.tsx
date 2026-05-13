@@ -637,7 +637,6 @@ function FeedScreenInner() {
           <View>
             {/* ── Top area with safe area padding ── */}
             <View style={[styles.topArea, { paddingTop: insets.top + 12 }]}>
-              {/* 1. Search + map + notifications — visual hierarchy: search dominant, icons secondary */}
               <View style={styles.searchRow}>
                 <PressableOpacity
                   onPress={() => router.push('/search')}
@@ -869,7 +868,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
 
-  // ── Search row — search is primary (filled pill), icons are secondary (transparent) ──
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',

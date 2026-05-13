@@ -16,12 +16,15 @@ import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
 import { getImageUrl } from '@/lib/imageUtils'
+import { formatDateHeader, formatEventTime } from '@/lib/format'
 import { PressableOpacity } from '@/components/ui'
 import type { Post, CommunityEvent } from '@/lib/types'
 
 const CARD_GAP = 10
 const H_PAD = 22
 const MAX_CARDS = 6
+
+const scrollContentStyle = { paddingHorizontal: H_PAD, gap: CARD_GAP } as const
 
 interface EventHeroCarouselProps {
   eventPosts: Post[]
@@ -33,7 +36,7 @@ interface HeroCard {
   id: string
   title: string
   imageUrl: string | null
-  date: Date
+  dateIso: string
   location: string | null
   source: 'post' | 'community'
 }
@@ -52,30 +55,32 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
   const scrollRef = useRef<ScrollView>(null)
 
   const cards = useMemo<HeroCard[]>(() => {
+    const now = Date.now()
+
     const postCards: HeroCard[] = eventPosts
       .filter(p => p.event_date)
       .map(p => ({
         id: p.id,
         title: p.title,
         imageUrl: p.image_url,
-        date: new Date(p.event_date!),
+        dateIso: p.event_date!,
         location: p.location,
         source: 'post' as const,
       }))
 
     const communityCards: HeroCard[] = communityEvents
-      .filter(e => new Date(e.event_date).getTime() > Date.now())
+      .filter(e => new Date(e.event_date).getTime() > now)
       .map(e => ({
         id: e.id,
         title: e.title,
         imageUrl: e.image_url,
-        date: new Date(e.event_date),
+        dateIso: e.event_date,
         location: e.location_name,
         source: 'community' as const,
       }))
 
     return [...communityCards, ...postCards]
-      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .sort((a, b) => new Date(a.dateIso).getTime() - new Date(b.dateIso).getTime())
       .slice(0, MAX_CARDS)
   }, [eventPosts, communityEvents])
 
@@ -84,41 +89,22 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
 
   const handleScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const idx = Math.round(e.nativeEvent.contentOffset.x / snapInterval)
-      setActiveIndex(Math.max(0, Math.min(idx, cards.length - 1)))
+      const idx = Math.max(0, Math.min(
+        Math.round(e.nativeEvent.contentOffset.x / snapInterval),
+        cards.length - 1,
+      ))
+      setActiveIndex(prev => prev === idx ? prev : idx)
     },
     [snapInterval, cards.length],
   )
 
-  const handlePress = useCallback(
-    (card: HeroCard) => {
-      if (card.source === 'community') {
-        router.push(`/event/${card.id}` as any)
-      } else {
-        router.push(`/post/${card.id}` as any)
-      }
-    },
-    [router],
-  )
-
-  const formatDate = useCallback(
-    (date: Date) => {
-      const loc = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US'
-      const weekday = date.toLocaleDateString(loc, { weekday: 'long' })
-      const day = date.getDate()
-      const month = date.toLocaleDateString(loc, { month: 'long' })
-      return `${weekday} ${day}. ${month}`
-    },
-    [locale],
-  )
-
-  const formatTime = useCallback(
-    (date: Date) => {
-      const loc = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-US'
-      return date.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' })
-    },
-    [locale],
-  )
+  const handlePress = (card: HeroCard) => {
+    if (card.source === 'community') {
+      router.push(`/event/${card.id}` as any)
+    } else {
+      router.push(`/post/${card.id}` as any)
+    }
+  }
 
   if (cards.length === 0) return null
 
@@ -132,7 +118,7 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
         snapToAlignment="start"
         decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: H_PAD, gap: CARD_GAP }}
+        contentContainerStyle={scrollContentStyle}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
@@ -167,7 +153,7 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
               <View style={styles.datePill}>
                 <Calendar size={12} color="#FFFFFF" strokeWidth={2.2} />
                 <Text style={styles.datePillText}>
-                  {formatDate(card.date)} · {formatTime(card.date)}
+                  {formatDateHeader(card.dateIso, locale)} · {formatEventTime(card.dateIso, locale)}
                 </Text>
               </View>
 
