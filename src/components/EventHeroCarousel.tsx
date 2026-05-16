@@ -8,6 +8,7 @@ import {
   type NativeSyntheticEvent,
   type NativeScrollEvent,
 } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { Calendar, MapPin, ArrowRight } from 'lucide-react-native'
@@ -23,6 +24,9 @@ const CARD_GAP = 10
 const H_PAD = 22
 const MAX_CARDS = 6
 
+// Bivo brand gradient for imageless hero cards (from bivoapp.io 3D palette)
+const BRAND_GRADIENT_COLORS = ['#1F5D3F', '#4a8f7a'] as const
+
 const scrollContentStyle = { paddingHorizontal: H_PAD, gap: CARD_GAP } as const
 
 interface EventHeroCarouselProps {
@@ -34,7 +38,7 @@ interface EventHeroCarouselProps {
 interface HeroCard {
   id: string
   title: string
-  imageUrl: string
+  imageUrl: string | null
   dateIso: string
   location: string | null
   source: 'post' | 'community'
@@ -65,26 +69,24 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
   const cards = useMemo<HeroCard[]>(() => {
     const now = Date.now()
 
-    // Only include posts that HAVE images
     const postCards: HeroCard[] = eventPosts
-      .filter(p => p.event_date && p.image_url)
+      .filter(p => p.event_date)
       .map(p => ({
         id: p.id,
         title: p.title,
-        imageUrl: p.image_url!,
+        imageUrl: p.image_url,
         dateIso: p.event_date!,
         location: p.location,
         source: 'post' as const,
         popularity: getPostPopularity(p),
       }))
 
-    // Only include community events that HAVE images
     const communityCards: HeroCard[] = communityEvents
-      .filter(e => new Date(e.event_date).getTime() > now && e.image_url)
+      .filter(e => new Date(e.event_date).getTime() > now)
       .map(e => ({
         id: e.id,
         title: e.title,
-        imageUrl: e.image_url!,
+        imageUrl: e.image_url,
         dateIso: e.event_date,
         location: e.location_name,
         source: 'community' as const,
@@ -157,12 +159,21 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
           >
             {/* Image area — top of card */}
             <View style={styles.imageArea}>
-              <Image
-                source={{ uri: getImageUrl(card.imageUrl, 'medium')! }}
-                style={StyleSheet.absoluteFill}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-              />
+              {card.imageUrl ? (
+                <Image
+                  source={{ uri: getImageUrl(card.imageUrl, 'medium')! }}
+                  style={StyleSheet.absoluteFill}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                />
+              ) : (
+                <LinearGradient
+                  colors={[BRAND_GRADIENT_COLORS[0], BRAND_GRADIENT_COLORS[1]]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              )}
             </View>
 
             {/* Content area — below image */}

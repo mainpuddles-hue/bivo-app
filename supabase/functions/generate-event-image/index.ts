@@ -79,16 +79,16 @@ function buildPrompt(title: string, description: string | null, category: string
     || CATEGORY_SCENES.default
 
   return [
-    'A 3D rendered still life scene in a single monochromatic teal-green color.',
-    'Exact color: soft muted teal like #9CCFD0 and #B5DFE0.',
+    'A 3D rendered still life scene in deep muted forest green.',
+    'Primary color: dark green #1F5D3F, secondary: #4a8f7a, accent: #2a7a54.',
     `Objects in the scene: ${sceneHint}.`,
-    'All objects are the same teal-green color, like they are made from clay or matte plastic.',
-    'Soft diffused overhead lighting, gentle shadows on a flat surface.',
-    'Clean light teal background, no gradients.',
-    'Rounded smooth 3D objects, Pixar-style miniature look.',
+    'All objects are made of the same matte clay material in deep forest green tones.',
+    'Warm soft lighting from above, gentle shadows on a light cream #F4F4F2 surface.',
+    'Clean warm off-white background.',
+    'Rounded smooth 3D objects, Pixar-style miniature diorama look.',
     'Absolutely no text, no letters, no numbers, no writing, no people, no faces.',
     'Isometric angle, product photography style, centered composition.',
-    'High quality 3D illustration, octane render.',
+    'High quality 3D illustration, octane render, studio lighting.',
   ].join(' ')
 }
 
