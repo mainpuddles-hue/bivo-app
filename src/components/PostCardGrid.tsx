@@ -284,8 +284,8 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
             <View style={styles.imgTopRow}>
               {!isExpired ? (
                 <View style={[styles.availBadge, isDark && styles.availBadgeDark]}>
-                  <View style={[styles.availDot, { backgroundColor: colors.success }]} />
-                  <Text style={[styles.availText, { color: colors.success }]}>{t('postCard.now') ?? 'Nyt'}</Text>
+                  <View style={[styles.availDot, { backgroundColor: colors.accent }]} />
+                  <Text style={[styles.availText, { color: colors.accent }]}>{t('postCard.now') ?? 'Nyt'}</Text>
                 </View>
               ) : category ? (
                 <View style={[styles.catChip, isDark && styles.catChipDark]}>

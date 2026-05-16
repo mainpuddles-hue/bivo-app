@@ -670,7 +670,7 @@ function FeedScreenInner() {
                   accessibilityRole="button"
                 >
                   <Bell size={20} color={colors.foreground} strokeWidth={1.6} />
-                  <View style={[styles.bellDot, { backgroundColor: colors.success }]} />
+                  <View style={[styles.bellDot, { backgroundColor: colors.accent }]} />
                 </PressableOpacity>
               </View>
 

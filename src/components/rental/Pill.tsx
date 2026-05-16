@@ -16,7 +16,7 @@ export function Pill({ tone = 'on', children }: PillProps) {
     on: { bg: colors.foreground, fg: colors.primaryForeground },
     off: { bg: colors.card, fg: colors.foreground, border: colors.border },
     soft: { bg: colors.cardElevated, fg: colors.foreground },
-    live: { bg: colors.success + '1A', fg: colors.success },
+    live: { bg: colors.accentBg, fg: colors.accent },
   }
   const t = tones[tone]
   return (

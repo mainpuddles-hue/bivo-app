@@ -94,8 +94,8 @@ export const EventCard = memo(function EventCard({ event, compact }: EventCardPr
               </Text>
             </View>
             {isTable && (
-              <View style={[s.tableBadge, { backgroundColor: `${colors.success}15` }]}>
-                <Text style={[s.tableText, { color: colors.success }]}>
+              <View style={[s.tableBadge, { backgroundColor: `${colors.accent}15` }]}>
+                <Text style={[s.tableText, { color: colors.accent }]}>
                   {t('tables.title')}
                 </Text>
               </View>

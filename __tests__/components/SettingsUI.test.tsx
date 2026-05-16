@@ -13,7 +13,8 @@ import type { ThemeColors } from '@/lib/theme'
 
 const mockColors: ThemeColors = {
   primary: '#1A1D1F',
-  accent: '#2A2D30',
+  accent: '#ABD9DB',
+  accentBg: '#E8F4F5',
   secondary: '#FF9500',
   background: '#F5F6F7',
   foreground: '#1A1D1F',

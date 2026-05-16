@@ -6,9 +6,10 @@ export const colors = {
     // hair=#EAEAE5, hair2=#D8D8D2, surface=#FFF, surface2=#F3F1EB,
     // bg=#F8F6F0, live=#2A5F3F
     primary: '#0A0A0A',
-    accent: '#1A1A1A',
+    accent: '#ABD9DB',
+    accentBg: '#E8F4F5',
     secondary: '#FF9500',
-    background: '#F8F6F0',
+    background: '#F4F4F2',
     foreground: '#0A0A0A',
     card: '#FFFFFF',
     cardElevated: '#F3F1EB',
@@ -40,7 +41,8 @@ export const colors = {
   dark: {
     // Helsinki Monochrome dark: inverted ink palette
     primary: '#F5F6F7',            // inverted ink
-    accent: '#E8EAEC',             // inverted ink-soft
+    accent: '#7CBFC2',             // teal accent — darker for dark mode legibility
+    accentBg: '#1A2E2F',          // dark teal tint
     secondary: '#FFAD33',
     background: '#0E1012',         // near-black canvas
     foreground: '#F5F6F7',         // near-white text
@@ -83,6 +85,7 @@ export const categoryColorsDark: Record<string, string> = {
 export type ThemeColors = {
   primary: string
   accent: string
+  accentBg: string
   secondary: string
   background: string
   foreground: string
