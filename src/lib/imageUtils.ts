@@ -33,8 +33,9 @@ export function getImageUrl(
 ): string | null {
   if (!originalUrl) return null
 
-  // Only transform Supabase Storage URLs
+  // Only transform Supabase Storage URLs (skip AI-generated images — already optimized)
   if (!originalUrl.includes('supabase.co/storage')) return originalUrl
+  if (originalUrl.includes('/generated/')) return originalUrl
 
   const config = SIZE_CONFIG[size]
 

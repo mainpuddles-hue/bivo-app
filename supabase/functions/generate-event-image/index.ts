@@ -164,7 +164,7 @@ serve(async (req) => {
   }
 
   try {
-    const { event_id, source } = await req.json()
+    const { event_id, source, force } = await req.json()
     if (!event_id) {
       return new Response(JSON.stringify({ error: 'event_id required' }), {
         status: 400,
@@ -193,8 +193,8 @@ serve(async (req) => {
       })
     }
 
-    // Skip if event already has an image
-    if (event[imageField]) {
+    // Skip if event already has an image (unless force regeneration)
+    if (event[imageField] && !force) {
       return new Response(JSON.stringify({ image_url: event[imageField], skipped: true }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
