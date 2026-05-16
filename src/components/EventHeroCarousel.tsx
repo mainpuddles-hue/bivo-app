@@ -179,7 +179,7 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
                   {t('postCard.viewEvent') ?? 'Katso tapahtuma'}
                 </Text>
                 <View style={[styles.ctaArrow, { backgroundColor: colors.foreground }]}>
-                  <ArrowRight size={13} color={colors.card} strokeWidth={2.2} />
+                  <ArrowRight size={16} color={colors.card} strokeWidth={2} />
                 </View>
               </View>
             </View>
@@ -263,9 +263,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
   ctaArrow: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 38,
+    height: 38,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },

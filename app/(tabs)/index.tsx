@@ -644,7 +644,7 @@ function FeedScreenInner() {
                   accessibilityLabel={t('common.search')}
                   accessibilityRole="button"
                 >
-                  <Search size={17} color={colors.tertiaryForeground} strokeWidth={2.2} />
+                  <Search size={18} color={colors.tertiaryForeground} strokeWidth={2} />
                   <Text style={[styles.searchPlaceholder, { color: colors.tertiaryForeground }]} numberOfLines={1}>
                     {feed.userNeighborhood
                       ? `${t('feed.searchIn') ?? 'Hae tavaraa'} ${feed.userNeighborhood}sta…`
@@ -861,12 +861,12 @@ const styles = StyleSheet.create({
 
   bellDot: {
     position: 'absolute',
-    top: 9,
-    right: 10,
+    top: 7,
+    right: 8,
     width: 7,
     height: 7,
     borderRadius: 999,
-    borderWidth: 1.5,
+    borderWidth: 2,
     borderColor: '#FFFFFF',
   },
 
@@ -878,7 +878,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 48,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -894,8 +894,8 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   iconBtn: {
-    width: 42,
-    height: 42,
+    width: 38,
+    height: 38,
     borderRadius: 999,
     borderWidth: 1,
     alignItems: 'center',
@@ -1040,7 +1040,7 @@ const styles = StyleSheet.create({
   coldStart: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32, gap: 16 },
   coldStartTitle: { fontSize: 24, fontWeight: '700', letterSpacing: -0.8, fontFamily: fonts.displayBold, lineHeight: 28 },
   coldStartHint: { fontSize: 15, textAlign: 'center', lineHeight: 22, fontFamily: fonts.body },
-  coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 999, marginTop: 12, minHeight: 52 },
+  coldStartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 999, marginTop: 12, minHeight: 56 },
   coldStartBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 22, letterSpacing: -0.2 },
 
   // ── Footer ──

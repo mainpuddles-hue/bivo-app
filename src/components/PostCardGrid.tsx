@@ -445,7 +445,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 18,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
   },

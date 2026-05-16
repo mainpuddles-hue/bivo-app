@@ -74,6 +74,7 @@ export function useFeedData() {
   const [userCityId, setUserCityId] = useState<string | null>(null)
   const [userCityName, setUserCityName] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [userName, setUserName] = useState<string | null>(null)
   const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false)
   const [cityNeighborhoods, setCityNeighborhoods] = useState<string[]>([])
   const [communityCards, setCommunityCards] = useState<{
@@ -138,11 +139,12 @@ export function useFeedData() {
       const user = { id: userId }
       const [{ data: followsData }, { data: profileData }] = await Promise.all([
         supabase.from('user_follows').select('followed_id').eq('follower_id', user.id),
-        (supabase.from('profiles') as any).select('naapurusto, city_id').eq('id', user.id).maybeSingle(),
+        (supabase.from('profiles') as any).select('naapurusto, city_id, name').eq('id', user.id).maybeSingle(),
       ])
       if (!mounted) return
       if (followsData) setFollowedIds(followsData.map((f: any) => f.followed_id))
       if ((profileData as any)?.naapurusto) setUserNeighborhood((profileData as any).naapurusto)
+      if ((profileData as any)?.name) setUserName((profileData as any).name)
       const cityId = (profileData as any)?.city_id ?? 'helsinki'
       setUserCityId(cityId)
       // Fetch city details (name + linkedevents URL) and neighborhoods
@@ -664,6 +666,7 @@ export function useFeedData() {
     userNeighborhood,
     userCityId,
     userCityName,
+    userName,
 
     // Discovery
     cityEvents,
