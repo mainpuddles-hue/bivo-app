@@ -1,6 +1,5 @@
 import { memo, useEffect, useRef } from 'react'
-import { View, Text, StyleSheet, Animated } from 'react-native'
-import { Check } from 'lucide-react-native'
+import { Text, StyleSheet, Animated } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { PressableOpacity } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
@@ -53,14 +52,6 @@ const FilterChip = memo(function FilterChip({ label, isActive, onPress, dotColor
             : { backgroundColor: colors.card, borderColor: colors.border },
         ]}
       >
-        {/* Active chips show a 10px Check (matching slice 1's TagChipRow
-            vocabulary); idle chips show the saturated category dot. The
-            "Kaikki" chip has no dotColor so it shows neither — clean. */}
-        {isActive ? (
-          <Check size={10} strokeWidth={2.4} color={colors.background} />
-        ) : dotColor ? (
-          <View style={[styles.chipDot, { backgroundColor: dotColor }]} />
-        ) : null}
         <Text style={[
           styles.chipText,
           { color: isActive ? colors.primaryForeground : colors.foreground },
@@ -112,14 +103,6 @@ const styles = StyleSheet.create({
     gap: 6,
     borderRadius: 999,
     borderWidth: 1,
-  },
-  // Small saturated dot (5px) — enough to read the category color at a
-  // glance without turning the chip into a pastel tile. Skipped on the
-  // "Kaikki" all-filter chip since it has no color of its own.
-  chipDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
   },
   chipText: {
     fontSize: 13,
