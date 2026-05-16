@@ -91,14 +91,14 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
   // State for AI-generated images (keyed by event id)
   const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({})
 
-  // Trigger AI image generation for community events without images
+  // Trigger AI image generation for hero events without images
   useEffect(() => {
-    const imagelessCommunityCards = cards.filter(
-      c => c.source === 'community' && !c.imageUrl && !generatedImages[c.id] && !generationRequested.has(c.id),
+    const imagelessCards = cards.filter(
+      c => !c.imageUrl && !generatedImages[c.id] && !generationRequested.has(c.id),
     )
-    if (imagelessCommunityCards.length === 0) return
+    if (imagelessCards.length === 0) return
 
-    for (const card of imagelessCommunityCards) {
+    for (const card of imagelessCards) {
       generationRequested.add(card.id)
 
       const supabase = createClient()
@@ -113,7 +113,7 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
             'Authorization': `Bearer ${token}`,
             'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
           },
-          body: JSON.stringify({ event_id: card.id }),
+          body: JSON.stringify({ event_id: card.id, source: card.source }),
         })
           .then(res => res.json())
           .then(result => {

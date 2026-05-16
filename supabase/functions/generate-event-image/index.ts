@@ -136,7 +136,7 @@ serve(async (req) => {
   }
 
   try {
-    const { event_id } = await req.json()
+    const { event_id, source } = await req.json()
     if (!event_id) {
       return new Response(JSON.stringify({ error: 'event_id required' }), {
         status: 400,
@@ -146,10 +146,15 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+    // Determine table based on source (post or community event)
+    const table = source === 'post' ? 'posts' : 'community_events'
+    const titleField = 'title'
+    const imageField = 'image_url'
+
     // Fetch event details
     const { data: event, error: fetchErr } = await (supabase
-      .from('community_events') as any)
-      .select('id, title, description, category, image_url')
+      .from(table) as any)
+      .select(`id, ${titleField}, description, ${imageField}${source === 'community' ? ', category' : ', type'}`)
       .eq('id', event_id)
       .single()
 
@@ -161,15 +166,16 @@ serve(async (req) => {
     }
 
     // Skip if event already has an image
-    if (event.image_url) {
-      return new Response(JSON.stringify({ image_url: event.image_url, skipped: true }), {
+    if (event[imageField]) {
+      return new Response(JSON.stringify({ image_url: event[imageField], skipped: true }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
     // Generate image
-    const prompt = buildPrompt(event.title, event.description, event.category)
+    const category = source === 'post' ? 'default' : (event.category || 'default')
+    const prompt = buildPrompt(event[titleField], event.description, category)
     const imageBytes = await generateImage(prompt)
 
     // Moderate generated image
@@ -182,9 +188,10 @@ serve(async (req) => {
     }
 
     // Upload to Supabase Storage
+    const bucket = source === 'post' ? 'post-images' : STORAGE_BUCKET
     const fileName = `generated/${event_id}.jpg`
     const { error: uploadErr } = await supabase.storage
-      .from(STORAGE_BUCKET)
+      .from(bucket)
       .upload(fileName, imageBytes, {
         contentType: 'image/jpeg',
         upsert: true,
@@ -196,19 +203,19 @@ serve(async (req) => {
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from(STORAGE_BUCKET)
+      .from(bucket)
       .getPublicUrl(fileName)
 
     const publicUrl = urlData.publicUrl
 
-    // Update event record with generated image
+    // Update record with generated image
     const { error: updateErr } = await (supabase
-      .from('community_events') as any)
-      .update({ image_url: publicUrl })
+      .from(table) as any)
+      .update({ [imageField]: publicUrl })
       .eq('id', event_id)
 
     if (updateErr) {
-      throw new Error(`Event update failed: ${updateErr.message}`)
+      throw new Error(`Record update failed: ${updateErr.message}`)
     }
 
     return new Response(
