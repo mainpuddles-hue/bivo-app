@@ -236,7 +236,8 @@ serve(async (req) => {
       .from(bucket)
       .getPublicUrl(fileName)
 
-    const publicUrl = urlData.publicUrl
+    // Append cache buster so clients fetch fresh image after regeneration
+    const publicUrl = `${urlData.publicUrl}?v=${Date.now()}`
 
     // Update record with generated image
     const { error: updateErr } = await (supabase
