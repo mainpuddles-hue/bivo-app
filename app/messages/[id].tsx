@@ -1117,7 +1117,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1,
   },
   circleBtn: {
-    width: 36, height: 36, borderRadius: 999,
+    width: 38, height: 38, borderRadius: 999,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },

@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
   },
   iconCircle: {

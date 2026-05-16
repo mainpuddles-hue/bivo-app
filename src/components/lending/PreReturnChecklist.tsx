@@ -105,7 +105,7 @@ export function PreReturnChecklist({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 14,
   },

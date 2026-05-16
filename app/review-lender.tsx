@@ -253,7 +253,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   backCircle: {
-    width: 36, height: 36, borderRadius: 999, borderWidth: 1,
+    width: 38, height: 38, borderRadius: 999, borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
   },
   headerTitle: {

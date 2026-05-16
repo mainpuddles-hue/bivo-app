@@ -1195,7 +1195,7 @@ const s = StyleSheet.create({
   // ── Wizard header ──
   wizHeader: { paddingHorizontal: 22 },
   wizHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  circleBtn: { width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  circleBtn: { width: 38, height: 38, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   wizStepLabel: { flex: 1, fontSize: 12, letterSpacing: 0.6, fontWeight: '500', fontFamily: fonts.bodyMedium },
   wizSaveLabel: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
   wizProgressRow: { flexDirection: 'row', gap: 4, marginBottom: 24 },

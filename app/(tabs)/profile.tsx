@@ -889,7 +889,7 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 14, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
   headerIcons: { flexDirection: 'row', gap: 8 },
   headerCircle: {
-    width: 36, height: 36, borderRadius: 999,
+    width: 38, height: 38, borderRadius: 999,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
   },

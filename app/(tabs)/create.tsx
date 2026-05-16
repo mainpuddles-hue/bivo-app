@@ -1493,7 +1493,7 @@ const mk = StyleSheet.create({
 
   // v3 Header
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12 },
-  headerCloseBtn: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  headerCloseBtn: { width: 44, height: 44, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '500', letterSpacing: -0.3, fontFamily: fonts.displayMedium },
   headerDraft: { width: 56, fontSize: 14, fontWeight: '600', textAlign: 'right', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
 
