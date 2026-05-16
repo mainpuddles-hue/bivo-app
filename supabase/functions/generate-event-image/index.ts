@@ -27,41 +27,45 @@ const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${IMAGE_MO
 const HF_TIMEOUT_MS = 60000 // 60s — image generation is slower
 const STORAGE_BUCKET = 'event-images'
 
-// Title-to-scene keyword mapping for content-relevant imagery
+// Title-to-scene mapping — describes scenes with simplified ball-head characters
+// and geometric props in a monochrome teal miniature city setting.
+// Characters: large sphere head, tiny curved smile (no other facial features),
+// simple tube/cylinder body and limbs, like claymation figures.
 const TITLE_KEYWORDS: [RegExp, string][] = [
-  [/lautapeli|board.?game|peli-ilta/i, 'board game pieces, dice, game tokens on a table, meeples, game cards'],
-  [/jalkapallo|football|futis/i, 'football on a field, goal posts, stadium shapes'],
-  [/koripallo|basketball|basket/i, 'basketball hoop, court lines, bouncing ball'],
-  [/juoks|running|maraton/i, 'running track, finish line, shoe shapes'],
-  [/urhei|sport|liikunt/i, 'sports equipment shapes, balls, rackets, field markings'],
-  [/musiik|music|keikka|konsertti/i, 'musical instruments, guitar, piano keys, vinyl record, musical notes'],
-  [/taide|art|maalaus|piirustus/i, 'paintbrush, canvas, art palette, paint tubes, easel'],
-  [/ruoka|food|kokkaus|kokki|resept/i, 'cooking pot, kitchen utensils, bowls, spoons, cutting board, vegetables'],
-  [/kahvi|coffee|brunch/i, 'coffee cup, saucer, coffee beans, pastries, cafe table'],
-  [/kirja|book|lukupiiri|reading/i, 'open books, reading glasses, bookshelf, stack of books'],
-  [/elokuva|movie|leffa|film/i, 'film reel, movie clapperboard, cinema screen, popcorn bucket'],
-  [/puutarh|garden|piha|istutus/i, 'garden tools, flower pots, watering can, small plants, seeds'],
-  [/retki|hike|patikointi|luonto/i, 'hiking boots, trail path, backpack, compass, pine trees'],
-  [/pyörä|bike|cycling|fillari/i, 'bicycle, wheel spokes, bike helmet, road path'],
-  [/jooga|yoga|meditaat/i, 'yoga mat, meditation cushion, peaceful zen stones, candle'],
-  [/käsityö|craft|neulo|ompel/i, 'yarn balls, knitting needles, fabric, scissors, thread spools'],
-  [/valokuva|photo|kamera/i, 'camera, photo frames, lens, film strip'],
-  [/lasten|kids|lapsi|perhe/i, 'toy blocks, teddy bear, crayons, small toy car, balloons'],
-  [/grilli|bbq|piknik|picnic/i, 'grill, picnic basket, blanket on grass, outdoor plates'],
+  [/lautapeli|board.?game|peli-ilta/i, 'two ball-headed figures sitting on cube blocks around a flat square table with small cube dice and cone-shaped game pawns between them, rectangular buildings behind'],
+  [/jalkapallo|football|futis/i, 'ball-headed figures running near a large sphere ball, rectangular goal frame, block buildings and lollipop trees in background'],
+  [/koripallo|basketball|basket/i, 'a ball-headed figure reaching toward a sphere near a cylindrical hoop on a tall post, block buildings behind'],
+  [/juoks|running|maraton/i, 'several ball-headed figures running along a flat path between block buildings, lollipop trees along the route'],
+  [/urhei|sport|liikunt/i, 'ball-headed figures with sphere balls and simple equipment shapes, block buildings and lollipop trees behind'],
+  [/musiik|music|keikka|konsertti/i, 'ball-headed figures on a rectangular stage platform, simplified geometric instrument shapes, block buildings behind'],
+  [/taide|art|maalaus|piirustus/i, 'a ball-headed figure standing at a rectangular easel shape, block buildings and lollipop trees behind'],
+  [/ruoka|food|kokkaus|kokki|resept/i, 'ball-headed figures around a rectangular counter with cylinder pot shapes and hemisphere bowls, block buildings behind'],
+  [/kahvi|coffee|brunch/i, 'ball-headed figures sitting on cube blocks at a rectangular table with cylinder cup shapes, block buildings and lollipop trees behind'],
+  [/kirja|book|lukupiiri|reading/i, 'ball-headed figures sitting on cube blocks holding flat rectangular shapes, surrounded by stacked slab book shapes, buildings behind'],
+  [/elokuva|movie|leffa|film/i, 'ball-headed figures sitting on cube seats facing a large flat rectangle screen, block buildings behind'],
+  [/puutarh|garden|piha|istutus/i, 'ball-headed figures near cylinder pot shapes and lollipop trees, rectangular raised bed blocks, buildings behind'],
+  [/retki|hike|patikointi|luonto/i, 'ball-headed figures walking along a path between cone-shaped trees and triangular mountain shapes'],
+  [/pyörä|bike|cycling|fillari/i, 'a ball-headed figure on a simplified geometric bicycle shape, flat road path, block buildings and lollipop trees'],
+  [/jooga|yoga|meditaat/i, 'ball-headed figures on flat rectangular mats in calm poses, lollipop trees and block buildings behind'],
+  [/käsityö|craft|neulo|ompel/i, 'ball-headed figures at a rectangular table with sphere yarn shapes and thin cylinder tools, buildings behind'],
+  [/valokuva|photo|kamera/i, 'a ball-headed figure holding a small rectangular box camera, other figures posing, block buildings behind'],
+  [/lasten|kids|lapsi|perhe/i, 'a tall ball-headed figure holding hands with a smaller ball-headed figure, stacked cube play blocks, lollipop trees and buildings'],
+  [/grilli|bbq|piknik|picnic/i, 'ball-headed figures around a hemisphere dome grill shape, flat disc plates on a rectangular table block, lollipop trees behind'],
+  [/siivous|clean|talkoo/i, 'ball-headed figures with simple cylinder tool shapes near rectangular buildings and lollipop trees, cube blocks on the ground'],
+  [/kirppu|flea.?market|myynti/i, 'ball-headed figures at rectangular table blocks with small cube items, under flat rectangular canopy shapes, buildings behind'],
 ]
 
-// Category fallback scenes (used when title keywords don't match)
 const CATEGORY_SCENES: Record<string, string> = {
-  urheilu: 'sports equipment, balls, racket, field markings, goal post',
-  musiikki: 'musical instruments, guitar, vinyl record, piano keys',
-  taide: 'paintbrush, canvas, art palette, paint tubes',
-  ruoka: 'cooking pot, kitchen utensils, bowls, cutting board',
-  peli: 'board game pieces, dice, game tokens, meeples, cards on table',
-  ulkoilu: 'pine trees, hiking trail, compass, backpack',
-  opiskelu: 'open books, notebook, pencils, desk lamp',
-  yhteiso: 'park benches, lamppost, neighborhood buildings, mailbox',
-  lapset: 'toy blocks, teddy bear, crayons, balloons',
-  default: 'neighborhood buildings, park bench, lamppost, trees, mailbox',
+  urheilu: 'ball-headed figures with sphere balls near rectangular goals and cone markers, block buildings behind',
+  musiikki: 'ball-headed figures on a rectangular stage with geometric instrument shapes, block buildings behind',
+  taide: 'a ball-headed figure at a rectangular easel, block buildings and lollipop trees behind',
+  ruoka: 'ball-headed figures around rectangular counters with cylinder pots and hemisphere bowls, buildings behind',
+  peli: 'ball-headed figures at a flat table with cube dice and cone pawns, block buildings behind',
+  ulkoilu: 'ball-headed figures walking between cone-shaped trees and triangular mountains',
+  opiskelu: 'ball-headed figures at rectangular desks with stacked slab books, buildings behind',
+  yhteiso: 'ball-headed figures walking among rectangular buildings of varying heights with lollipop trees',
+  lapset: 'tall and small ball-headed figures near stacked cube blocks and lollipop trees, buildings behind',
+  default: 'ball-headed figures walking among rectangular buildings of varying heights, lollipop trees, cube blocks',
 }
 
 function getSceneFromTitle(title: string): string | null {
@@ -73,24 +77,47 @@ function getSceneFromTitle(title: string): string | null {
 }
 
 function buildPrompt(title: string, description: string | null, category: string): string {
-  // Prioritize title-based scene for content relevance
   const sceneHint = getSceneFromTitle(title)
     || CATEGORY_SCENES[category]
     || CATEGORY_SCENES.default
 
   return [
-    'Monochromatic 3D render, everything is the exact same single soft mint teal color #ABD9DB.',
-    'The entire scene uses ONLY ONE COLOR: light pastel mint teal #ABD9DB.',
-    'Objects, ground plane, and background are ALL the same uniform #ABD9DB teal.',
-    `Objects in the scene: ${sceneHint}.`,
-    'Smooth matte clay material, no texture variation, no realistic materials.',
-    'No wood, no metal, no grass, no fabric, no realistic textures whatsoever.',
-    'Every single object is identical smooth matte mint teal clay, like a 3D printed model.',
-    'Soft diffused ambient lighting, very subtle shadows, monochrome aesthetic.',
-    'Abstract geometric minimalist shapes, rounded low-poly forms.',
-    'Absolutely no text, no letters, no numbers, no writing, no people, no faces.',
-    'Isometric angle, centered composition, miniature diorama look.',
-    'Monochrome 3D abstract art installation, single uniform color throughout the entire image.',
+    // Exact style reference
+    'Monochromatic 3D claymation-style scene. The exact style is:',
+    'a miniature city made entirely of smooth matte teal clay,',
+    'with simplified ball-headed humanoid figures interacting in the scene.',
+
+    // Color — the critical rule
+    'ENTIRE IMAGE IS ONE COLOR: medium mint teal, hex #7EC8C8.',
+    'Background, ground, sky, buildings, figures, props — ALL #7EC8C8 teal.',
+    'The ground seamlessly blends into the background with no visible horizon.',
+    'Depth is shown ONLY through soft directional shadows, not color changes.',
+
+    // Character description
+    'Characters are simple clay figures: oversized smooth sphere head,',
+    'tiny curved line smile (no eyes, no nose, no other facial features),',
+    'simple cylinder/tube body and limbs, slightly rounded. Like toy figurines.',
+    'Characters are the SAME teal color as everything else.',
+
+    // Scene
+    `Scene: ${sceneHint}.`,
+
+    // Environment
+    'Background: rectangular block buildings of varying heights.',
+    'Trees are lollipop style: sphere on thin cylinder stick.',
+    'All shapes are simple geometric primitives — cubes, cylinders, spheres, cones.',
+
+    // Material and lighting
+    'Smooth matte clay material on everything. No realistic textures.',
+    'No wood, metal, glass, fabric, grass, or any natural material.',
+    'Soft directional light from upper left creating gentle visible shadows for depth.',
+    'Shadows are a slightly darker shade of the same teal, never black or gray.',
+
+    // Restrictions
+    'NO text, letters, numbers, or writing anywhere.',
+    'NO realistic objects — everything is simplified geometric clay.',
+    'NO other colors — no black, white, brown, or any accent color.',
+    'NO detailed facial features — only a tiny smile curve on sphere heads.',
   ].join(' ')
 }
 
