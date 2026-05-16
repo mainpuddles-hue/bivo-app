@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useCallback, useRef } from 'react'
+import { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import {
   View,
   Text,
@@ -17,11 +17,16 @@ import { fonts } from '@/lib/fonts'
 import { getImageUrl } from '@/lib/imageUtils'
 import { formatDateHeader, formatEventTime } from '@/lib/format'
 import { PressableOpacity } from '@/components/ui'
+import { createClient } from '@/lib/supabase/client'
 import type { Post, CommunityEvent } from '@/lib/types'
 
 const CARD_GAP = 10
 const H_PAD = 22
 const MAX_CARDS = 6
+const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+
+// Track which events we've already requested generation for (per session)
+const generationRequested = new Set<string>()
 
 const scrollContentStyle = { paddingHorizontal: H_PAD, gap: CARD_GAP } as const
 
@@ -83,6 +88,46 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
       .slice(0, MAX_CARDS)
   }, [eventPosts, communityEvents])
 
+  // State for AI-generated images (keyed by event id)
+  const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({})
+
+  // Trigger AI image generation for community events without images
+  useEffect(() => {
+    const imagelessCommunityCards = cards.filter(
+      c => c.source === 'community' && !c.imageUrl && !generatedImages[c.id] && !generationRequested.has(c.id),
+    )
+    if (imagelessCommunityCards.length === 0) return
+
+    for (const card of imagelessCommunityCards) {
+      generationRequested.add(card.id)
+
+      const supabase = createClient()
+      supabase.auth.getSession().then(({ data }) => {
+        const token = data.session?.access_token
+        if (!token) return
+
+        fetch(`${FUNCTIONS_URL}/generate-event-image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
+          },
+          body: JSON.stringify({ event_id: card.id }),
+        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.image_url) {
+              setGeneratedImages(prev => ({ ...prev, [card.id]: result.image_url }))
+            }
+          })
+          .catch(() => {
+            // Silent fail — card just stays without image
+          })
+      })
+    }
+  }, [cards, generatedImages])
+
   const cardWidth = cards.length > 1 ? screenWidth - H_PAD * 2 - 24 : screenWidth - H_PAD * 2
   const snapInterval = cardWidth + CARD_GAP
 
@@ -139,9 +184,9 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
           >
             {/* Image area — top of card */}
             <View style={styles.imageArea}>
-              {card.imageUrl ? (
+              {(card.imageUrl || generatedImages[card.id]) ? (
                 <Image
-                  source={{ uri: getImageUrl(card.imageUrl, 'medium')! }}
+                  source={{ uri: card.imageUrl ? getImageUrl(card.imageUrl, 'medium')! : generatedImages[card.id] }}
                   style={StyleSheet.absoluteFill}
                   contentFit="cover"
                   cachePolicy="memory-disk"
