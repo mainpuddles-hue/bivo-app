@@ -406,13 +406,26 @@ function FeedScreenInner() {
 
   const visiblePosts = filteredPosts
 
-  const heroEventPosts = useMemo(
-    () => [...filteredPosts.filter(p => p.type === 'tapahtuma'), ...inlineEvents],
-    [filteredPosts, inlineEvents],
-  )
+  // Fetch hero event posts directly — independent of paginated feed
+  const [heroEventPosts, setHeroEventPosts] = useState<Post[]>([])
+  useEffect(() => {
+    let mounted = true
+    supabase
+      .from('posts')
+      .select('*')
+      .eq('type', 'tapahtuma')
+      .eq('is_active', true)
+      .not('event_date', 'is', null)
+      .order('like_count', { ascending: false })
+      .limit(10)
+      .then(({ data, error }: any) => {
+        if (!mounted || error || !data) return
+        setHeroEventPosts(data as Post[])
+      })
+    return () => { mounted = false }
+  }, [supabase])
 
   // Background AI image generation for imageless hero-eligible events
-  // Generates images in Supabase Storage so they appear in the hero on next feed refresh
   const aiGenRequested = useRef(new Set<string>())
   useEffect(() => {
     const imagelessPosts = heroEventPosts.filter(

@@ -24,8 +24,8 @@ const CARD_GAP = 10
 const H_PAD = 22
 const MAX_CARDS = 6
 
-// Bivo brand gradient for imageless hero cards (from bivoapp.io 3D palette)
-const BRAND_GRADIENT_COLORS = ['#1F5D3F', '#4a8f7a'] as const
+// Bivo brand gradient for imageless hero cards (--color-bivo-live from bivoapp.io)
+const BRAND_GRADIENT_COLORS = ['#93CED0', '#ABD9DB'] as const
 
 const scrollContentStyle = { paddingHorizontal: H_PAD, gap: CARD_GAP } as const
 

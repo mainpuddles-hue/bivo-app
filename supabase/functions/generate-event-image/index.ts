@@ -79,16 +79,18 @@ function buildPrompt(title: string, description: string | null, category: string
     || CATEGORY_SCENES.default
 
   return [
-    'A 3D rendered still life scene in deep muted forest green.',
-    'Primary color: dark green #1F5D3F, secondary: #4a8f7a, accent: #2a7a54.',
+    'Monochromatic 3D render, everything is the exact same single soft mint teal color #ABD9DB.',
+    'The entire scene uses ONLY ONE COLOR: light pastel mint teal #ABD9DB.',
+    'Objects, ground plane, and background are ALL the same uniform #ABD9DB teal.',
     `Objects in the scene: ${sceneHint}.`,
-    'All objects are made of the same matte clay material in deep forest green tones.',
-    'Warm soft lighting from above, gentle shadows on a light cream #F4F4F2 surface.',
-    'Clean warm off-white background.',
-    'Rounded smooth 3D objects, Pixar-style miniature diorama look.',
+    'Smooth matte clay material, no texture variation, no realistic materials.',
+    'No wood, no metal, no grass, no fabric, no realistic textures whatsoever.',
+    'Every single object is identical smooth matte mint teal clay, like a 3D printed model.',
+    'Soft diffused ambient lighting, very subtle shadows, monochrome aesthetic.',
+    'Abstract geometric minimalist shapes, rounded low-poly forms.',
     'Absolutely no text, no letters, no numbers, no writing, no people, no faces.',
-    'Isometric angle, product photography style, centered composition.',
-    'High quality 3D illustration, octane render, studio lighting.',
+    'Isometric angle, centered composition, miniature diorama look.',
+    'Monochrome 3D abstract art installation, single uniform color throughout the entire image.',
   ].join(' ')
 }
 
