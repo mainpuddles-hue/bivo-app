@@ -27,40 +27,68 @@ const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${IMAGE_MO
 const HF_TIMEOUT_MS = 60000 // 60s — image generation is slower
 const STORAGE_BUCKET = 'event-images'
 
-// Category-specific scene elements for prompt enrichment
+// Title-to-scene keyword mapping for content-relevant imagery
+const TITLE_KEYWORDS: [RegExp, string][] = [
+  [/lautapeli|board.?game|peli-ilta/i, 'board game pieces, dice, game tokens on a table, meeples, game cards'],
+  [/jalkapallo|football|futis/i, 'football on a field, goal posts, stadium shapes'],
+  [/koripallo|basketball|basket/i, 'basketball hoop, court lines, bouncing ball'],
+  [/juoks|running|maraton/i, 'running track, finish line, shoe shapes'],
+  [/urhei|sport|liikunt/i, 'sports equipment shapes, balls, rackets, field markings'],
+  [/musiik|music|keikka|konsertti/i, 'musical instruments, guitar, piano keys, vinyl record, musical notes'],
+  [/taide|art|maalaus|piirustus/i, 'paintbrush, canvas, art palette, paint tubes, easel'],
+  [/ruoka|food|kokkaus|kokki|resept/i, 'cooking pot, kitchen utensils, bowls, spoons, cutting board, vegetables'],
+  [/kahvi|coffee|brunch/i, 'coffee cup, saucer, coffee beans, pastries, cafe table'],
+  [/kirja|book|lukupiiri|reading/i, 'open books, reading glasses, bookshelf, stack of books'],
+  [/elokuva|movie|leffa|film/i, 'film reel, movie clapperboard, cinema screen, popcorn bucket'],
+  [/puutarh|garden|piha|istutus/i, 'garden tools, flower pots, watering can, small plants, seeds'],
+  [/retki|hike|patikointi|luonto/i, 'hiking boots, trail path, backpack, compass, pine trees'],
+  [/pyörä|bike|cycling|fillari/i, 'bicycle, wheel spokes, bike helmet, road path'],
+  [/jooga|yoga|meditaat/i, 'yoga mat, meditation cushion, peaceful zen stones, candle'],
+  [/käsityö|craft|neulo|ompel/i, 'yarn balls, knitting needles, fabric, scissors, thread spools'],
+  [/valokuva|photo|kamera/i, 'camera, photo frames, lens, film strip'],
+  [/lasten|kids|lapsi|perhe/i, 'toy blocks, teddy bear, crayons, small toy car, balloons'],
+  [/grilli|bbq|piknik|picnic/i, 'grill, picnic basket, blanket on grass, outdoor plates'],
+]
+
+// Category fallback scenes (used when title keywords don't match)
 const CATEGORY_SCENES: Record<string, string> = {
-  urheilu: 'abstract sports field, geometric ball shapes, movement lines',
-  musiikki: 'abstract musical notes floating, curved sound wave shapes',
-  taide: 'abstract paintbrush strokes, geometric canvas shapes, art studio elements',
-  ruoka: 'abstract food shapes, geometric bowls and plates, kitchen elements',
-  peli: 'abstract board game pieces, dice shapes, geometric game board',
-  ulkoilu: 'abstract trees, park bench shapes, nature elements',
-  opiskelu: 'abstract book shapes, geometric desk, lightbulb shapes',
-  yhteiso: 'abstract group of rounded figures, community gathering shapes',
-  lapset: 'abstract playground shapes, toy blocks, swing set silhouettes',
-  default: 'abstract neighborhood buildings, geometric city blocks, community plaza',
+  urheilu: 'sports equipment, balls, racket, field markings, goal post',
+  musiikki: 'musical instruments, guitar, vinyl record, piano keys',
+  taide: 'paintbrush, canvas, art palette, paint tubes',
+  ruoka: 'cooking pot, kitchen utensils, bowls, cutting board',
+  peli: 'board game pieces, dice, game tokens, meeples, cards on table',
+  ulkoilu: 'pine trees, hiking trail, compass, backpack',
+  opiskelu: 'open books, notebook, pencils, desk lamp',
+  yhteiso: 'park benches, lamppost, neighborhood buildings, mailbox',
+  lapset: 'toy blocks, teddy bear, crayons, balloons',
+  default: 'neighborhood buildings, park bench, lamppost, trees, mailbox',
+}
+
+function getSceneFromTitle(title: string): string | null {
+  const lower = title.toLowerCase()
+  for (const [pattern, scene] of TITLE_KEYWORDS) {
+    if (pattern.test(lower)) return scene
+  }
+  return null
 }
 
 function buildPrompt(title: string, description: string | null, category: string): string {
-  const sceneHint = CATEGORY_SCENES[category] || CATEGORY_SCENES.default
-
-  // Keep the content hint short to avoid the model trying to render text
-  const contentHint = title.length > 60 ? title.slice(0, 60) : title
+  // Prioritize title-based scene for content relevance
+  const sceneHint = getSceneFromTitle(title)
+    || CATEGORY_SCENES[category]
+    || CATEGORY_SCENES.default
 
   return [
-    'Monochromatic teal and mint colored 3D render,',
-    'minimalist geometric scene,',
-    `${sceneHint},`,
-    `inspired by the theme: "${contentHint}",`,
-    'soft diffused studio lighting,',
-    'matte clay-like material,',
-    'smooth rounded shapes, spheres, blocks, arches,',
-    'abstract architectural neighborhood,',
-    'no text, no people, no faces, no letters, no words,',
-    'clean background, subtle shadows,',
-    'color palette: #ABD9DB #7CBFC2 #5AA8AB #3D8E91 #E8F5F5,',
-    'Pixar-style 3D illustration, product render quality,',
-    '4k, high quality',
+    'A 3D rendered still life scene in a single monochromatic teal-green color.',
+    'Exact color: soft muted teal like #9CCFD0 and #B5DFE0.',
+    `Objects in the scene: ${sceneHint}.`,
+    'All objects are the same teal-green color, like they are made from clay or matte plastic.',
+    'Soft diffused overhead lighting, gentle shadows on a flat surface.',
+    'Clean light teal background, no gradients.',
+    'Rounded smooth 3D objects, Pixar-style miniature look.',
+    'Absolutely no text, no letters, no numbers, no writing, no people, no faces.',
+    'Isometric angle, product photography style, centered composition.',
+    'High quality 3D illustration, octane render.',
   ].join(' ')
 }
 

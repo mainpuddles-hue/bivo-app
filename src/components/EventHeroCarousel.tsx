@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react'
+import { memo, useMemo, useState, useCallback, useRef } from 'react'
 import {
   View,
   Text,
@@ -17,16 +17,11 @@ import { fonts } from '@/lib/fonts'
 import { getImageUrl } from '@/lib/imageUtils'
 import { formatDateHeader, formatEventTime } from '@/lib/format'
 import { PressableOpacity } from '@/components/ui'
-import { createClient } from '@/lib/supabase/client'
 import type { Post, CommunityEvent } from '@/lib/types'
 
 const CARD_GAP = 10
 const H_PAD = 22
 const MAX_CARDS = 6
-const FUNCTIONS_URL = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
-
-// Track which events we've already requested generation for (per session)
-const generationRequested = new Set<string>()
 
 const scrollContentStyle = { paddingHorizontal: H_PAD, gap: CARD_GAP } as const
 
@@ -39,10 +34,19 @@ interface EventHeroCarouselProps {
 interface HeroCard {
   id: string
   title: string
-  imageUrl: string | null
+  imageUrl: string
   dateIso: string
   location: string | null
   source: 'post' | 'community'
+  popularity: number
+}
+
+function getPostPopularity(p: Post): number {
+  return (p.like_count || 0) * 2 + (p.comment_count || 0) * 3
+}
+
+function getCommunityPopularity(e: CommunityEvent): number {
+  return (e.participant_count || 0) * 5
 }
 
 export const EventHeroCarousel = memo(function EventHeroCarousel({
@@ -61,72 +65,41 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
   const cards = useMemo<HeroCard[]>(() => {
     const now = Date.now()
 
+    // Only include posts that HAVE images
     const postCards: HeroCard[] = eventPosts
-      .filter(p => p.event_date)
+      .filter(p => p.event_date && p.image_url)
       .map(p => ({
         id: p.id,
         title: p.title,
-        imageUrl: p.image_url,
+        imageUrl: p.image_url!,
         dateIso: p.event_date!,
         location: p.location,
         source: 'post' as const,
+        popularity: getPostPopularity(p),
       }))
 
+    // Only include community events that HAVE images
     const communityCards: HeroCard[] = communityEvents
-      .filter(e => new Date(e.event_date).getTime() > now)
+      .filter(e => new Date(e.event_date).getTime() > now && e.image_url)
       .map(e => ({
         id: e.id,
         title: e.title,
-        imageUrl: e.image_url,
+        imageUrl: e.image_url!,
         dateIso: e.event_date,
         location: e.location_name,
         source: 'community' as const,
+        popularity: getCommunityPopularity(e),
       }))
 
+    // Sort by popularity descending, then by date ascending as tiebreaker
     return [...communityCards, ...postCards]
-      .sort((a, b) => new Date(a.dateIso).getTime() - new Date(b.dateIso).getTime())
+      .sort((a, b) => {
+        const popDiff = b.popularity - a.popularity
+        if (popDiff !== 0) return popDiff
+        return new Date(a.dateIso).getTime() - new Date(b.dateIso).getTime()
+      })
       .slice(0, MAX_CARDS)
   }, [eventPosts, communityEvents])
-
-  // State for AI-generated images (keyed by event id)
-  const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({})
-
-  // Trigger AI image generation for hero events without images
-  useEffect(() => {
-    const imagelessCards = cards.filter(
-      c => !c.imageUrl && !generatedImages[c.id] && !generationRequested.has(c.id),
-    )
-    if (imagelessCards.length === 0) return
-
-    for (const card of imagelessCards) {
-      generationRequested.add(card.id)
-
-      const supabase = createClient()
-      supabase.auth.getSession().then(({ data }) => {
-        const token = data.session?.access_token
-        if (!token) return
-
-        fetch(`${FUNCTIONS_URL}/generate-event-image`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
-          },
-          body: JSON.stringify({ event_id: card.id, source: card.source }),
-        })
-          .then(res => res.json())
-          .then(result => {
-            if (result.image_url) {
-              setGeneratedImages(prev => ({ ...prev, [card.id]: result.image_url }))
-            }
-          })
-          .catch(() => {
-            // Silent fail — card just stays without image
-          })
-      })
-    }
-  }, [cards, generatedImages])
 
   const cardWidth = cards.length > 1 ? screenWidth - H_PAD * 2 - 24 : screenWidth - H_PAD * 2
   const snapInterval = cardWidth + CARD_GAP
@@ -184,16 +157,12 @@ export const EventHeroCarousel = memo(function EventHeroCarousel({
           >
             {/* Image area — top of card */}
             <View style={styles.imageArea}>
-              {(card.imageUrl || generatedImages[card.id]) ? (
-                <Image
-                  source={{ uri: card.imageUrl ? getImageUrl(card.imageUrl, 'medium')! : generatedImages[card.id] }}
-                  style={StyleSheet.absoluteFill}
-                  contentFit="cover"
-                  cachePolicy="memory-disk"
-                />
-              ) : (
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.muted }]} />
-              )}
+              <Image
+                source={{ uri: getImageUrl(card.imageUrl, 'medium')! }}
+                style={StyleSheet.absoluteFill}
+                contentFit="cover"
+                cachePolicy="memory-disk"
+              />
             </View>
 
             {/* Content area — below image */}

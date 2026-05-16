@@ -194,9 +194,6 @@ function FeedScreenInner() {
     return () => { mounted = false }
   }, [supabase])
 
-  // Building card removed — Bivo is neighborhood-based, not building-based.
-  // Geographic feed filtering is handled by useFeedData (bounding box around user location).
-
   // Fetch active polls for feed display
   const [feedPolls, setFeedPolls] = useState<Poll[]>([])
   useEffect(() => {
@@ -413,6 +410,43 @@ function FeedScreenInner() {
     () => [...filteredPosts.filter(p => p.type === 'tapahtuma'), ...inlineEvents],
     [filteredPosts, inlineEvents],
   )
+
+  // Background AI image generation for imageless hero-eligible events
+  // Generates images in Supabase Storage so they appear in the hero on next feed refresh
+  const aiGenRequested = useRef(new Set<string>())
+  useEffect(() => {
+    const imagelessPosts = heroEventPosts.filter(
+      p => p.event_date && !p.image_url && !aiGenRequested.current.has(p.id),
+    )
+    const imagelessCommunity = heroCommunityEvents.filter(
+      e => !e.image_url && !aiGenRequested.current.has(e.id),
+    )
+    const toGenerate: { id: string; source: 'post' | 'community' }[] = [
+      ...imagelessPosts.map(p => ({ id: p.id, source: 'post' as const })),
+      ...imagelessCommunity.map(e => ({ id: e.id, source: 'community' as const })),
+    ]
+    if (toGenerate.length === 0) return
+
+    for (const item of toGenerate) aiGenRequested.current.add(item.id)
+
+    supabase.auth.getSession().then(({ data }) => {
+      const token = data.session?.access_token
+      if (!token) return
+      const functionsUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
+      }
+      for (const item of toGenerate) {
+        fetch(`${functionsUrl}/generate-event-image`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ event_id: item.id, source: item.source }),
+        }).catch(() => {})
+      }
+    })
+  }, [heroEventPosts, heroCommunityEvents, supabase])
 
   // ── Category sections (Wolt-style horizontal scrolling) ──
   const categorySections = useMemo(() => {
