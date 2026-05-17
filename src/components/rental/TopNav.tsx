@@ -41,11 +41,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    height: 56,
+    paddingHorizontal: 22,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
   center: { flex: 1, alignItems: 'center' },
-  title: { fontSize: 16, fontFamily: fonts.bodySemi, fontWeight: '600' },
+  title: { fontSize: 17, fontFamily: fonts.bodySemi, fontWeight: '600' },
   sub: { fontSize: 12, fontFamily: fonts.body, marginTop: 1 },
   trailing: { width: 44, alignItems: 'flex-end' },
 })

@@ -11,7 +11,7 @@ interface SheetProps {
 export function Sheet({ children, padding = 20, style }: SheetProps) {
   const { colors } = useTheme()
   return (
-    <View style={[{ backgroundColor: colors.card, borderRadius: 16, padding }, style]}>
+    <View style={[{ backgroundColor: colors.card, borderRadius: 20, padding }, style]}>
       {children}
     </View>
   )

@@ -17,7 +17,7 @@ export function Eyebrow({ children, style }: EyebrowProps) {
       fontWeight: '600',
       letterSpacing: 1.3,
       textTransform: 'uppercase',
-      color: colors.tertiaryForeground,
+      color: colors.foreground,
       marginBottom: 14,
     }, style]}>
       {children}

@@ -14,7 +14,7 @@ interface BigBtnProps {
 export function BigBtn({ children, onPress, secondary, disabled, style }: BigBtnProps) {
   const { colors } = useTheme()
   const bg = disabled
-    ? colors.tertiaryForeground
+    ? colors.disabledForeground
     : secondary
       ? colors.card
       : colors.foreground
@@ -25,7 +25,7 @@ export function BigBtn({ children, onPress, secondary, disabled, style }: BigBtn
       onPress={onPress}
       disabled={disabled}
       activeOpacity={0.8}
-      style={[styles.btn, { backgroundColor: bg }, secondary && { borderWidth: 1, borderColor: colors.border }, style]}
+      style={[styles.btn, { backgroundColor: bg }, secondary && { borderWidth: 1, borderColor: colors.borderStrong }, style]}
     >
       <Text style={[styles.text, { color: fg }]} numberOfLines={1}>{children}</Text>
     </TouchableOpacity>
@@ -40,5 +40,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  text: { fontSize: 15, fontFamily: fonts.bodySemi, fontWeight: '600' },
+  text: { fontSize: 16, fontFamily: fonts.bodySemi, fontWeight: '600' },
 })

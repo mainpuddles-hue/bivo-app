@@ -14,9 +14,9 @@ export function Pill({ tone = 'on', children }: PillProps) {
   const { colors } = useTheme()
   const tones: Record<PillTone, { bg: string; fg: string; border?: string }> = {
     on: { bg: colors.foreground, fg: colors.primaryForeground },
-    off: { bg: colors.card, fg: colors.foreground, border: colors.border },
+    off: { bg: colors.card, fg: colors.foreground, border: colors.borderStrong },
     soft: { bg: colors.cardElevated, fg: colors.foreground },
-    live: { bg: colors.accentBg, fg: colors.accent },
+    live: { bg: colors.successBg, fg: colors.success },
   }
   const t = tones[tone]
   return (
