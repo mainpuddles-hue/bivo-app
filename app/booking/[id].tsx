@@ -1593,7 +1593,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -1620,7 +1620,7 @@ const s = StyleSheet.create({
   },
   headerSpacer: { width: 36 },
 
-  scrollPadded: { paddingHorizontal: 16, gap: 12 },
+  scrollPadded: { paddingHorizontal: 22, gap: 12 },
   notFound: { fontSize: 16, fontFamily: fonts.body, textAlign: 'center', marginTop: 104, lineHeight: 22 },
 
   // Hero center
@@ -1886,8 +1886,9 @@ const s = StyleSheet.create({
   // Sticky CTA
   stickyWrap: {
     position: 'absolute',
-    left: 16,
-    right: 16,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 22,
   },
   stickyCta: {
     flexDirection: 'row',

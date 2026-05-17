@@ -142,7 +142,7 @@ function ReviewLenderScreenInner() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 110 }]}
+          contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 140 }]}
           keyboardDismissMode="interactive"
         >
           {/* Hero — plain sans (no serif) per handoff §4 */}
@@ -238,7 +238,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -256,7 +256,7 @@ const s = StyleSheet.create({
   },
   headerSpacer: { width: 36, height: 36 },
 
-  content: { paddingHorizontal: 16, gap: 4 },
+  content: { paddingHorizontal: 22, gap: 4 },
 
   hero: { alignItems: 'center', gap: 10, paddingVertical: 14 },
   avatarShadow: {
@@ -296,7 +296,7 @@ const s = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.8,
+    letterSpacing: 0.88,
     textTransform: 'uppercase',
     marginBottom: 10,
   },
@@ -308,7 +308,7 @@ const s = StyleSheet.create({
   },
 
   commentInput: {
-    borderRadius: 18,
+    borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 14,

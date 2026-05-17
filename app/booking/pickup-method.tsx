@@ -233,7 +233,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -255,7 +255,7 @@ const s = StyleSheet.create({
   },
   headerSpacer: { width: 36, height: 36 },
 
-  content: { paddingHorizontal: 16, gap: 14 },
+  content: { paddingHorizontal: 22, gap: 14 },
 
   sectionLabel: {
     fontSize: 11,

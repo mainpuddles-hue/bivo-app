@@ -342,7 +342,7 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 12, gap: 12,
+    paddingHorizontal: 22, paddingBottom: 12, gap: 12,
   },
   backCircle: {
     width: 38, height: 38, borderRadius: 999, borderWidth: 1,
@@ -352,12 +352,12 @@ const s = StyleSheet.create({
   headerTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.15 },
   headerSpacer: { width: 36, height: 36 },
 
-  content: { paddingHorizontal: 16 },
+  content: { paddingHorizontal: 22 },
 
   /* Summary */
   summaryCard: {
     flexDirection: 'row', gap: 12, alignItems: 'center',
-    borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 16,
+    borderRadius: 14, borderWidth: 1, padding: 16, marginBottom: 16,
   },
   summaryImage: { width: 52, height: 52, borderRadius: 12 },
   summaryImagePlaceholder: { width: 52, height: 52, borderRadius: 12 },
@@ -378,7 +378,7 @@ const s = StyleSheet.create({
   },
 
   /* Breakdown */
-  breakdownCard: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, marginBottom: 14 },
+  breakdownCard: { borderRadius: 14, borderWidth: 1, paddingHorizontal: 16, marginBottom: 14 },
   breakdownRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10 },
   breakdownLabel: { fontSize: 13, fontFamily: fonts.body },
   breakdownValue: { fontSize: 13, fontWeight: '500', fontFamily: fonts.bodyMedium },
@@ -411,7 +411,7 @@ const s = StyleSheet.create({
   /* CTA */
   ctaWrap: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    paddingHorizontal: 16, paddingTop: 14,
+    paddingHorizontal: 22, paddingTop: 14,
   },
   ctaBtn: {
     borderRadius: 999, height: 56,

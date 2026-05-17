@@ -235,7 +235,7 @@ const ss = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -248,7 +248,7 @@ const ss = StyleSheet.create({
     fontFamily: fonts.bodySemi, letterSpacing: -0.15, textAlign: 'center',
   },
   headerSpacer: { width: 36, height: 36 },
-  list: { paddingHorizontal: 16, paddingTop: 4 },
+  list: { paddingHorizontal: 22, paddingTop: 4 },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: '600', fontFamily: fonts.heading },
