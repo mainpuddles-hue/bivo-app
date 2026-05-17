@@ -59,7 +59,7 @@ export function scorePost(post: Post, ctx: FeedContext): number {
   const personalScore = Math.min(1, Math.max(0, ctx.personalScores?.get(post.id) ?? 0))
 
   // Time-of-day relevance
-  const hour = new Date().getHours()
+  const hour = new Date(ctx.now ?? Date.now()).getHours()
   let timeRelevance = 0.5 // neutral
   if (hour >= 6 && hour < 10) {
     // Morning: boost needs

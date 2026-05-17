@@ -297,7 +297,7 @@ function NewListingScreenInner() {
         description: description.trim() || '',
         image_url: imageUrls[0] || null,
         location: address.trim() || null,
-        daily_fee: pricingModel === 'free' ? 0 : parseFloat(price) || 0,
+        daily_fee: pricingModel === 'free' ? 0 : (parseFloat(price.replace(',', '.')) || 0),
         tags: tags.length > 0 ? tags : null,
         is_active: !isDraft,
         is_pro_listing: false,

@@ -123,15 +123,11 @@ function getDaysElapsed(start: string): number {
 function formatShortDate(dateStr: string, locale: string): string {
   try {
     const d = new Date(dateStr)
-    const days = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
-    const daysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    const dayNames = locale === 'fi' ? days : daysEn
-    const day = dayNames[d.getDay()]
-    const date = d.getDate()
-    const month = d.getMonth() + 1
-    const hours = d.getHours().toString().padStart(2, '0')
-    const mins = d.getMinutes().toString().padStart(2, '0')
-    return `${day} ${date}.${month} · ${hours}.${mins}`
+    const loc = locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB'
+    const dayShort = d.toLocaleDateString(loc, { weekday: 'short' })
+    const datePart = d.toLocaleDateString(loc, { day: 'numeric', month: 'numeric' })
+    const time = d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' })
+    return `${dayShort} ${datePart} · ${time}`
   } catch {
     return dateStr
   }
@@ -326,10 +322,12 @@ function BookingDetailScreenInner() {
   }, [router])
 
   useEffect(() => {
+    let mounted = true
     setFetchError(false)
     async function load() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
+        if (!mounted) return
         if (user) setUserId(user.id)
         if (!id || !isValidUUID(id as string)) { setLoading(false); return }
 
@@ -429,6 +427,7 @@ function BookingDetailScreenInner() {
       }
     }
     load()
+    return () => { mounted = false }
   }, [id, supabase, retryKey])
 
   // ─── Messaging ───
@@ -632,10 +631,10 @@ function BookingDetailScreenInner() {
     return getStepIndex(booking.status, steps)
   }, [booking, steps])
 
-  const canConfirm = booking?.my_role === 'lender' && booking?.status === 'pending'
-    || booking?.my_role === 'provider' && booking?.status === 'paid'
+  const canConfirm = (booking?.my_role === 'lender' && booking?.status === 'pending')
+    || (booking?.my_role === 'provider' && booking?.status === 'pending')
   const canCancel = booking?.status === 'pending' || booking?.status === 'paid' || booking?.status === 'confirmed'
-  const canComplete = (booking?.my_role === 'lender' && ['active', 'paid', 'confirmed'].includes(booking?.status ?? ''))
+  const canComplete = (booking?.my_role === 'lender' && booking?.status === 'active')
     || (booking?.my_role === 'provider' && booking?.status === 'in_progress')
   const canStart = booking?.my_role === 'provider' && booking?.status === 'confirmed'
 
@@ -983,8 +982,8 @@ function BookingDetailScreenInner() {
                     {actionLoading ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : (
                       <Text style={[s.actionBtnText, { color: colors.primaryForeground }]}>
                         {booking.pickup_method === 'hub'
-                          ? (t('hub.confirmReturn') ?? 'Vahvista palautus hubiin')
-                          : (t('locker.confirmReturn') ?? 'Vahvista palautus lokeroon')}
+                          ? t('hub.confirmReturn')
+                          : t('locker.confirmReturn')}
                       </Text>
                     )}
                   </PressableOpacity>

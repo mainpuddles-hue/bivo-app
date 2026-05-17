@@ -937,7 +937,7 @@ function PostDetailScreenInner() {
     try {
       const bookingStatus = isFreeRental ? 'confirmed' : 'pending'
       const { data: booking, error: bookingError } = await (supabase.from('rental_bookings') as any)
-        .insert({ post_id: id, borrower_id: userId, lender_id: post.user_id, start_date: bookingStartDate, end_date: bookingEndDate, daily_fee: post.daily_fee ?? 0, service_fee: isFreeRental ? 0 : serviceFee, total_amount: isFreeRental ? 0 : bookingTotal, deposit_amount: isFreeRental ? 0 : depositAmount, deposit_status: isFreeRental ? null : 'authorized', status: bookingStatus })
+        .insert({ post_id: id, borrower_id: userId, lender_id: post.user_id, start_date: bookingStartDate, end_date: bookingEndDate, daily_fee: post.daily_fee ?? 0, service_fee: isFreeRental ? 0 : serviceFee, total_amount: isFreeRental ? 0 : bookingTotal, deposit_amount: isFreeRental ? 0 : depositAmount, deposit_status: isFreeRental ? null : 'pending', status: bookingStatus })
         .select('id').single()
       if (bookingError || !booking) { toast.show({ message: t('rental.bookingFailed'), type: 'error' }); setSendingBooking(false); return }
 

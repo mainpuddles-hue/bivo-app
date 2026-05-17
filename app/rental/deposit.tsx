@@ -90,7 +90,7 @@ export default function DepositScreen() {
             <Text style={styles.cardNumber}>•••• 4821</Text>
             <Text style={styles.cardExp}>{t('rentalFlow.validUntil')} 11/27</Text>
           </View>
-          <TouchableOpacity onPress={() => router.push('/payments')}>
+          <TouchableOpacity onPress={() => router.push('/payment-settings' as any)}>
             <Text style={styles.changeLink}>{t('rentalFlow.changeCard')}</Text>
           </TouchableOpacity>
         </Sheet>

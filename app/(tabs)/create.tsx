@@ -624,7 +624,7 @@ export default function CreateScreen() {
           submittingRef.current = false; return
         }
       }
-      if (eventEndTime && eventStartTime && eventEndTime < eventStartTime) {
+      if (eventEndTime && eventStartTime && eventEndTime.padStart(5, '0') < eventStartTime.padStart(5, '0')) {
         toast.show({ message: t('create.endTimeBeforeStart') ?? 'Päättymisaika ei voi olla ennen alkamisaikaa', type: 'error' })
         submittingRef.current = false; return
       }
@@ -752,7 +752,9 @@ export default function CreateScreen() {
         if (eventEndTime && /^\d{1,2}:\d{2}$/.test(eventEndTime)) {
           const [h, m] = eventEndTime.split(':').map(Number)
           if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
-            const d = new Date(eventDate); d.setHours(h, m, 0, 0); eventEndISO = d.toISOString()
+            const d = new Date(eventDate); d.setHours(h, m, 0, 0)
+            if (eventDateISO && d.toISOString() <= eventDateISO) d.setDate(d.getDate() + 1)
+            eventEndISO = d.toISOString()
           }
         }
         const maxAtt = eventMaxCapacity ? parseInt(eventMaxCapacity, 10) : null

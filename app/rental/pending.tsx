@@ -35,7 +35,7 @@ export default function PendingRequestScreen() {
                 return;
               }
             }
-            router.replace('/(tabs)/loans');
+            router.replace('/(tabs)');
           },
         },
       ],
@@ -99,7 +99,7 @@ export default function PendingRequestScreen() {
       </ScrollView>
 
       <View style={[styles.ctaArea, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <BigBtn secondary onPress={() => { if (conversationId) router.push(`/chat/${conversationId}`); }}>
+        <BigBtn secondary onPress={() => { if (conversationId) router.push(`/messages/${conversationId}`); }}>
           {t('rentalFlow.openChat')}
         </BigBtn>
         <BigBtn
