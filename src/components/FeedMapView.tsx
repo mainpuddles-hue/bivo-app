@@ -81,7 +81,6 @@ interface MappablePost {
   post: Post
   latitude: number
   longitude: number
-  approximate: boolean
 }
 
 type SelectedItem =
@@ -136,26 +135,18 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
   }, [posts, activeFilter])
 
   const mappablePosts = useMemo(() => {
-    return filteredPosts.map((p): MappablePost => {
-      if (p.latitude != null && p.longitude != null && p.latitude !== 0 && p.longitude !== 0) {
+    return filteredPosts
+      .filter((p) => p.latitude != null && p.longitude != null && p.latitude !== 0 && p.longitude !== 0)
+      .map((p): MappablePost => {
         // Micro-jitter (~30m) so pins at exact same address don't stack perfectly
         const jitter = deterministicOffset(p.id)
         return {
           post: p,
-          latitude: p.latitude + jitter.dLat * 0.1,
-          longitude: p.longitude + jitter.dLng * 0.1,
-          approximate: false,
+          latitude: p.latitude! + jitter.dLat * 0.1,
+          longitude: p.longitude! + jitter.dLng * 0.1,
         }
-      }
-      const offset = deterministicOffset(p.id)
-      return {
-        post: p,
-        latitude: centerLat + offset.dLat,
-        longitude: centerLng + offset.dLng,
-        approximate: true,
-      }
-    })
-  }, [filteredPosts, centerLat, centerLng])
+      })
+  }, [filteredPosts])
 
   // Only show events when no category filter or tapahtuma filter
   const mappableEvents = useMemo(() => {
@@ -286,7 +277,6 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
               identifier={`p-${mp.post.id}`}
               coordinate={{ latitude: mp.latitude, longitude: mp.longitude }}
               tracksViewChanges={false}
-              opacity={mp.approximate ? 0.65 : 1}
             >
               <View style={s.markerWrap} pointerEvents="none">
                 <View style={[s.markerBubble, { backgroundColor: color }]}>
