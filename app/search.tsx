@@ -780,6 +780,7 @@ function SearchScreenInner() {
         .from('posts')
         .select(POST_SELECT)
         .eq('is_active', true)
+        .or('type.neq.tapahtuma,event_date.is.null,event_date.gte.now()')
         .or(`title.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/[(),]/g, '')}%,description.ilike.%${q.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/[(),]/g, '')}%`)
 
       // Hide disabled category types from search results (same as feed)
@@ -974,6 +975,7 @@ function SearchScreenInner() {
         .from('posts')
         .select(POST_SELECT)
         .eq('is_active', true)
+        .or('type.neq.tapahtuma,event_date.is.null,event_date.gte.now()')
         .or(`title.ilike.%${escapedQ}%,description.ilike.%${escapedQ}%`)
 
       // Hide disabled category types from search results (same as feed)

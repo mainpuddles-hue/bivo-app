@@ -289,7 +289,7 @@ const [editingBio, setEditingBio] = useState(false)
     try {
       const { data } = await supabase
         .from('posts')
-        .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at, expires_at')
+        .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at, expires_at, event_date')
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false })
         .limit(100)
@@ -341,6 +341,7 @@ const [editingBio, setEditingBio] = useState(false)
   const getPostStatus = (post: Post): 'active' | 'expired' | 'closed' => {
     if (!post.is_active) return 'closed'
     if (post.expires_at && new Date(post.expires_at) < new Date()) return 'expired'
+    if ((post as any).type === 'tapahtuma' && (post as any).event_date && new Date((post as any).event_date) < new Date()) return 'expired'
     return 'active'
   }
 

@@ -196,9 +196,10 @@ export default function PublicProfileScreen() {
     // Public posts
     const { data: userPosts } = await supabase
       .from('posts')
-      .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at')
+      .select('id, type, title, created_at, image_url, like_count, comment_count, location, user_id, description, is_pro_listing, tags, daily_fee, is_active, updated_at, event_date')
       .eq('user_id', userId)
       .eq('is_active', true)
+      .or('type.neq.tapahtuma,event_date.is.null,event_date.gte.now()')
       .order('created_at', { ascending: false })
       .limit(20)
     if (!mountedRef.current) return
