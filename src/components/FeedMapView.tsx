@@ -67,8 +67,8 @@ function deterministicOffset(id: string): { dLat: number; dLng: number } {
     hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0
   }
   const angle = ((hash & 0xffff) / 0xffff) * Math.PI * 2
-  // Wider spread to prevent marker stacking (min ~1.5km, max ~4km)
-  const radius = 0.015 + ((hash >>> 16) & 0xfff) / 0xfff * 0.025
+  // Tight spread ~200-400m so pins stay in the correct neighborhood
+  const radius = 0.002 + ((hash >>> 16) & 0xfff) / 0xfff * 0.002
   return {
     dLat: Math.sin(angle) * radius,
     dLng: Math.cos(angle) * radius * 1.8,
@@ -136,7 +136,14 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
   const mappablePosts = useMemo(() => {
     return filteredPosts.map((p): MappablePost => {
       if (p.latitude != null && p.longitude != null && p.latitude !== 0 && p.longitude !== 0) {
-        return { post: p, latitude: p.latitude, longitude: p.longitude, approximate: false }
+        // Micro-jitter (~30m) so pins at exact same address don't stack perfectly
+        const jitter = deterministicOffset(p.id)
+        return {
+          post: p,
+          latitude: p.latitude + jitter.dLat * 0.1,
+          longitude: p.longitude + jitter.dLng * 0.1,
+          approximate: false,
+        }
       }
       const offset = deterministicOffset(p.id)
       return {
@@ -406,7 +413,7 @@ const s = StyleSheet.create({
     fontSize: 11,
     fontFamily: fonts.bodySemi,
     fontWeight: '700',
-    letterSpacing: 0.8,
+    letterSpacing: 0.88,
   },
   markerArrow: {
     width: 0, height: 0,
@@ -424,8 +431,8 @@ const s = StyleSheet.create({
   badgeText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
   // Preview card
   preview: {
-    position: 'absolute', left: 12, right: 12,
-    borderRadius: 20, borderWidth: 1, overflow: 'hidden',
+    position: 'absolute', left: 22, right: 22,
+    borderRadius: 18, borderWidth: 1, overflow: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8,
   },
   previewInner: { flexDirection: 'row', padding: 12, gap: 12 },
@@ -433,7 +440,7 @@ const s = StyleSheet.create({
   previewBody: { flex: 1, gap: 2 },
   previewCatRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   previewDot: { width: 8, height: 8, borderRadius: 4 },
-  previewCat: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.5, lineHeight: 14 },
+  previewCat: { fontSize: 11, fontFamily: fonts.bodySemi, textTransform: 'uppercase', letterSpacing: 0.88, lineHeight: 14 },
   previewTitle: { fontSize: 16, fontFamily: fonts.heading, lineHeight: 21 },
   previewMeta: { fontSize: 12, fontFamily: fonts.body, lineHeight: 16 },
   previewCta: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18, marginTop: 2 },
