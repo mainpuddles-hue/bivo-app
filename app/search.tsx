@@ -1262,6 +1262,22 @@ function SearchScreenInner() {
           </PressableOpacity>
         )}
 
+        {/* "Tallenna haku" banner — shown when results exist and search isn't already saved */}
+        {results.length > 0 && !savedSearches.some(ss => ss.query === query.trim()) && (
+          <PressableOpacity
+            onPress={saveCurrentSearch}
+            accessibilityRole="button"
+            accessibilityLabel={t('search.saveThisSearch')}
+            style={[s.saveBanner, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <Bell size={16} color={colors.foreground} strokeWidth={1.8} />
+            <View style={{ flex: 1 }}>
+              <Text style={[s.saveBannerTitle, { color: colors.foreground }]}>{t('search.saveThisSearch')}</Text>
+              <Text style={[s.saveBannerSub, { color: colors.mutedForeground }]}>{t('search.saveThisSearchHint') ?? 'Saat ilmoituksen uusista osumista'}</Text>
+            </View>
+          </PressableOpacity>
+        )}
+
         {/* "Samankaltaista" section */}
         {similarPosts.length > 0 && (
           <View style={s.similarSection}>
@@ -1275,7 +1291,7 @@ function SearchScreenInner() {
         )}
       </ScrollView>
     )
-  }, [results, similarPosts, query, colors, isDark, t, filters, renderResultRow, renderSimilarCard, loadMore, loadingMore, hasMore, executeSearch])
+  }, [results, similarPosts, query, colors, isDark, t, filters, renderResultRow, renderSimilarCard, loadMore, loadingMore, hasMore, executeSearch, savedSearches, saveCurrentSearch])
 
   const renderEventItem = useCallback(({ item }: { item: typeof eventResults[number] }) => (
     <PressableOpacity
@@ -1724,6 +1740,30 @@ const s = StyleSheet.create({
   loadMoreText: {
     fontSize: 13,
     lineHeight: 18,
+  },
+
+  // ── "Tallenna haku" banner ──
+  saveBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  saveBannerTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    lineHeight: 18,
+  },
+  saveBannerSub: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    lineHeight: 16,
+    marginTop: 1,
   },
 
   // ── "Samankaltaista" section ──

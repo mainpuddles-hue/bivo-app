@@ -21,6 +21,7 @@ import { triggerPush } from '@/lib/pushTrigger'
 import { usePriceSuggestion } from '@/hooks/usePriceSuggestion'
 import { ReportModal } from '@/components/ReportModal'
 import { Avatar } from '@/components/Avatar'
+import { Eyebrow } from '@/components/rental/Eyebrow'
 import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE, suggestDeposit, DEPOSIT_SUGGESTIONS } from '@/lib/constants'
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { FEATURES } from '@/lib/featureFlags'
@@ -1253,6 +1254,9 @@ function PostDetailScreenInner() {
 
         {/* v3 Body */}
         <View style={[styles.bodyCard, { backgroundColor: colors.background }]}>
+          {/* Drag handle */}
+          <View style={styles.dragHandle} />
+
           {/* Closed/inactive banner */}
           {!post.is_active && (
             <View style={[styles.closedBanner, { backgroundColor: `${colors.destructive}15` }]}>
@@ -1372,6 +1376,7 @@ function PostDetailScreenInner() {
           {/* v3 Description — 15px, generous line-height */}
           {post.description ? (
             <View style={styles.descriptionBlock}>
+              <Eyebrow style={{ marginBottom: 8 }}>{t('post.descriptionLabel')}</Eyebrow>
               <Text style={[styles.description, { color: colors.foreground }]} numberOfLines={descriptionExpanded ? undefined : 5}>
                 {post.description}
               </Text>
@@ -2056,9 +2061,15 @@ const styles = StyleSheet.create({
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)' },
   dotActive: { width: 16, backgroundColor: 'white' },
 
+  // v3 Drag handle
+  dragHandle: {
+    width: 36, height: 4, borderRadius: 999,
+    backgroundColor: '#D4D4D1',
+    alignSelf: 'center', marginBottom: 8,
+  },
   // v3 Body card
   bodyCard: {
-    paddingTop: 20, paddingHorizontal: 20, paddingBottom: 16,
+    paddingTop: 14, paddingHorizontal: 20, paddingBottom: 16,
     position: 'relative', zIndex: 2, gap: 14,
   },
   closedBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },

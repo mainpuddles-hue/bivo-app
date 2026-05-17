@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   label: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     letterSpacing: -0.1,
