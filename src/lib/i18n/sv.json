@@ -55,7 +55,9 @@
     "showAll": "Visa alla",
     "showLess": "Visa mindre",
     "image": "Bild",
-    "free": "Gratis"
+    "free": "Gratis",
+    "backToHome": "Tillbaka till startsidan",
+    "pageNotFound": "Sidan hittades inte"
   },
   "gallery": {
     "gestureHint": "Dubbeltryck för att zooma, nyp för att ändra storlek"
@@ -295,7 +297,9 @@
     "category": "Kategori",
     "responseTime": "Svarstid",
     "deposit": "Deposition",
-    "saveFailed": "Kunde inte spara"
+    "saveFailed": "Kunde inte spara",
+    "image": "Bild",
+    "imageIndicator": "Bildsida"
   },
   "offer": {
     "title": "Ge ett bud",
@@ -486,7 +490,9 @@
     "leaveFailed": "Kunde inte lämna",
     "eventNotFound": "Evenemanget hittades inte",
     "loadFailed": "Kunde inte ladda evenemanget",
-    "chatLeaveFailed": "Kunde inte lämna evenemangets chatt"
+    "chatLeaveFailed": "Kunde inte lämna evenemangets chatt",
+    "chatJoinFailed": "Kunde inte gå med i evenemangets chatt",
+    "spotsRemaining": "{count} platser kvar"
   },
   "activity": {
     "activities": "Tillsammans",
@@ -684,7 +690,9 @@
     "sendFirstMessage": "Skicka det första meddelandet för att starta konversationen",
     "rateLimited": "Skickar för snabbt. Vänta lite.",
     "imageTooLarge": "Bilden är för stor (max 10 MB)",
-    "imageUploadFailed": "Bilduppladdning misslyckades"
+    "imageUploadFailed": "Bilduppladdning misslyckades",
+    "addImage": "Lägg till bild",
+    "invalidFileType": "Filtypen stöds inte"
   },
   "conversation": {
     "startPrompt": "Starta en konversation genom att skriva ett meddelande",
@@ -998,7 +1006,15 @@
     "helpTitle": "Hjälp och support",
     "helpFaq": "Vanliga frågor",
     "helpContact": "Kontakta support",
-    "earnings": "Intäkter"
+    "earnings": "Intäkter",
+    "feedbackSubject": "Bivo feedback — {name}",
+    "feedbackBodyPrefix": "Användare",
+    "feedbackBodyEmail": "E-post",
+    "feedbackBodyVersion": "Version",
+    "feedbackDesc": "Berätta om din feedback, förslag eller rapportera en bugg.",
+    "feedbackPlaceholder": "Skriv din feedback här...",
+    "feedbackSent": "Feedback skickad!",
+    "sendFeedback": "Skicka"
   },
   "postCard": {
     "viewListing": "Visa annons",
@@ -1252,7 +1268,29 @@
     "selectPickup": "Välj upphämtningsplats",
     "selectNearestHub": "Välj närmaste hub",
     "loadFailed": "Kunde inte ladda upphämtningsplatser",
-    "noHubs": "Inga upphämtningsplatser tillgängliga"
+    "noHubs": "Inga upphämtningsplatser tillgängliga",
+    "atBorrower": "UTLÅNAD",
+    "collect": "HÄMTA FRÅN HUB",
+    "collectCaption": "Låntagaren har lämnat tillbaka — hämta från hubben.",
+    "confirmCollect": "Bekräfta hämtning från hub",
+    "confirmDropoff": "Bekräfta inlämning till hub",
+    "confirmPickup": "Bekräfta hämtning från hub",
+    "confirmReturn": "Bekräfta retur till hub",
+    "dropoff": "LÄMNA PÅ HUB",
+    "dropoffCaption": "Lämna föremålet på hubben så meddelas låntagaren.",
+    "handoffPoint": "UPPHÄMTNINGSPLATS",
+    "pickup": "HÄMTA FRÅN HUB",
+    "pickupCaption": "Hämta föremålet från hubben när det passar dig.",
+    "return": "RETURNERA TILL HUB",
+    "returnCaption": "Lämna tillbaka föremålet till hubben innan låneperioden slutar.",
+    "returned": "RETURNERAD",
+    "returnedCaption": "Lånet är avslutat — tack.",
+    "waitingDropoff": "VÄNTAR PÅ INLÄMNING",
+    "waitingDropoffCaption": "Du meddelas när föremålet finns att hämta.",
+    "waitingPickup": "VÄNTAR PÅ UPPHÄMTNING",
+    "waitingPickupCaption": "Låntagaren meddelas och hämtar föremålet.",
+    "waitingReturn": "VÄNTAR PÅ RETUR",
+    "waitingReturnCaption": "Du meddelas när föremålet finns på hubben."
   },
   "review": {
     "title": "Recension",
@@ -1369,7 +1407,9 @@
     "overdueWarning": "Föremålet måste returneras! Försenat med {hours} timmar.",
     "penaltyApplied": "Förseningsavgift: {amount}",
     "depositForfeitWarning": "Om föremålet inte returneras inom 7 dagar förverkas depositionen.",
-    "gracePeriod": "Respitperiod (24h)"
+    "gracePeriod": "Respitperiod (24h)",
+    "lender": "Långivare",
+    "cancelBookingConfirm": "Är du säker på att du vill avboka?"
   },
   "rentalFlow": {
     "requestNotFound": "Förfrågan hittades inte",
@@ -1378,44 +1418,37 @@
     "itemFallback": "Föremål",
     "neighborFallback": "Granne",
     "nearbyFallback": "i närheten",
-
     "approveRequest": "Godkänn förfrågan",
     "approveConfirmBody": "Du bekräftar att {{item}} är tillgängligt för låntagaren i {{days}} dygn från och med {{date}}.",
     "approveFailed": "Godkännande misslyckades",
     "pushApprovedTitle": "Din låneförfrågan godkändes",
     "pushApprovedBody": "{{item}} har godkänts. Kom överens om hämtningstid i chatten.",
-
     "rejectRequest": "Avvisa förfrågan",
     "rejectConfirmBody": "Är du säker på att du vill avvisa denna låneförfrågan? Låntagaren meddelas.",
     "rejectFailed": "Avvisning misslyckades",
     "pushRejectedTitle": "Din låneförfrågan avvisades",
     "pushRejectedBody": "{{item}} gick inte den här gången. Bläddra bland andra grannar.",
-
     "markReturned": "Jag har återlämnat",
     "markReturnedBody": "Du bekräftar att du har överlämnat föremålet till ägaren. Ägaren bekräftar mottagandet.",
     "confirmReturn": "Bekräfta återlämning",
     "returnFailed": "Det gick inte att markera återlämningen",
     "pushReturnedTitle": "Föremål återlämnat",
     "pushReturnedBody": "{{item}} har återlämnats. Bekräfta mottagandet.",
-
     "confirmReceipt": "Bekräfta mottagande",
     "confirmReceiptBody": "Du bekräftar att {{item}} har returnerats till dig. Därefter kan ni båda lämna omdömen.",
     "confirmReceiptBtn": "Bekräfta",
     "confirmFailed": "Bekräftelse misslyckades",
     "pushCompletedTitle": "Lånet avslutades",
     "pushCompletedBody": "{{item}} har mottagits. Du kan nu lämna ett omdöme.",
-
     "cancelRequest": "Avbryt förfrågan",
     "cancelConfirmBody": "Är du säker på att du vill avbryta låneförfrågan? Ägaren meddelas.",
     "cancelNo": "Nej",
     "cancelFailed": "Avbrytning misslyckades",
-
     "rentalTitle": "Lån",
     "backToHome": "Tillbaka till startsidan",
     "openChat": "Öppna chatt",
     "showPickupQR": "Visa hämtnings-QR",
     "scanPickupQR": "Skanna hämtnings-QR",
-
     "awaitingResponse": "Väntar på svar",
     "notificationWhenOwnerReplies": "Du meddelas så snart ägaren svarar på din förfrågan.",
     "itemInUse": "Föremålet är i ditt bruk",
@@ -1428,14 +1461,12 @@
     "checkItemCondition": "Kontrollera att föremålet är i bra skick och bekräfta mottagandet.",
     "waitingOwnerConfirm": "Väntar på att ägaren bekräftar att de har fått föremålet.",
     "confirmReceiptAction": "Bekräfta mottagande",
-
     "giveReview": "Lämna omdöme",
     "reviewSent": "Ditt omdöme har skickats",
     "reviewWaitBody": "Den andra partens omdöme visas när den också har skickat sitt, eller efter 14 dagar.",
     "reviews": "Omdömen",
     "fromBorrower": "Från låntagare",
     "fromOwner": "Från ägare",
-
     "requestSent": "Förfrågan skickad",
     "approval": "Godkännande",
     "pending": "väntar…",
@@ -1449,7 +1480,6 @@
     "rentalFee": "Hyra ({{days}} dygn)",
     "deposit": "Deposition",
     "messageToOwner": "Meddelande till ägaren",
-
     "statusNewRequest": "NY FÖRFRÅGAN",
     "statusWantsToLend": "{{name}} vill låna.",
     "statusReplyIn24h": "Svara inom 24 timmar.",
@@ -1470,7 +1500,6 @@
     "statusReviewNow": "Om du inte har lämnat ett omdöme ännu kan du göra det nu.",
     "statusCancelled": "AVBRUTEN",
     "statusLoanCancelled": "Lån avbrutet.",
-
     "requestTitle": "Be om att låna",
     "today": "Idag",
     "tomorrow": "Imorgon",
@@ -1505,7 +1534,6 @@
     "loginRequiredBody": "Du måste vara inloggad för att göra en låneförfrågan.",
     "ownListing": "Din egen annons",
     "cannotBorrowOwnItem": "Du kan inte låna ditt eget föremål.",
-
     "reviewTitle": "Omdöme",
     "rentalNotFound": "Uthyrning hittades inte",
     "cannotReviewThisRental": "Du kan inte betygsätta denna uthyrning",
@@ -1529,7 +1557,6 @@
     "otherReviewVisibleWhenBothSent": "Den andra partens omdöme visas när den också har skickat sitt.",
     "ownerAccusative": "ägaren",
     "borrowerAccusative": "låntagaren",
-
     "documentCondition": "Dokumentera skick",
     "phase2of3": "FAS 2 / 3",
     "takePhotos": "Ta några bilder",
@@ -1549,7 +1576,6 @@
     "photosMissing": "Bilder saknas",
     "photosMissingBody": "Ta minst {{count}} obligatoriska bilder.",
     "unknownError": "Okänt fel",
-
     "scanTitle": "Skanna hämtnings-QR",
     "cameraNeedTitle": "Vi behöver kameran",
     "cameraNeedBody": "Bivo behöver kameraåtkomst för att du ska kunna skanna ägarens hämtnings-QR-kod.",
@@ -1562,7 +1588,6 @@
     "qrWrongRental": "QR-koden tillhör inte detta lån. Kontrollera att du är på rätt förfrågningssida.",
     "pickupConfirmed": "Hämtning bekräftad",
     "pickupConfirmedBody": "Föremålet är nu i ditt bruk. Kom ihåg att återlämna i tid.",
-
     "pendingTitle": "Väntar på svar",
     "requestSentTag": "FÖRFRÅGAN SKICKAD",
     "waitingForOwner": "Väntar på {{name}}",
@@ -1571,7 +1596,6 @@
     "requestRegarding": "Förfrågan gäller",
     "cancelRequestAction": "Avbryt förfrågan",
     "cancelRequestConfirm": "Vill du avbryta låneförfrågan?",
-
     "overdueTitle": "Lån · försenat",
     "lateBy": "{{hours}} T {{minutes}} MIN FÖRSENAT",
     "returnItem": "Återlämna {{item}}",
@@ -1584,7 +1608,6 @@
     "sendMessageWhenOnWay": "Skicka ett meddelande när du är på väg.",
     "onMyWay": "Jag är på väg",
     "requestExtension": "Begär förlängning",
-
     "pickupConfirmedTitle": "Hämtning bekräftad",
     "pickupConfirmedTag": "HÄMTNING BEKRÄFTAD",
     "itemWithYou": "{{item}} är hos dig",
@@ -1595,7 +1618,6 @@
     "checklistParts": "Packa med alla delar",
     "checklistCondition": "Återlämna i överenskommet skick",
     "openActiveRental": "Öppna aktivt lån",
-
     "reviewWaitingTitle": "Omdöme",
     "reviewSentTag": "OMDÖME SKICKAT",
     "waitingForReview": "Väntar på",
@@ -1606,7 +1628,6 @@
     "notYetReviewed": "{{name}} · har inte betygsatt ännu",
     "usually1to2days": "Vanligtvis inom 1–2 dagar",
     "backToFeed": "Tillbaka till flödet",
-
     "pickupMethodTitle": "Hämtning",
     "pickupMethodLabel": "Hämtningssätt",
     "howToPickup": "Hur vill du\nhämta föremålet?",
@@ -1616,7 +1637,6 @@
     "doorstepDesc": "Ägaren lämnar föremålet vid sin adress",
     "continue": "Fortsätt",
     "pickupMethodFailed": "Det gick inte att spara hämtningssätt.",
-
     "depositTitle": "Deposition",
     "confirmDeposit": "BEKRÄFTA DEPOSITION",
     "amountReserved": "{{amount}} € reserveras",
@@ -1631,7 +1651,6 @@
     "changeCard": "Byt",
     "depositReleaseHint": "Depositionen frigörs inom 24 timmar efter återlämning.",
     "confirmAndSend": "Bekräfta och skicka förfrågan",
-
     "rejectedTitle": "Avvisad",
     "notThisTime": "INTE DEN HÄR GÅNGEN",
     "ownerCouldntLend": "{{name}} kunde inte\nlåna ut den här veckan",
@@ -1639,7 +1658,6 @@
     "ownersMessage": "Meddelande från {{name}}",
     "searchAnother": "Sök efter ett annat {{item}}",
     "backToLoans": "Tillbaka till lån",
-
     "depositReleasedTag": "DEPOSITION FRIGJORD",
     "returnsToCard": "återvänder till ditt kort",
     "visibleInStatement": "Syns på kontoutdraget inom 1–3 bankdagar.",
@@ -1647,13 +1665,11 @@
     "daysCount": "{{days}} dagar",
     "finalCost": "Slutkostnad",
     "leaveReview": "Lämna omdöme",
-
     "cancelledTag": "FÖRFRÅGAN AVBRUTEN",
     "cancelledConfirm": "Uppfattat.",
     "ownerNotified": "{{name}} har meddelats.",
     "nothingCharged": "Ingenting debiterades. Du kan fråga igen senare.",
     "backToSearch": "Tillbaka till sökning",
-
     "extendTitle": "Förläng lån",
     "addTime": "LÄGG TILL TID",
     "newReturn": "NY ÅTERLÄMNING",
@@ -1671,7 +1687,6 @@
     "rentalNotFoundShort": "Lån hittades inte.",
     "maxDurationReached": "Lånet är redan {{current}} dygn, maximal tid är {{max}} dygn.",
     "returnFrom": "återlämning {{date}}",
-
     "ownerReviewTitle": "Betygsätt {{name}}",
     "howWasItWith": "Hur gick det med\n{{name}}?",
     "overallRating": "Helhetsomdöme",
@@ -1686,7 +1701,6 @@
     "reviewPublishedSameTime": "{{name}}s omdöme om dig publiceras samtidigt",
     "reviewSentAlert": "Omdöme skickat",
     "reviewSentAlertBody": "Omdömet visas för låntagaren när båda har betygsatt.",
-
     "ownerActiveLent": "Utlånat",
     "activeRental": "Aktivt lån",
     "hoursLeft": "{{hours}} timmar kvar",
@@ -1704,7 +1718,6 @@
     "thisWeek": "Denna vecka",
     "pickupLabel2": "HÄMTAD {{date}}",
     "returnLabel2": "ÅTERLÄMNING {{date}}",
-
     "ownerReturnTitle": "Återlämning",
     "borrowerReturns": "{{name}} ÅTERLÄMNAR",
     "inspectAndRelease": "Inspektera {{item}}\noch frigör deposition",
@@ -1723,7 +1736,6 @@
     "releaseDeposit": "Frigör deposition",
     "returnConfirmed": "Återlämning bekräftad",
     "depositReleasedToBorrower": "Depositionen frigörs till låntagaren.",
-
     "handoverTitle": "Hämtning",
     "showToBorrower": "Visa detta för låntagaren",
     "askBorrowerToScan": "Be låntagaren att skanna koden med sin telefon. När den är skannad är föremålet officiellt deras ansvar.",
@@ -1736,7 +1748,6 @@
     "onlyOwnerCanShow": "Bara ägaren kan visa hämtnings-QR:n.",
     "cannotHandoverInStatus": "Kan inte överlämna när lånet har status \"{{status}}\".",
     "pickupComplete": "Hämtning klar",
-
     "ownerRequestTitle": "Låneförfrågan",
     "loanRequest": "Låneförfrågan",
     "newRequestTag": "NY FÖRFRÅGAN",
@@ -1755,7 +1766,6 @@
     "requestRejected": "Avvisad",
     "requestApprovedBody": "Låneförfrågan godkänd.",
     "requestRejectedBody": "Låneförfrågan avvisad.",
-
     "ownerOverdueTitle": "Försenad",
     "overdueLabel": "Försenad",
     "overdueBadge": "Försenad",
@@ -1765,7 +1775,6 @@
     "sendMessageToBorrower": "Skicka meddelande till låntagaren",
     "contactSupport": "Kontakta support",
     "conversationNotFound": "Konversation hittades inte.",
-
     "loading": "Laddar…",
     "tryAgain": "Försök igen",
     "cameraRollPermission": "Behörighet till bildgalleriet behövs."
@@ -1853,7 +1862,8 @@
     "stepReturned": "Återlämnad",
     "stepInProgress": "Pågår",
     "stepCompleted": "Klar",
-    "stepCancelled": "Avbokad"
+    "stepCancelled": "Avbokad",
+    "alreadyReviewed": "Du har redan recenserat detta"
   },
   "payment": {
     "success": "Betalning lyckades!",
@@ -1893,7 +1903,8 @@
     "commissionInfo": "Bivo tar ut en 10% serviceavgift på alla transaktioner. Leverantören får 90% av priset.",
     "securityNote": "Betalningsdata hanteras av Stripe. Bivo lagrar inte dina kortuppgifter.",
     "startConnect": "Starta Stripe-anslutning",
-    "subscriptionActivating": "Prenumeration aktiveras…"
+    "subscriptionActivating": "Prenumeration aktiveras…",
+    "paymentFailed": "Betalningen misslyckades"
   },
   "push": {
     "permissionDenied": "Aviseringsbehörighet nekad",
@@ -2171,7 +2182,9 @@
     "draftRestored": "Utkast återställt",
     "clearDraft": "Rensa utkast",
     "titlePlaceholder": "T.ex. Borrmaskin att låna, Kallio",
-    "descriptionPlaceholder": "Beskriv: skick, plats, tillgänglighet..."
+    "descriptionPlaceholder": "Beskriv: skick, plats, tillgänglighet...",
+    "invalidFileType": "Filtypen stöds inte",
+    "removeImage": "Ta bort bild"
   },
   "locationPicker": {
     "useCurrentLocation": "Använd nuvarande plats",
@@ -2546,7 +2559,9 @@
     "eventJoined": "gick med i ditt evenemang",
     "loginRequired": "Logga in för att se aviseringar",
     "loginHint": "Logga in för att hålla dig uppdaterad om vad som händer i ditt grannskap.",
-    "unread": "Olästa"
+    "unread": "Olästa",
+    "new": "nya aviseringar",
+    "title": "Aviseringar"
   },
   "map": {
     "locate": "Hitta mig",
@@ -3384,7 +3399,19 @@
     "privacyNote": "Data lagras krypterat. Bivo delar inte den med tredje parter.",
     "verifyingFace": "Verifierar foto...",
     "faceVerified": "Ansiktsverifiering klar!",
-    "noFaceDetected": "Inget ansikte hittades. Prova ett annat foto."
+    "noFaceDetected": "Inget ansikte hittades. Prova ett annat foto.",
+    "digit": "Siffra",
+    "backToApp": "Tillbaka till appen",
+    "errorTitle": "Verifiering misslyckades",
+    "errorMessage": "Något gick fel. Försök igen.",
+    "tryAgain": "Försök igen",
+    "successTitle": "Verifiering lyckades",
+    "successMessage": "Ditt konto har verifierats.",
+    "unlockedTitle": "Nya funktioner upplåsta",
+    "featureBorrow": "Låna föremål",
+    "featureBorrowDesc": "Be om att låna föremål från grannar.",
+    "featureServices": "Tjänster",
+    "featureServicesDesc": "Erbjud och köp tjänster från grannar."
   },
   "addressVerification": {
     "title": "Adressverifiering",
@@ -3701,7 +3728,9 @@
     "emptyDescription": "Skapa din första annons och börja hjälpa grannskapet.",
     "emptyAction": "Skapa annons",
     "createNew": "Skapa ny annons",
-    "menu": "Meny"
+    "menu": "Meny",
+    "activate": "Aktivera",
+    "deactivate": "Inaktivera"
   },
   "returnItem": {
     "title": "Retur",
@@ -3743,7 +3772,13 @@
     "reviewPublished": "Omdöme publicerat",
     "reviewPublishedDesc": "Tack för ditt omdöme!",
     "stars": "stjärnor",
-    "starsAccessibility": "{count} stjärnor"
+    "starsAccessibility": "{count} stjärnor",
+    "tagReturnedOnTime": "Lämnade tillbaka i tid",
+    "tagGoodCondition": "Bra skick",
+    "tagFriendly": "Vänlig",
+    "tagClearComm": "Tydlig kommunikation",
+    "tagExperienced": "Erfaren användare",
+    "tagWouldLendAgain": "Skulle låna ut igen"
   },
   "payouts": {
     "title": "Inkomster",
@@ -3768,7 +3803,9 @@
     "paymentMethod": "BETALNINGSMETOD",
     "cardValid": "Giltig {date}",
     "addPaymentMethod": "Lägg till betalningsmetod",
-    "pay": "Betala"
+    "pay": "Betala",
+    "stripeDescription": "Uthyrning · {title}",
+    "stripeDescriptionDefault": "Bivo-uthyrning"
   },
   "screenError": {
     "title": "Fel",
@@ -3790,6 +3827,93 @@
     "duration3d": "3 dagar",
     "duration7d": "7 dagar",
     "publish": "Publicera omröstning",
-    "newPoll": "Omröstning"
+    "newPoll": "Omröstning",
+    "minOptionsRequired": "Lägg till minst 2 alternativ"
+  },
+  "itemDetail": {
+    "notFound": "Föremålet hittades inte",
+    "notFoundBody": "Annonsen har tagits bort eller länken har gått ut.",
+    "backToHome": "Tillbaka till startsidan",
+    "neighbor": "Granne",
+    "chatOpenFailed": "Kunde inte öppna konversationen. Försök igen.",
+    "availableNow": "Tillgänglig nu",
+    "rentalFee": "HYRA",
+    "perDay": "/dag",
+    "deposit": "DEPOSITION",
+    "refundable": "återbetalas",
+    "free": "GRATIS",
+    "freeBody": "Gratis att hämta. Ingen deposition eller retur krävs, bara kom och hämta.",
+    "neighborInBivo": "Granne på Bivo",
+    "sendMessage": "Skicka meddelande till {name}",
+    "description": "Beskrivning",
+    "ownListing": "Det här är din egen annons.",
+    "freeHint": "Gratis föremål, ingen deposition eller retur.",
+    "reserveForMe": "Reservera åt mig",
+    "requestLoan": "Be om att låna"
+  },
+  "reviewLender": {
+    "title": "Betygsätt långivaren",
+    "heroQuestion": "Hur gick det med {name}?",
+    "heroMeta": "Omdömen hjälper andra grannar och håller gemenskapen rättvis.",
+    "whatWentWell": "VAD GICK BRA",
+    "publicComment": "OFFENTLIG KOMMENTAR",
+    "commentPlaceholder": "Berätta kort hur upplevelsen var…",
+    "footerNote": "Omdömet visas på {name}s profil.",
+    "send": "Skicka omdöme",
+    "published": "Omdöme skickat",
+    "tagFastResponse": "Snabb att svara",
+    "tagFriendly": "Vänlig",
+    "tagGoodCondition": "Bra skick",
+    "tagClearInstr": "Tydliga instruktioner",
+    "tagFlexible": "Flexibelt schema"
+  },
+  "hubPicker": {
+    "title": "Välj hub",
+    "emptyTitle": "Inga hubbar tillgängliga",
+    "emptyBody": "Hubnätverket byggs fortfarande. Gå tillbaka och välj ett annat sätt.",
+    "confirm": "Bekräfta plats"
+  },
+  "locker": {
+    "collectCode": "HÄMTNINGSKOD",
+    "confirmCollect": "Bekräfta hämtning från skåp",
+    "confirmDropoff": "Bekräfta inlämning i skåp",
+    "confirmPickup": "Bekräfta hämtning från skåp",
+    "confirmReturn": "Bekräfta retur till skåp",
+    "dropoffCode": "ÅTKOMSTKOD",
+    "pickupCode": "HÄMTNINGSKOD",
+    "pinDelayed": "PIN-koder skapas när långivaren bekräftar bokningen",
+    "returnCode": "RETURKOD",
+    "validToday": "Giltig idag",
+    "validUntil": "Giltig till"
+  },
+  "lockerPicker": {
+    "title": "Välj Gardi-skåp",
+    "emptyTitle": "Inga skåp tillgängliga",
+    "emptyBody": "Skåpnätverket byggs just nu. Gå tillbaka och välj ett annat sätt.",
+    "confirm": "Bekräfta skåp"
+  },
+  "pickup": {
+    "title": "Välj upphämtningsmetod",
+    "howCopy": "HUR VILL DU HÄMTA?",
+    "helper": "Du kan ändra upphämtningsmetoden innan du bekräftar med långivaren.",
+    "address": "Överenskommen adress",
+    "addressSub": "Möt långivaren personligen",
+    "hub": "TackBird Hub",
+    "hubSub": "{count} hubbar i närheten",
+    "hubEmpty": "Inga hubbar i närheten ännu",
+    "gardi": "Gardi smart skåp",
+    "gardiSub": "24/7 upphämtning med egen PIN-kod",
+    "gardiEmpty": "Skåpnätverket byggs just nu",
+    "empty": "Inte tillgänglig",
+    "lendingThis": "UTLÅNING",
+    "continueToPayment": "Fortsätt till betalning",
+    "continueToHub": "Välj hub",
+    "continueToLocker": "Välj skåp"
+  },
+  "reviews": {
+    "submitted": "Omdöme skickat"
+  },
+  "splash": {
+    "tagline": "Ditt grannskap marknadsplats"
   }
 }

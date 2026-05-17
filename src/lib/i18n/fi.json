@@ -55,7 +55,9 @@
     "showAll": "Näytä kaikki",
     "showLess": "Näytä vähemmän",
     "image": "Kuva",
-    "free": "Ilmainen"
+    "free": "Ilmainen",
+    "backToHome": "Takaisin etusivulle",
+    "pageNotFound": "Sivua ei löytynyt"
   },
   "gallery": {
     "gestureHint": "Kaksoisnapauta zoomataksesi, nipistä suurentaaksesi"
@@ -295,7 +297,9 @@
     "category": "Kategoria",
     "responseTime": "Vastausaika",
     "deposit": "Vakuus",
-    "saveFailed": "Tallennus epäonnistui"
+    "saveFailed": "Tallennus epäonnistui",
+    "image": "Kuva",
+    "imageIndicator": "Kuvasivu"
   },
   "offer": {
     "title": "Tee tarjous",
@@ -486,7 +490,9 @@
     "joinedSuccess": "Liityit tapahtumaan!",
     "joinPending": "Pyyntö lähetetty",
     "eventPending": "Päivä ei vahvistettu",
-    "chatLeaveFailed": "Chat-jäsenyyden poisto epäonnistui"
+    "chatLeaveFailed": "Chat-jäsenyyden poisto epäonnistui",
+    "chatJoinFailed": "Chattiin liittyminen epäonnistui",
+    "spotsRemaining": "{count} paikkaa jäljellä"
   },
   "activity": {
     "activities": "Porukalla",
@@ -684,7 +690,9 @@
     "sendFirstMessage": "Lähetä ensimmäinen viesti aloittaaksesi keskustelun",
     "rateLimited": "Liian monta viestiä. Odota hetki.",
     "imageTooLarge": "Kuva on liian suuri (max 10 Mt)",
-    "imageUploadFailed": "Kuvan lataus epäonnistui"
+    "imageUploadFailed": "Kuvan lataus epäonnistui",
+    "addImage": "Lisää kuva",
+    "invalidFileType": "Tiedostotyyppi ei ole tuettu"
   },
   "conversation": {
     "startPrompt": "Aloita keskustelu kirjoittamalla viesti",
@@ -998,7 +1006,15 @@
     "helpTitle": "Ohje ja tuki",
     "helpFaq": "Usein kysytyt kysymykset",
     "helpContact": "Ota yhteyttä tukeen",
-    "earnings": "Tulot"
+    "earnings": "Tulot",
+    "feedbackSubject": "Bivo palaute — {name}",
+    "feedbackBodyPrefix": "Käyttäjä",
+    "feedbackBodyEmail": "Email",
+    "feedbackBodyVersion": "Versio",
+    "feedbackDesc": "Kerro meille palautteesi, ehdotuksesi tai ilmoita virheestä.",
+    "feedbackPlaceholder": "Kirjoita palautteesi tähän...",
+    "feedbackSent": "Palaute lähetetty!",
+    "sendFeedback": "Lähetä"
   },
   "postCard": {
     "viewListing": "Katso ilmoitus",
@@ -1252,7 +1268,29 @@
     "selectPickup": "Valitse noutopiste",
     "selectNearestHub": "Valitse läheisin hub-piste",
     "loadFailed": "Noutopisteiden lataaminen epäonnistui",
-    "noHubs": "Ei noutopisteitä saatavilla"
+    "noHubs": "Ei noutopisteitä saatavilla",
+    "atBorrower": "LAINASSA",
+    "collect": "NOUDA HUBISTA",
+    "collectCaption": "Lainaaja palautti — käy noutamassa.",
+    "confirmCollect": "Vahvista nouto hubista",
+    "confirmDropoff": "Vahvista jätetty hubiin",
+    "confirmPickup": "Vahvista nouto hubista",
+    "confirmReturn": "Vahvista palautus hubiin",
+    "dropoff": "JÄTÄ HUBIIN",
+    "dropoffCaption": "Jätä laite hubiin niin lainaaja saa ilmoituksen.",
+    "handoffPoint": "NOUTOPISTE",
+    "pickup": "NOUDA HUBISTA",
+    "pickupCaption": "Käy noutamassa laite hubista milloin sinulle sopii.",
+    "return": "PALAUTA HUBIIN",
+    "returnCaption": "Palauta laite hubiin loppukauden mennessä.",
+    "returned": "PALAUTETTU",
+    "returnedCaption": "Lainaus on päätössä — kiitos.",
+    "waitingDropoff": "ODOTTAA TOIMITUSTA",
+    "waitingDropoffCaption": "Saat ilmoituksen kun laite on hubissa noudettavissa.",
+    "waitingPickup": "ODOTTAA NOUTOA",
+    "waitingPickupCaption": "Lainaaja saa ilmoituksen ja käy hakemassa.",
+    "waitingReturn": "ODOTTAA PALAUTUSTA",
+    "waitingReturnCaption": "Saat ilmoituksen kun laite on hubissa."
   },
   "review": {
     "title": "Arvostelu",
@@ -1369,7 +1407,9 @@
     "disputeDescriptionPlaceholder": "Kuvaile ongelma...",
     "uploadPhotosButton": "Lataa kuvat",
     "comparePhotos": "Vertaa kuvia",
-    "gracePeriod": "Grace-aika (24h)"
+    "gracePeriod": "Grace-aika (24h)",
+    "lender": "Lainanantaja",
+    "cancelBookingConfirm": "Haluatko varmasti peruuttaa varauksen?"
   },
   "rentalFlow": {
     "requestNotFound": "Pyyntöä ei löytynyt",
@@ -1378,44 +1418,37 @@
     "itemFallback": "Tavara",
     "neighborFallback": "Naapuri",
     "nearbyFallback": "lähellä",
-
     "approveRequest": "Hyväksy pyyntö",
     "approveConfirmBody": "Vahvistat, että {{item}} on {{date}} alkaen {{days}} vrk ajan lainaajan käytössä.",
     "approveFailed": "Hyväksyntä epäonnistui",
     "pushApprovedTitle": "Lainapyyntösi hyväksyttiin",
     "pushApprovedBody": "{{item}} on hyväksytty. Sopikaa noutoaika keskustelussa.",
-
     "rejectRequest": "Hylkää pyyntö",
     "rejectConfirmBody": "Haluatko varmasti hylätä tämän lainapyynnön? Lainaaja saa ilmoituksen.",
     "rejectFailed": "Hylkäys epäonnistui",
     "pushRejectedTitle": "Lainapyyntösi hylättiin",
     "pushRejectedBody": "{{item}} ei tällä kertaa onnistunut. Selaa muita naapureita.",
-
     "markReturned": "Olen palauttanut",
     "markReturnedBody": "Vahvistat, että olet luovuttanut tavaran omistajalle. Omistaja vahvistaa vastaanoton.",
     "confirmReturn": "Vahvista palautus",
     "returnFailed": "Palautuksen merkitseminen epäonnistui",
     "pushReturnedTitle": "Tavara palautettu",
     "pushReturnedBody": "{{item}} on palautettu. Vahvista vastaanotto.",
-
     "confirmReceipt": "Vahvista vastaanotto",
     "confirmReceiptBody": "Vahvistat, että {{item}} on palautunut sinulle. Tämän jälkeen voitte molemmat jättää arviot.",
     "confirmReceiptBtn": "Vahvistan",
     "confirmFailed": "Vahvistus epäonnistui",
     "pushCompletedTitle": "Lainaus päättyi",
     "pushCompletedBody": "{{item}} on vastaanotettu. Voit nyt jättää arvion.",
-
     "cancelRequest": "Peruuta pyyntö",
     "cancelConfirmBody": "Haluatko varmasti peruuttaa lainapyynnön? Omistaja saa ilmoituksen.",
     "cancelNo": "En",
     "cancelFailed": "Peruutus epäonnistui",
-
     "rentalTitle": "Lainaus",
     "backToHome": "Takaisin etusivulle",
     "openChat": "Avaa keskustelu",
     "showPickupQR": "Näytä nouto-QR",
     "scanPickupQR": "Skannaa nouto-QR",
-
     "awaitingResponse": "Odotetaan vastausta",
     "notificationWhenOwnerReplies": "Saat ilmoituksen heti kun omistaja vastaa pyyntöösi.",
     "itemInUse": "Tavara on käytössäsi",
@@ -1428,14 +1461,12 @@
     "checkItemCondition": "Tarkista, että tavara on kunnossa, ja vahvista vastaanotto.",
     "waitingOwnerConfirm": "Odotetaan, että omistaja vahvistaa saaneensa tavaran.",
     "confirmReceiptAction": "Vahvistan vastaanoton",
-
     "giveReview": "Anna arvio",
     "reviewSent": "Arviosi lähetetty",
     "reviewWaitBody": "Toisen osapuolen arvio tulee näkyviin kun hän on myös lähettänyt sen, tai 14 päivän kuluttua.",
     "reviews": "Arviot",
     "fromBorrower": "Lainaajalta",
     "fromOwner": "Omistajalta",
-
     "requestSent": "Pyyntö lähetetty",
     "approval": "Hyväksyntä",
     "pending": "odottaa…",
@@ -1449,7 +1480,6 @@
     "rentalFee": "Vuokra ({{days}} vrk)",
     "deposit": "Vakuus",
     "messageToOwner": "Viesti omistajalle",
-
     "statusNewRequest": "UUSI PYYNTÖ",
     "statusWantsToLend": "{{name}} haluaa lainata.",
     "statusReplyIn24h": "Vastaa 24 h sisällä.",
@@ -1470,7 +1500,6 @@
     "statusReviewNow": "Jos et vielä arvioinut, sen voi tehdä nyt.",
     "statusCancelled": "PERUUTETTU",
     "statusLoanCancelled": "Lainaus peruutettu.",
-
     "requestTitle": "Pyydä lainaksi",
     "today": "Tänään",
     "tomorrow": "Huomenna",
@@ -1505,7 +1534,6 @@
     "loginRequiredBody": "Sinun täytyy olla kirjautunut tehdäksesi lainapyynnön.",
     "ownListing": "Oma ilmoituksesi",
     "cannotBorrowOwnItem": "Et voi lainata omaa tavaraasi.",
-
     "reviewTitle": "Arvio",
     "rentalNotFound": "Vuokrausta ei löytynyt",
     "cannotReviewThisRental": "Et voi arvioida tätä vuokrausta",
@@ -1529,7 +1557,6 @@
     "otherReviewVisibleWhenBothSent": "Toisen osapuolen arvio tulee näkyviin kun hän on myös lähettänyt sen.",
     "ownerAccusative": "omistajaa",
     "borrowerAccusative": "lainaajaa",
-
     "documentCondition": "Dokumentoi kunto",
     "phase2of3": "VAIHE 2 / 3",
     "takePhotos": "Ota muutama kuva",
@@ -1549,7 +1576,6 @@
     "photosMissing": "Kuvat puuttuvat",
     "photosMissingBody": "Ota vähintään {{count}} pakollista kuvaa.",
     "unknownError": "Tuntematon virhe",
-
     "scanTitle": "Skannaa nouto-QR",
     "cameraNeedTitle": "Tarvitsemme kameran",
     "cameraNeedBody": "Bivo tarvitsee pääsyn kameraan jotta voit skannata omistajan näyttämän nouto-QR-koodin.",
@@ -1562,7 +1588,6 @@
     "qrWrongRental": "QR ei kuulu tähän lainaan. Tarkista että olet oikealla pyyntösivulla.",
     "pickupConfirmed": "Nouto vahvistettu",
     "pickupConfirmedBody": "Tavara on nyt sinun käytössäsi. Muista palauttaa sovittuna aikana.",
-
     "pendingTitle": "Odottaa vastausta",
     "requestSentTag": "PYYNTÖ LÄHETETTY",
     "waitingForOwner": "Odottaa {{name}}",
@@ -1571,7 +1596,6 @@
     "requestRegarding": "Pyyntö koskee",
     "cancelRequestAction": "Peruuta pyyntö",
     "cancelRequestConfirm": "Haluatko perua lainapyynnön?",
-
     "overdueTitle": "Laina · myöhässä",
     "lateBy": "{{hours}} T {{minutes}} MIN MYÖHÄSSÄ",
     "returnItem": "Palauta {{item}}",
@@ -1584,7 +1608,6 @@
     "sendMessageWhenOnWay": "Lähetä viesti kun olet matkalla.",
     "onMyWay": "Olen matkalla",
     "requestExtension": "Pyydä virallinen pidennys",
-
     "pickupConfirmedTitle": "Nouto vahvistettu",
     "pickupConfirmedTag": "NOUTO VAHVISTETTU",
     "itemWithYou": "{{item}} on sinulla",
@@ -1595,7 +1618,6 @@
     "checklistParts": "Pakkaa kaikki osat mukaan",
     "checklistCondition": "Palauta sovitussa kunnossa",
     "openActiveRental": "Avaa aktiivinen laina",
-
     "reviewWaitingTitle": "Arviointi",
     "reviewSentTag": "ARVIO LÄHETETTY",
     "waitingForReview": "Odotetaan",
@@ -1606,7 +1628,6 @@
     "notYetReviewed": "{{name}} · ei vielä arvioinut",
     "usually1to2days": "Yleensä 1–2 päivän kuluessa",
     "backToFeed": "Palaa etusivulle",
-
     "pickupMethodTitle": "Nouto",
     "pickupMethodLabel": "Noutotapa",
     "howToPickup": "Miten haluat\nnoutaa tavaran?",
@@ -1616,7 +1637,6 @@
     "doorstepDesc": "Omistaja jättää tavaran osoitteeseensa",
     "continue": "Jatka",
     "pickupMethodFailed": "Noutotavan tallennus epäonnistui.",
-
     "depositTitle": "Vakuus",
     "confirmDeposit": "VARMISTA VAKUUS",
     "amountReserved": "{{amount}} € varataan",
@@ -1631,7 +1651,6 @@
     "changeCard": "Vaihda",
     "depositReleaseHint": "Vakuus vapautetaan 24 t kuluessa palautuksesta.",
     "confirmAndSend": "Vahvista ja lähetä pyyntö",
-
     "rejectedTitle": "Hylätty",
     "notThisTime": "EI TÄLLÄ KERTAA",
     "ownerCouldntLend": "{{name}} ei voinut\nlainata tällä viikolla",
@@ -1639,7 +1658,6 @@
     "ownersMessage": "{{name}}n viesti",
     "searchAnother": "Etsi toinen {{item}}",
     "backToLoans": "Palaa lainoihin",
-
     "depositReleasedTag": "VAKUUS VAPAUTETTU",
     "returnsToCard": "palaa kortillesi",
     "visibleInStatement": "Näkyy tiliotteella 1–3 arkipäivän kuluessa.",
@@ -1647,13 +1665,11 @@
     "daysCount": "{{days}} päivää",
     "finalCost": "Lopullinen kulu",
     "leaveReview": "Jätä arvio",
-
     "cancelledTag": "PYYNTÖ PERUTTU",
     "cancelledConfirm": "Selvä.",
     "ownerNotified": "{{name}} sai ilmoituksen.",
     "nothingCharged": "Mitään ei veloitettu. Voit kysyä uudestaan myöhemmin.",
     "backToSearch": "Takaisin etsimään",
-
     "extendTitle": "Pidennä laina",
     "addTime": "LISÄÄ AIKAA",
     "newReturn": "UUSI PALAUTUS",
@@ -1671,7 +1687,6 @@
     "rentalNotFoundShort": "Lainaa ei löytynyt.",
     "maxDurationReached": "Laina on jo {{current}} vuorokautta, enimmäisaika on {{max}} vuorokautta.",
     "returnFrom": "palautus {{date}}",
-
     "ownerReviewTitle": "Arvioi {{name}}",
     "howWasItWith": "Miten meni {{name}}n\nkanssa?",
     "overallRating": "Yleisarvio",
@@ -1686,7 +1701,6 @@
     "reviewPublishedSameTime": "{{name}}n arvio sinusta julkaistaan samaan aikaan",
     "reviewSentAlert": "Arvio lähetetty",
     "reviewSentAlertBody": "Arvio näkyy lainaajalle, kun molemmat ovat arvioineet.",
-
     "ownerActiveLent": "Annettu",
     "activeRental": "Aktiivinen laina",
     "hoursLeft": "{{hours}} tuntia jäljellä",
@@ -1704,7 +1718,6 @@
     "thisWeek": "Tämä viikko",
     "pickupLabel2": "NOUDETTU {{date}}",
     "returnLabel2": "PALAUTUS {{date}}",
-
     "ownerReturnTitle": "Palautus",
     "borrowerReturns": "{{name}} PALAUTTAA",
     "inspectAndRelease": "Tarkista {{item}}\nja vapauta vakuus",
@@ -1723,7 +1736,6 @@
     "releaseDeposit": "Vapauta vakuus",
     "returnConfirmed": "Palautus vahvistettu",
     "depositReleasedToBorrower": "Vakuus vapautetaan lainaajalle.",
-
     "handoverTitle": "Nouto",
     "showToBorrower": "Näytä tämä lainaajalle",
     "askBorrowerToScan": "Pyydä lainaajaa skannaamaan koodi puhelimellaan. Kun se on skannattu, tavara on virallisesti heidän vastuullaan.",
@@ -1736,7 +1748,6 @@
     "onlyOwnerCanShow": "Vain omistaja voi näyttää nouto-QR:n.",
     "cannotHandoverInStatus": "Lainaa ei voi luovuttaa kun se on tilassa \"{{status}}\".",
     "pickupComplete": "Nouto valmis",
-
     "ownerRequestTitle": "Lainapyyntö",
     "loanRequest": "Lainapyyntö",
     "newRequestTag": "UUSI PYYNTÖ",
@@ -1755,7 +1766,6 @@
     "requestRejected": "Hylätty",
     "requestApprovedBody": "Lainauspyyntö hyväksytty.",
     "requestRejectedBody": "Lainauspyyntö hylätty.",
-
     "ownerOverdueTitle": "Myöhässä",
     "overdueLabel": "Myöhässä",
     "overdueBadge": "Myöhässä",
@@ -1765,7 +1775,6 @@
     "sendMessageToBorrower": "Lähetä viesti lainaajalle",
     "contactSupport": "Ota yhteyttä tukeen",
     "conversationNotFound": "Keskustelua ei löydy.",
-
     "loading": "Ladataan…",
     "tryAgain": "Yritä uudelleen",
     "cameraRollPermission": "Kuvagallerian käyttölupa tarvitaan."
@@ -1853,7 +1862,8 @@
     "stepReturned": "Palautettu",
     "stepInProgress": "Käynnissä",
     "stepCompleted": "Valmis",
-    "stepCancelled": "Peruutettu"
+    "stepCancelled": "Peruutettu",
+    "alreadyReviewed": "Olet jo arvostellut tämän"
   },
   "payment": {
     "success": "Maksu onnistui!",
@@ -1893,7 +1903,8 @@
     "commissionInfo": "Bivo veloittaa 10% palvelumaksun kaikista transaktioista. Palveluntarjoaja saa 90% hinnasta.",
     "securityNote": "Maksutiedot käsittelee Stripe. Bivo ei tallenna korttitietojasi.",
     "startConnect": "Aloita Stripe-yhdistäminen",
-    "subscriptionActivating": "Tilaus aktivoituu…"
+    "subscriptionActivating": "Tilaus aktivoituu…",
+    "paymentFailed": "Maksu epäonnistui"
   },
   "push": {
     "permissionDenied": "Ilmoituslupa evätty",
@@ -2171,7 +2182,9 @@
     "draftRestored": "Luonnos palautettu",
     "clearDraft": "Tyhjennä luonnos",
     "titlePlaceholder": "Esim. Akkuporakone lainaan, Kallio",
-    "descriptionPlaceholder": "Kerro tarkemmin: kunto, sijainti, milloin saatavilla..."
+    "descriptionPlaceholder": "Kerro tarkemmin: kunto, sijainti, milloin saatavilla...",
+    "invalidFileType": "Tiedostotyyppi ei ole tuettu",
+    "removeImage": "Poista kuva"
   },
   "locationPicker": {
     "useCurrentLocation": "Käytä nykyistä sijaintia",
@@ -2546,7 +2559,9 @@
     "eventJoined": "liittyi tapahtumaasi",
     "loginRequired": "Kirjaudu sisään nähdäksesi ilmoitukset",
     "loginHint": "Kirjaudu sisään pysyäksesi ajan tasalla naapurustosi tapahtumista.",
-    "unread": "Lukemattomat"
+    "unread": "Lukemattomat",
+    "new": "uusia ilmoituksia",
+    "title": "Ilmoitukset"
   },
   "map": {
     "locate": "Paikanna minut",
@@ -3384,7 +3399,19 @@
     "privacyNote": "Tiedot säilytetään salattuna. Bivo ei jaa niitä kolmansille osapuolille.",
     "verifyingFace": "Tarkistetaan kasvokuvaa...",
     "faceVerified": "Kasvokuva vahvistettu!",
-    "noFaceDetected": "Kasvoja ei tunnistettu. Kokeile toista kuvaa."
+    "noFaceDetected": "Kasvoja ei tunnistettu. Kokeile toista kuvaa.",
+    "digit": "Numero",
+    "backToApp": "Takaisin sovellukseen",
+    "errorTitle": "Vahvistus epäonnistui",
+    "errorMessage": "Jokin meni pieleen. Yritä uudelleen.",
+    "tryAgain": "Yritä uudelleen",
+    "successTitle": "Vahvistus onnistui",
+    "successMessage": "Tilisi on nyt vahvistettu.",
+    "unlockedTitle": "Uusia ominaisuuksia avattu",
+    "featureBorrow": "Lainaa tavaroita",
+    "featureBorrowDesc": "Pyydä lainaksi naapureiden tavaroita.",
+    "featureServices": "Palvelut",
+    "featureServicesDesc": "Tarjoa ja osta palveluita naapureilta."
   },
   "addressVerification": {
     "title": "Osoitevahvistus",
@@ -3701,7 +3728,9 @@
     "emptyDescription": "Luo ensimmäinen ilmoituksesi ja aloita naapuruston palveleminen.",
     "emptyAction": "Luo ilmoitus",
     "createNew": "Luo uusi ilmoitus",
-    "menu": "Valikko"
+    "menu": "Valikko",
+    "activate": "Aktivoi",
+    "deactivate": "Deaktivoi"
   },
   "returnItem": {
     "title": "Palautus",
@@ -3743,7 +3772,13 @@
     "reviewPublished": "Arvio julkaistu",
     "reviewPublishedDesc": "Kiitos arviostasi!",
     "stars": "tähteä",
-    "starsAccessibility": "{count} tähteä"
+    "starsAccessibility": "{count} tähteä",
+    "tagReturnedOnTime": "Palautti ajoissa",
+    "tagGoodCondition": "Hyvässä kunnossa",
+    "tagFriendly": "Ystävällinen",
+    "tagClearComm": "Kommunikoi selvästi",
+    "tagExperienced": "Kokenut käyttäjä",
+    "tagWouldLendAgain": "Lainaisin uudestaan"
   },
   "payouts": {
     "title": "Tulot",
@@ -3768,7 +3803,9 @@
     "paymentMethod": "MAKSUTAPA",
     "cardValid": "Voimassa {date}",
     "addPaymentMethod": "Lisää maksutapa",
-    "pay": "Maksa"
+    "pay": "Maksa",
+    "stripeDescription": "Lainaus · {title}",
+    "stripeDescriptionDefault": "Bivo-lainaus"
   },
   "screenError": {
     "title": "Virhe",
@@ -3790,6 +3827,93 @@
     "duration3d": "3 päivää",
     "duration7d": "7 päivää",
     "publish": "Julkaise kysely",
-    "newPoll": "Kysely"
+    "newPoll": "Kysely",
+    "minOptionsRequired": "Lisää vähintään 2 vaihtoehtoa"
+  },
+  "itemDetail": {
+    "notFound": "Tavaraa ei löytynyt",
+    "notFoundBody": "Ilmoitus on poistettu tai linkki on vanhentunut.",
+    "backToHome": "Takaisin etusivulle",
+    "neighbor": "Naapuri",
+    "chatOpenFailed": "Keskustelun avaaminen epäonnistui. Yritä uudelleen.",
+    "availableNow": "Vapaana nyt",
+    "rentalFee": "VUOKRA",
+    "perDay": "/vrk",
+    "deposit": "VAKUUS",
+    "refundable": "palautetaan",
+    "free": "ILMAINEN",
+    "freeBody": "Vapaa noudettavaksi. Ei vakuutta eikä palautusta, hae vain paikan päältä.",
+    "neighborInBivo": "Naapuri Bivossa",
+    "sendMessage": "Lähetä viesti käyttäjälle {name}",
+    "description": "Kuvaus",
+    "ownListing": "Tämä on oma ilmoituksesi.",
+    "freeHint": "Ilmainen tavara, ei vakuutta eikä palautusta.",
+    "reserveForMe": "Varaa itselleni",
+    "requestLoan": "Pyydä lainaksi"
+  },
+  "reviewLender": {
+    "title": "Arvioi lainanantaja",
+    "heroQuestion": "Miten {name} onnistui?",
+    "heroMeta": "Arvio auttaa muita naapureita ja pitää yhteisön reiluna.",
+    "whatWentWell": "MIKÄ TOIMI HYVIN",
+    "publicComment": "JULKINEN KOMMENTTI",
+    "commentPlaceholder": "Kerro lyhyesti, miten kokemus meni…",
+    "footerNote": "Arvio näytetään {name} profiilissa.",
+    "send": "Lähetä arvio",
+    "published": "Arvio lähetetty",
+    "tagFastResponse": "Nopea vastaus",
+    "tagFriendly": "Ystävällinen",
+    "tagGoodCondition": "Hyvässä kunnossa",
+    "tagClearInstr": "Selkeät ohjeet",
+    "tagFlexible": "Joustava aikataulu"
+  },
+  "hubPicker": {
+    "title": "Valitse hub",
+    "emptyTitle": "Ei hubeja saatavilla",
+    "emptyBody": "Hub-verkko on vielä rakenteilla. Palaa edelliseen ja valitse toinen tapa.",
+    "confirm": "Vahvista paikka"
+  },
+  "locker": {
+    "collectCode": "NOUTOKOODI",
+    "confirmCollect": "Vahvista nouto lokerosta",
+    "confirmDropoff": "Vahvista jätetty lokeroon",
+    "confirmPickup": "Vahvista nouto lokerosta",
+    "confirmReturn": "Vahvista palautus lokeroon",
+    "dropoffCode": "AVAUSKOODI",
+    "pickupCode": "NOUTOKOODI",
+    "pinDelayed": "PIN-koodit luodaan kun lainanantaja vahvistaa varauksen",
+    "returnCode": "PALAUTUSKOODI",
+    "validToday": "Voimassa tänään",
+    "validUntil": "Voimassa"
+  },
+  "lockerPicker": {
+    "title": "Valitse Gardi-lokero",
+    "emptyTitle": "Ei lokeroita saatavilla",
+    "emptyBody": "Lokeroverkkoa rakennetaan parhaillaan. Palaa edelliseen ja valitse toinen tapa.",
+    "confirm": "Vahvista lokero"
+  },
+  "pickup": {
+    "title": "Valitse noutotapa",
+    "howCopy": "MITEN HALUAT NOUTAA?",
+    "helper": "Voit muuttaa noutotavan ennen vahvistusta lainanantajan kanssa.",
+    "address": "Sovittu osoite",
+    "addressSub": "Tapaa lainanantajan kanssa kasvotusten",
+    "hub": "TackBird Hub",
+    "hubSub": "{count} hubia lähistöllä",
+    "hubEmpty": "Ei hubeja lähistöllä toistaiseksi",
+    "gardi": "Gardi älylokero",
+    "gardiSub": "24/7 nouto omalla PIN-koodilla",
+    "gardiEmpty": "Lokeroverkkoa rakennetaan parhaillaan",
+    "empty": "Ei valittavissa",
+    "lendingThis": "LAINATAAN",
+    "continueToPayment": "Jatka maksuun",
+    "continueToHub": "Valitse hub",
+    "continueToLocker": "Valitse lokero"
+  },
+  "reviews": {
+    "submitted": "Arvostelu lähetetty"
+  },
+  "splash": {
+    "tagline": "Naapurustosi markkinapaikka"
   }
 }

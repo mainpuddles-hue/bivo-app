@@ -55,7 +55,9 @@
     "showAll": "Show all",
     "showLess": "Show less",
     "image": "Image",
-    "free": "Free"
+    "free": "Free",
+    "backToHome": "Back to home",
+    "pageNotFound": "Page not found"
   },
   "gallery": {
     "gestureHint": "Double-tap to zoom, pinch to resize"
@@ -295,7 +297,9 @@
     "category": "Category",
     "responseTime": "Response time",
     "deposit": "Deposit",
-    "saveFailed": "Could not save"
+    "saveFailed": "Could not save",
+    "image": "Image",
+    "imageIndicator": "Image page"
   },
   "offer": {
     "title": "Make an Offer",
@@ -486,7 +490,9 @@
     "joinedSuccess": "You joined the event!",
     "joinPending": "Request sent",
     "eventPending": "Date pending",
-    "chatLeaveFailed": "Could not leave event chat"
+    "chatLeaveFailed": "Could not leave event chat",
+    "chatJoinFailed": "Could not join event chat",
+    "spotsRemaining": "{count} spots remaining"
   },
   "activity": {
     "activities": "Together",
@@ -684,7 +690,9 @@
     "sendFirstMessage": "Send the first message to start the conversation",
     "rateLimited": "Sending too fast. Please wait.",
     "imageTooLarge": "Image is too large (max 10 MB)",
-    "imageUploadFailed": "Image upload failed"
+    "imageUploadFailed": "Image upload failed",
+    "addImage": "Add image",
+    "invalidFileType": "File type not supported"
   },
   "conversation": {
     "startPrompt": "Start a conversation by typing a message",
@@ -998,7 +1006,15 @@
     "helpTitle": "Help & support",
     "helpFaq": "Frequently asked questions",
     "helpContact": "Contact support",
-    "earnings": "Earnings"
+    "earnings": "Earnings",
+    "feedbackSubject": "Bivo feedback — {name}",
+    "feedbackBodyPrefix": "User",
+    "feedbackBodyEmail": "Email",
+    "feedbackBodyVersion": "Version",
+    "feedbackDesc": "Share your feedback, suggestions, or report a bug.",
+    "feedbackPlaceholder": "Write your feedback here...",
+    "feedbackSent": "Feedback sent!",
+    "sendFeedback": "Send"
   },
   "postCard": {
     "viewListing": "View listing",
@@ -1252,7 +1268,29 @@
     "selectPickup": "Select pickup point",
     "selectNearestHub": "Select the nearest hub",
     "loadFailed": "Failed to load pickup points",
-    "noHubs": "No pickup points available"
+    "noHubs": "No pickup points available",
+    "atBorrower": "ON LOAN",
+    "collect": "COLLECT FROM HUB",
+    "collectCaption": "The borrower returned it — collect from the hub.",
+    "confirmCollect": "Confirm hub collection",
+    "confirmDropoff": "Confirm hub drop-off",
+    "confirmPickup": "Confirm hub pickup",
+    "confirmReturn": "Confirm hub return",
+    "dropoff": "DROP OFF AT HUB",
+    "dropoffCaption": "Drop the item at the hub and the borrower will be notified.",
+    "handoffPoint": "PICKUP POINT",
+    "pickup": "PICK UP FROM HUB",
+    "pickupCaption": "Pick up the item from the hub at your convenience.",
+    "return": "RETURN TO HUB",
+    "returnCaption": "Return the item to the hub before the loan period ends.",
+    "returned": "RETURNED",
+    "returnedCaption": "The loan is complete — thank you.",
+    "waitingDropoff": "AWAITING DROP-OFF",
+    "waitingDropoffCaption": "You'll be notified when the item is ready for pickup.",
+    "waitingPickup": "AWAITING PICKUP",
+    "waitingPickupCaption": "The borrower will be notified and pick it up.",
+    "waitingReturn": "AWAITING RETURN",
+    "waitingReturnCaption": "You'll be notified when the item is at the hub."
   },
   "review": {
     "title": "Review",
@@ -1369,7 +1407,9 @@
     "disputeDescriptionPlaceholder": "Describe the issue...",
     "uploadPhotosButton": "Upload photos",
     "comparePhotos": "Compare photos",
-    "gracePeriod": "Grace period (24h)"
+    "gracePeriod": "Grace period (24h)",
+    "lender": "Lender",
+    "cancelBookingConfirm": "Are you sure you want to cancel the booking?"
   },
   "rentalFlow": {
     "requestNotFound": "Request not found",
@@ -1378,44 +1418,37 @@
     "itemFallback": "Item",
     "neighborFallback": "Neighbor",
     "nearbyFallback": "nearby",
-
     "approveRequest": "Approve request",
     "approveConfirmBody": "You confirm that {{item}} will be available to the borrower for {{days}} days starting {{date}}.",
     "approveFailed": "Approval failed",
     "pushApprovedTitle": "Your loan request was approved",
     "pushApprovedBody": "{{item}} has been approved. Arrange pickup time in the chat.",
-
     "rejectRequest": "Reject request",
     "rejectConfirmBody": "Are you sure you want to reject this loan request? The borrower will be notified.",
     "rejectFailed": "Rejection failed",
     "pushRejectedTitle": "Your loan request was rejected",
     "pushRejectedBody": "{{item}} didn't work out this time. Browse other neighbors.",
-
     "markReturned": "I have returned it",
     "markReturnedBody": "You confirm that you have handed the item back to the owner. The owner will confirm receipt.",
     "confirmReturn": "Confirm return",
     "returnFailed": "Failed to mark return",
     "pushReturnedTitle": "Item returned",
     "pushReturnedBody": "{{item}} has been returned. Please confirm receipt.",
-
     "confirmReceipt": "Confirm receipt",
     "confirmReceiptBody": "You confirm that {{item}} has been returned to you. After this, both of you can leave reviews.",
     "confirmReceiptBtn": "Confirm",
     "confirmFailed": "Confirmation failed",
     "pushCompletedTitle": "Loan completed",
     "pushCompletedBody": "{{item}} has been received. You can now leave a review.",
-
     "cancelRequest": "Cancel request",
     "cancelConfirmBody": "Are you sure you want to cancel the loan request? The owner will be notified.",
     "cancelNo": "No",
     "cancelFailed": "Cancellation failed",
-
     "rentalTitle": "Loan",
     "backToHome": "Back to home",
     "openChat": "Open chat",
     "showPickupQR": "Show pickup QR",
     "scanPickupQR": "Scan pickup QR",
-
     "awaitingResponse": "Awaiting response",
     "notificationWhenOwnerReplies": "You'll be notified as soon as the owner responds to your request.",
     "itemInUse": "Item is in your use",
@@ -1428,14 +1461,12 @@
     "checkItemCondition": "Check that the item is in good condition and confirm receipt.",
     "waitingOwnerConfirm": "Waiting for the owner to confirm they have received the item.",
     "confirmReceiptAction": "Confirm receipt",
-
     "giveReview": "Leave a review",
     "reviewSent": "Your review has been sent",
     "reviewWaitBody": "The other party's review will appear once they have also submitted theirs, or after 14 days.",
     "reviews": "Reviews",
     "fromBorrower": "From borrower",
     "fromOwner": "From owner",
-
     "requestSent": "Request sent",
     "approval": "Approval",
     "pending": "pending…",
@@ -1449,7 +1480,6 @@
     "rentalFee": "Rental fee ({{days}} days)",
     "deposit": "Deposit",
     "messageToOwner": "Message to owner",
-
     "statusNewRequest": "NEW REQUEST",
     "statusWantsToLend": "{{name}} wants to borrow.",
     "statusReplyIn24h": "Reply within 24 hours.",
@@ -1470,7 +1500,6 @@
     "statusReviewNow": "If you haven't reviewed yet, you can do it now.",
     "statusCancelled": "CANCELLED",
     "statusLoanCancelled": "Loan cancelled.",
-
     "requestTitle": "Request to borrow",
     "today": "Today",
     "tomorrow": "Tomorrow",
@@ -1505,7 +1534,6 @@
     "loginRequiredBody": "You must be logged in to make a loan request.",
     "ownListing": "Your own listing",
     "cannotBorrowOwnItem": "You cannot borrow your own item.",
-
     "reviewTitle": "Review",
     "rentalNotFound": "Rental not found",
     "cannotReviewThisRental": "You cannot review this rental",
@@ -1529,7 +1557,6 @@
     "otherReviewVisibleWhenBothSent": "The other party's review will appear once they have also submitted theirs.",
     "ownerAccusative": "the owner",
     "borrowerAccusative": "the borrower",
-
     "documentCondition": "Document condition",
     "phase2of3": "PHASE 2 / 3",
     "takePhotos": "Take a few photos",
@@ -1549,7 +1576,6 @@
     "photosMissing": "Photos missing",
     "photosMissingBody": "Take at least {{count}} required photos.",
     "unknownError": "Unknown error",
-
     "scanTitle": "Scan pickup QR",
     "cameraNeedTitle": "We need the camera",
     "cameraNeedBody": "Bivo needs camera access so you can scan the owner's pickup QR code.",
@@ -1562,7 +1588,6 @@
     "qrWrongRental": "QR does not belong to this loan. Check that you are on the correct request page.",
     "pickupConfirmed": "Pickup confirmed",
     "pickupConfirmedBody": "The item is now in your use. Remember to return it on time.",
-
     "pendingTitle": "Awaiting response",
     "requestSentTag": "REQUEST SENT",
     "waitingForOwner": "Waiting for {{name}}",
@@ -1571,7 +1596,6 @@
     "requestRegarding": "Request regarding",
     "cancelRequestAction": "Cancel request",
     "cancelRequestConfirm": "Do you want to cancel the loan request?",
-
     "overdueTitle": "Loan · overdue",
     "lateBy": "{{hours}} H {{minutes}} MIN OVERDUE",
     "returnItem": "Return {{item}}",
@@ -1584,7 +1608,6 @@
     "sendMessageWhenOnWay": "Send a message when you're on the way.",
     "onMyWay": "I'm on my way",
     "requestExtension": "Request an extension",
-
     "pickupConfirmedTitle": "Pickup confirmed",
     "pickupConfirmedTag": "PICKUP CONFIRMED",
     "itemWithYou": "{{item}} is with you",
@@ -1595,7 +1618,6 @@
     "checklistParts": "Pack all parts",
     "checklistCondition": "Return in agreed condition",
     "openActiveRental": "Open active loan",
-
     "reviewWaitingTitle": "Review",
     "reviewSentTag": "REVIEW SENT",
     "waitingForReview": "Waiting for",
@@ -1606,7 +1628,6 @@
     "notYetReviewed": "{{name}} · not yet reviewed",
     "usually1to2days": "Usually within 1–2 days",
     "backToFeed": "Back to feed",
-
     "pickupMethodTitle": "Pickup",
     "pickupMethodLabel": "Pickup method",
     "howToPickup": "How do you want to\npick up the item?",
@@ -1616,7 +1637,6 @@
     "doorstepDesc": "Owner leaves the item at their address",
     "continue": "Continue",
     "pickupMethodFailed": "Failed to save pickup method.",
-
     "depositTitle": "Deposit",
     "confirmDeposit": "CONFIRM DEPOSIT",
     "amountReserved": "{{amount}} € will be reserved",
@@ -1631,7 +1651,6 @@
     "changeCard": "Change",
     "depositReleaseHint": "Deposit released within 24 hours of return.",
     "confirmAndSend": "Confirm and send request",
-
     "rejectedTitle": "Rejected",
     "notThisTime": "NOT THIS TIME",
     "ownerCouldntLend": "{{name}} couldn't\nlend this week",
@@ -1639,7 +1658,6 @@
     "ownersMessage": "{{name}}'s message",
     "searchAnother": "Search for another {{item}}",
     "backToLoans": "Back to loans",
-
     "depositReleasedTag": "DEPOSIT RELEASED",
     "returnsToCard": "returns to your card",
     "visibleInStatement": "Visible on your statement within 1–3 business days.",
@@ -1647,13 +1665,11 @@
     "daysCount": "{{days}} days",
     "finalCost": "Final cost",
     "leaveReview": "Leave a review",
-
     "cancelledTag": "REQUEST CANCELLED",
     "cancelledConfirm": "Got it.",
     "ownerNotified": "{{name}} has been notified.",
     "nothingCharged": "Nothing was charged. You can ask again later.",
     "backToSearch": "Back to search",
-
     "extendTitle": "Extend loan",
     "addTime": "ADD TIME",
     "newReturn": "NEW RETURN",
@@ -1671,7 +1687,6 @@
     "rentalNotFoundShort": "Loan not found.",
     "maxDurationReached": "The loan is already {{current}} days, the maximum is {{max}} days.",
     "returnFrom": "return {{date}}",
-
     "ownerReviewTitle": "Review {{name}}",
     "howWasItWith": "How was it with\n{{name}}?",
     "overallRating": "Overall rating",
@@ -1686,7 +1701,6 @@
     "reviewPublishedSameTime": "{{name}}'s review of you will be published at the same time",
     "reviewSentAlert": "Review sent",
     "reviewSentAlertBody": "The review will be visible to the borrower once both have reviewed.",
-
     "ownerActiveLent": "Lent out",
     "activeRental": "Active loan",
     "hoursLeft": "{{hours}} hours left",
@@ -1704,7 +1718,6 @@
     "thisWeek": "This week",
     "pickupLabel2": "PICKED UP {{date}}",
     "returnLabel2": "RETURN {{date}}",
-
     "ownerReturnTitle": "Return",
     "borrowerReturns": "{{name}} IS RETURNING",
     "inspectAndRelease": "Inspect {{item}}\nand release deposit",
@@ -1723,7 +1736,6 @@
     "releaseDeposit": "Release deposit",
     "returnConfirmed": "Return confirmed",
     "depositReleasedToBorrower": "Deposit will be released to the borrower.",
-
     "handoverTitle": "Pickup",
     "showToBorrower": "Show this to the borrower",
     "askBorrowerToScan": "Ask the borrower to scan the code with their phone. Once scanned, the item is officially their responsibility.",
@@ -1736,7 +1748,6 @@
     "onlyOwnerCanShow": "Only the owner can show the pickup QR.",
     "cannotHandoverInStatus": "Cannot hand over while the loan is in \"{{status}}\" status.",
     "pickupComplete": "Pickup complete",
-
     "ownerRequestTitle": "Loan request",
     "loanRequest": "Loan request",
     "newRequestTag": "NEW REQUEST",
@@ -1755,7 +1766,6 @@
     "requestRejected": "Rejected",
     "requestApprovedBody": "Loan request approved.",
     "requestRejectedBody": "Loan request rejected.",
-
     "ownerOverdueTitle": "Overdue",
     "overdueLabel": "Overdue",
     "overdueBadge": "Overdue",
@@ -1765,7 +1775,6 @@
     "sendMessageToBorrower": "Send message to borrower",
     "contactSupport": "Contact support",
     "conversationNotFound": "Conversation not found.",
-
     "loading": "Loading…",
     "tryAgain": "Try again",
     "cameraRollPermission": "Photo library permission is needed."
@@ -1853,7 +1862,8 @@
     "stepReturned": "Returned",
     "stepInProgress": "In progress",
     "stepCompleted": "Completed",
-    "stepCancelled": "Cancelled"
+    "stepCancelled": "Cancelled",
+    "alreadyReviewed": "You have already reviewed this"
   },
   "payment": {
     "success": "Payment successful!",
@@ -1893,7 +1903,8 @@
     "commissionInfo": "Bivo charges a 10% service fee on all transactions. The provider receives 90% of the price.",
     "securityNote": "Payment data is handled by Stripe. Bivo does not store your card details.",
     "startConnect": "Start Stripe setup",
-    "subscriptionActivating": "Subscription activating…"
+    "subscriptionActivating": "Subscription activating…",
+    "paymentFailed": "Payment failed"
   },
   "push": {
     "permissionDenied": "Notification permission denied",
@@ -2171,7 +2182,9 @@
     "draftRestored": "Draft restored",
     "clearDraft": "Clear draft",
     "titlePlaceholder": "E.g. Drill for lending, Kallio",
-    "descriptionPlaceholder": "Describe: condition, location, availability..."
+    "descriptionPlaceholder": "Describe: condition, location, availability...",
+    "invalidFileType": "File type not supported",
+    "removeImage": "Remove image"
   },
   "locationPicker": {
     "useCurrentLocation": "Use current location",
@@ -2546,7 +2559,9 @@
     "eventJoined": "joined your event",
     "loginRequired": "Log in to see notifications",
     "loginHint": "Log in to stay updated on what's happening in your neighborhood.",
-    "unread": "Unread"
+    "unread": "Unread",
+    "new": "new notifications",
+    "title": "Notifications"
   },
   "map": {
     "locate": "Locate me",
@@ -3384,7 +3399,19 @@
     "privacyNote": "Data is stored encrypted. Bivo does not share it with third parties.",
     "verifyingFace": "Verifying photo...",
     "faceVerified": "Face verified!",
-    "noFaceDetected": "No face detected. Try another photo."
+    "noFaceDetected": "No face detected. Try another photo.",
+    "digit": "Digit",
+    "backToApp": "Back to app",
+    "errorTitle": "Verification failed",
+    "errorMessage": "Something went wrong. Please try again.",
+    "tryAgain": "Try again",
+    "successTitle": "Verification successful",
+    "successMessage": "Your account has been verified.",
+    "unlockedTitle": "New features unlocked",
+    "featureBorrow": "Borrow items",
+    "featureBorrowDesc": "Request to borrow items from neighbors.",
+    "featureServices": "Services",
+    "featureServicesDesc": "Offer and buy services from neighbors."
   },
   "addressVerification": {
     "title": "Address verification",
@@ -3701,7 +3728,9 @@
     "emptyDescription": "Create your first listing and start serving the neighborhood.",
     "emptyAction": "Create listing",
     "createNew": "Create new listing",
-    "menu": "Menu"
+    "menu": "Menu",
+    "activate": "Activate",
+    "deactivate": "Deactivate"
   },
   "returnItem": {
     "title": "Return",
@@ -3743,7 +3772,13 @@
     "reviewPublished": "Review published",
     "reviewPublishedDesc": "Thanks for your review!",
     "stars": "stars",
-    "starsAccessibility": "{count} stars"
+    "starsAccessibility": "{count} stars",
+    "tagReturnedOnTime": "Returned on time",
+    "tagGoodCondition": "Good condition",
+    "tagFriendly": "Friendly",
+    "tagClearComm": "Clear communication",
+    "tagExperienced": "Experienced user",
+    "tagWouldLendAgain": "Would lend again"
   },
   "payouts": {
     "title": "Earnings",
@@ -3768,7 +3803,9 @@
     "paymentMethod": "PAYMENT METHOD",
     "cardValid": "Valid {date}",
     "addPaymentMethod": "Add payment method",
-    "pay": "Pay"
+    "pay": "Pay",
+    "stripeDescription": "Rental · {title}",
+    "stripeDescriptionDefault": "Bivo rental"
   },
   "screenError": {
     "title": "Error",
@@ -3790,6 +3827,93 @@
     "duration3d": "3 days",
     "duration7d": "7 days",
     "publish": "Publish poll",
-    "newPoll": "Poll"
+    "newPoll": "Poll",
+    "minOptionsRequired": "Add at least 2 options"
+  },
+  "itemDetail": {
+    "notFound": "Item not found",
+    "notFoundBody": "The listing has been removed or the link has expired.",
+    "backToHome": "Back to home",
+    "neighbor": "Neighbor",
+    "chatOpenFailed": "Could not open conversation. Please try again.",
+    "availableNow": "Available now",
+    "rentalFee": "RENTAL",
+    "perDay": "/day",
+    "deposit": "DEPOSIT",
+    "refundable": "refundable",
+    "free": "FREE",
+    "freeBody": "Free to pick up. No deposit or return required, just come and get it.",
+    "neighborInBivo": "Neighbor on Bivo",
+    "sendMessage": "Send message to {name}",
+    "description": "Description",
+    "ownListing": "This is your own listing.",
+    "freeHint": "Free item, no deposit or return needed.",
+    "reserveForMe": "Reserve for me",
+    "requestLoan": "Request to borrow"
+  },
+  "reviewLender": {
+    "title": "Review lender",
+    "heroQuestion": "How did {name} do?",
+    "heroMeta": "Reviews help other neighbors and keep the community fair.",
+    "whatWentWell": "WHAT WENT WELL",
+    "publicComment": "PUBLIC COMMENT",
+    "commentPlaceholder": "Briefly tell how the experience went…",
+    "footerNote": "The review will be shown on {name}'s profile.",
+    "send": "Submit review",
+    "published": "Review submitted",
+    "tagFastResponse": "Quick to respond",
+    "tagFriendly": "Friendly",
+    "tagGoodCondition": "Good condition",
+    "tagClearInstr": "Clear instructions",
+    "tagFlexible": "Flexible schedule"
+  },
+  "hubPicker": {
+    "title": "Choose a hub",
+    "emptyTitle": "No hubs available",
+    "emptyBody": "The hub network is still being built. Go back and choose another method.",
+    "confirm": "Confirm location"
+  },
+  "locker": {
+    "collectCode": "COLLECTION CODE",
+    "confirmCollect": "Confirm locker collection",
+    "confirmDropoff": "Confirm locker drop-off",
+    "confirmPickup": "Confirm locker pickup",
+    "confirmReturn": "Confirm locker return",
+    "dropoffCode": "ACCESS CODE",
+    "pickupCode": "PICKUP CODE",
+    "pinDelayed": "PIN codes are created when the lender confirms the booking",
+    "returnCode": "RETURN CODE",
+    "validToday": "Valid today",
+    "validUntil": "Valid until"
+  },
+  "lockerPicker": {
+    "title": "Choose a Gardi locker",
+    "emptyTitle": "No lockers available",
+    "emptyBody": "The locker network is being built. Go back and choose another method.",
+    "confirm": "Confirm locker"
+  },
+  "pickup": {
+    "title": "Choose pickup method",
+    "howCopy": "HOW DO YOU WANT TO PICK UP?",
+    "helper": "You can change the pickup method before confirming with the lender.",
+    "address": "Agreed address",
+    "addressSub": "Meet the lender in person",
+    "hub": "TackBird Hub",
+    "hubSub": "{count} hubs nearby",
+    "hubEmpty": "No hubs nearby yet",
+    "gardi": "Gardi smart locker",
+    "gardiSub": "24/7 pickup with your own PIN code",
+    "gardiEmpty": "Locker network is being built",
+    "empty": "Not available",
+    "lendingThis": "LENDING",
+    "continueToPayment": "Continue to payment",
+    "continueToHub": "Choose hub",
+    "continueToLocker": "Choose locker"
+  },
+  "reviews": {
+    "submitted": "Review submitted"
+  },
+  "splash": {
+    "tagline": "Your neighborhood marketplace"
   }
 }

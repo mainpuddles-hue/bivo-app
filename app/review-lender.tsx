@@ -20,20 +20,7 @@ import { useToast } from '@/components/Toast'
 import { StarRating, TagChipRow, StickyCTA } from '@/components/lending'
 
 // Lender-side virtues, per design handoff §4.
-const TAGS_FI = [
-  { key: 'fast_response',  label: 'Nopea vastaus' },
-  { key: 'friendly',       label: 'Ystävällinen' },
-  { key: 'good_condition', label: 'Hyvässä kunnossa' },
-  { key: 'clear_instr',    label: 'Selkeät ohjeet' },
-  { key: 'flexible',       label: 'Joustava aikataulu' },
-]
-const TAGS_EN = [
-  { key: 'fast_response',  label: 'Quick to respond' },
-  { key: 'friendly',       label: 'Friendly' },
-  { key: 'good_condition', label: 'Good condition' },
-  { key: 'clear_instr',    label: 'Clear instructions' },
-  { key: 'flexible',       label: 'Flexible schedule' },
-]
+const TAG_KEYS = ['fast_response', 'friendly', 'good_condition', 'clear_instr', 'flexible'] as const
 
 interface BookingTarget {
   id: string
@@ -61,7 +48,10 @@ function ReviewLenderScreenInner() {
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const tags = locale === 'fi' ? TAGS_FI : TAGS_EN
+  const tags = TAG_KEYS.map(key => ({
+    key,
+    label: t(`reviewLender.tag${key.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('')}`),
+  }))
 
   useEffect(() => {
     if (!params.bookingId) return

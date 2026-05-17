@@ -127,8 +127,8 @@ export default function SettingsScreen() {
         },
         body: JSON.stringify({
           to: 'puddles@puddles.fi',
-          subject: `Bivo palaute — ${profile?.name ?? 'Käyttäjä'}`,
-          body: `${feedbackText.trim()}\n\n---\nKäyttäjä: ${profile?.name ?? '—'}\nEmail: ${userEmail ?? '—'}\nID: ${profile?.id ?? '—'}\nVersio: ${Constants.expoConfig?.version ?? '?'}`,
+          subject: t('settings.feedbackSubject', { name: profile?.name ?? '—' }),
+          body: `${feedbackText.trim()}\n\n---\n${t('settings.feedbackBodyPrefix')}: ${profile?.name ?? '—'}\n${t('settings.feedbackBodyEmail')}: ${userEmail ?? '—'}\nID: ${profile?.id ?? '—'}\n${t('settings.feedbackBodyVersion')}: ${Constants.expoConfig?.version ?? '?'}`,
         }),
       })
       toast.show({ message: t('settings.feedbackSent') ?? 'Palaute lähetetty!', type: 'success' })

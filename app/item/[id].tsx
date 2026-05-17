@@ -11,6 +11,7 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens, type LegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&q=80&auto=format';
 
@@ -31,6 +32,7 @@ interface ItemData {
 
 export default function ProductScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -75,7 +77,7 @@ export default function ProductScreen() {
     return (
       <View style={[styles.container, styles.centerState]}>
         <View style={[styles.floatingBack, { top: insets.top + 10 }]}>
-          <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel="Takaisin">
+          <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel={t('common.back')}>
             <BackIcon size={18} strokeWidth={2} />
           </RoundBtn>
         </View>
@@ -88,23 +90,23 @@ export default function ProductScreen() {
     return (
       <View style={[styles.container, styles.centerState]}>
         <View style={[styles.floatingBack, { top: insets.top + 10 }]}>
-          <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel="Takaisin">
+          <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel={t('common.back')}>
             <BackIcon size={18} strokeWidth={2} />
           </RoundBtn>
         </View>
-        <Text style={styles.notFoundTitle}>Tavaraa ei löytynyt</Text>
+        <Text style={styles.notFoundTitle}>{t('itemDetail.notFound')}</Text>
         <Text style={styles.notFoundBody}>
-          Ilmoitus on poistettu tai linkki on vanhentunut.
+          {t('itemDetail.notFoundBody')}
         </Text>
         <View style={styles.notFoundCta}>
-          <BigBtn onPress={() => router.replace('/(tabs)')}>Takaisin etusivulle</BigBtn>
+          <BigBtn onPress={() => router.replace('/(tabs)')}>{t('itemDetail.backToHome')}</BigBtn>
         </View>
       </View>
     );
   }
 
   const heroImage = item.images?.[0]?.image_url ?? PLACEHOLDER_IMG;
-  const ownerName = item.owner?.name ?? 'Naapuri';
+  const ownerName = item.owner?.name ?? t('itemDetail.neighbor');
   const isOwnItem = userId === item.owner_id;
 
   const handleMessageOwner = async () => {
@@ -129,7 +131,7 @@ export default function ProductScreen() {
     }).select('id').single();
 
     if (error || !created) {
-      Alert.alert('Virhe', 'Keskustelun avaaminen epäonnistui. Yritä uudelleen.');
+      Alert.alert(t('common.error'), t('itemDetail.chatOpenFailed'));
       return;
     }
     router.push(`/chat/${created.id}`);
@@ -151,7 +153,7 @@ export default function ProductScreen() {
             />
           )}
           <View style={[styles.floatingNav, { top: insets.top + 10 }]}>
-            <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel="Takaisin">
+            <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel={t('common.back')}>
               <BackIcon size={18} strokeWidth={2} />
             </RoundBtn>
             {/* Tallennetut tulee Phase 2:ssa — saved_items-taulu olemassa
@@ -167,7 +169,7 @@ export default function ProductScreen() {
           {item.is_active && item.status === 'active' && (
             <View style={styles.livePill}>
               <View style={styles.liveDot} />
-              <Text style={styles.liveText}>Vapaana nyt</Text>
+              <Text style={styles.liveText}>{t('itemDetail.availableNow')}</Text>
             </View>
           )}
 
@@ -178,21 +180,21 @@ export default function ProductScreen() {
           {!item.is_free ? (
             <View style={styles.priceRow}>
               <Sheet style={styles.priceBox} padding={14}>
-                <Text style={styles.priceLabel}>VUOKRA</Text>
+                <Text style={styles.priceLabel}>{t('itemDetail.rentalFee')}</Text>
                 <Text style={styles.priceValue}>{item.daily_fee ?? 0} €</Text>
-                <Text style={styles.priceUnit}>/vrk</Text>
+                <Text style={styles.priceUnit}>{t('itemDetail.perDay')}</Text>
               </Sheet>
               <Sheet style={styles.priceBox} padding={14}>
-                <Text style={styles.priceLabel}>VAKUUS</Text>
+                <Text style={styles.priceLabel}>{t('itemDetail.deposit')}</Text>
                 <Text style={styles.priceValue}>{item.deposit_amount ?? 0} €</Text>
-                <Text style={styles.priceUnit}>palautetaan</Text>
+                <Text style={styles.priceUnit}>{t('itemDetail.refundable')}</Text>
               </Sheet>
             </View>
           ) : (
             <Sheet style={styles.freeBlock} padding={16}>
-              <Text style={styles.freeLabel}>ILMAINEN</Text>
+              <Text style={styles.freeLabel}>{t('itemDetail.free')}</Text>
               <Text style={styles.freeBody}>
-                Vapaa noudettavaksi. Ei vakuutta eikä palautusta, hae vain paikan päältä.
+                {t('itemDetail.freeBody')}
               </Text>
             </Sheet>
           )}
@@ -209,12 +211,12 @@ export default function ProductScreen() {
                   <Avatar url={item.owner?.avatar_url} name={ownerName} size={48} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.ownerName}>{ownerName}</Text>
-                    <Text style={styles.ownerInfo}>Naapuri Bivossa</Text>
+                    <Text style={styles.ownerInfo}>{t('itemDetail.neighborInBivo')}</Text>
                   </View>
                   {!isOwnItem && (
                     <RoundBtn
                       onPress={handleMessageOwner}
-                      accessibilityLabel={`Lähetä viesti käyttäjälle ${ownerName}`}
+                      accessibilityLabel={t('itemDetail.sendMessage', { name: ownerName })}
                     >
                       <ChatIcon size={18} />
                     </RoundBtn>
@@ -226,7 +228,7 @@ export default function ProductScreen() {
 
           {/* Description */}
           <View style={styles.descSection}>
-            <Eyebrow>Kuvaus</Eyebrow>
+            <Eyebrow>{t('itemDetail.description')}</Eyebrow>
             <Text style={styles.descText}>{item.description}</Text>
           </View>
 
@@ -237,16 +239,16 @@ export default function ProductScreen() {
       {isOwnItem ? (
         <View style={styles.stickyOwnInfo}>
           <View style={styles.ownInfo}>
-            <Text style={styles.ownInfoText}>Tämä on oma ilmoituksesi.</Text>
+            <Text style={styles.ownInfoText}>{t('itemDetail.ownListing')}</Text>
           </View>
         </View>
       ) : item.is_free ? (
-        <StickyCTA onPress={() => router.push(`/free/${item.id}`)} hint="Ilmainen tavara, ei vakuutta eikä palautusta.">
-          Varaa itselleni
+        <StickyCTA onPress={() => router.push(`/free/${item.id}`)} hint={t('itemDetail.freeHint')}>
+          {t('itemDetail.reserveForMe')}
         </StickyCTA>
       ) : (
         <StickyCTA onPress={() => router.push(`/rental/request?itemId=${item.id}`)}>
-          Pyydä lainaksi
+          {t('itemDetail.requestLoan')}
         </StickyCTA>
       )}
     </View>

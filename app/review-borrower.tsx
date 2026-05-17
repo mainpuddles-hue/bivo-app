@@ -20,22 +20,7 @@ import { useToast } from '@/components/Toast'
 import { StarRating, TagChipRow, StickyCTA } from '@/components/lending'
 
 // Borrower-side virtues, per design handoff §3.
-const TAGS_FI = [
-  { key: 'returned_on_time',  label: 'Palautti ajoissa' },
-  { key: 'good_condition',    label: 'Hyvässä kunnossa' },
-  { key: 'friendly',          label: 'Ystävällinen' },
-  { key: 'clear_comm',        label: 'Kommunikoi selvästi' },
-  { key: 'experienced',       label: 'Kokenut käyttäjä' },
-  { key: 'would_lend_again',  label: 'Lainaisin uudestaan' },
-]
-const TAGS_EN = [
-  { key: 'returned_on_time',  label: 'Returned on time' },
-  { key: 'good_condition',    label: 'Good condition' },
-  { key: 'friendly',          label: 'Friendly' },
-  { key: 'clear_comm',        label: 'Clear communication' },
-  { key: 'experienced',       label: 'Experienced user' },
-  { key: 'would_lend_again',  label: 'Would lend again' },
-]
+const TAG_KEYS = ['returned_on_time', 'good_condition', 'friendly', 'clear_comm', 'experienced', 'would_lend_again'] as const
 
 interface BookingTarget {
   id: string
@@ -63,7 +48,10 @@ function ReviewBorrowerScreenInner() {
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const tags = locale === 'fi' ? TAGS_FI : TAGS_EN
+  const tags = TAG_KEYS.map(key => ({
+    key,
+    label: t(`reviewBorrower.tag${key.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('')}`),
+  }))
 
   useEffect(() => {
     if (!params.bookingId) return

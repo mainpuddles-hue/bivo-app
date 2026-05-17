@@ -127,7 +127,7 @@ function PaymentCheckoutScreenInner() {
 
         const sessionId = await stripePayment.createPayment({
           amount: totalCents,
-          description: params.itemTitle ? `Lainaus · ${params.itemTitle}` : 'TackBird-lainaus',
+          description: params.itemTitle ? t('checkout.stripeDescription', { title: params.itemTitle }) : t('checkout.stripeDescriptionDefault'),
           type: 'rental',
           postId: b.post_id,
           sellerId: b.lender_id,
