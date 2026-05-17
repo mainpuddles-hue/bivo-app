@@ -21,10 +21,14 @@ export function useEventChatUnread(userId: string | null) {
     async function fetchUnread() {
       try {
         // Get group conversations this user is a member of
-        const { data: memberships } = await (supabase.from('conversation_members') as any)
+        const { data: memberships, error: memberError } = await (supabase.from('conversation_members') as any)
           .select('conversation_id')
           .eq('user_id', userId)
 
+        if (memberError) {
+          if (__DEV__) console.warn('[useEventChatUnread] conversation_members query error:', memberError.message)
+          return
+        }
         if (!memberships || !mounted) return
         const convIds = memberships.map((m: any) => m.conversation_id)
         convIdsRef.current = new Set(convIds)

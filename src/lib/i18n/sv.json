@@ -57,7 +57,8 @@
     "image": "Bild",
     "free": "Gratis",
     "backToHome": "Tillbaka till startsidan",
-    "pageNotFound": "Sidan hittades inte"
+    "pageNotFound": "Sidan hittades inte",
+    "event": "Evenemang"
   },
   "gallery": {
     "gestureHint": "Dubbeltryck för att zooma, nyp för att ändra storlek"
@@ -165,6 +166,12 @@
     "listView": "Listvy",
     "postsOnMap": "annonser på kartan",
     "tapToOpen": "Öppna annons →",
+    "pinTarvitsen": "BEHOV",
+    "pinTarjoan": "ERBJUDER",
+    "pinIlmaista": "GRATIS",
+    "pinNappaa": "FÅNGA",
+    "pinLainaa": "LÅN",
+    "pinTapahtuma": "EVENEMANG",
     "neighborsInBuilding": "{count} grannar i ditt hus",
     "weeklyPopular": "Populärt denna vecka",
     "weeklyPopularSub": "Evenemang i ditt område",

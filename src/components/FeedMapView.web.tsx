@@ -16,6 +16,6 @@ export function FeedMapView(_props: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, borderRadius: 20, margin: 16, padding: 32 },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, borderRadius: 18, margin: 22, padding: 32 },
   text: { fontSize: 14, fontFamily: fonts.body, textAlign: 'center' },
 })

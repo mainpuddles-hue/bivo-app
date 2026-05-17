@@ -42,11 +42,13 @@ const PIN_COLORS: Record<string, string> = {
 
 const EVENT_COLOR = '#2B8A62'
 
-// Category short labels per locale
-const TYPE_LABELS: Record<string, Record<string, string>> = {
-  fi: { tarvitsen: 'TARVE', tarjoan: 'TARJOUS', ilmaista: 'ILMAINEN', nappaa: 'NAPPAA', lainaa: 'LAINAA' },
-  en: { tarvitsen: 'NEED', tarjoan: 'OFFER', ilmaista: 'FREE', nappaa: 'GRAB', lainaa: 'LEND' },
-  sv: { tarvitsen: 'BEHOV', tarjoan: 'ERBJUDER', ilmaista: 'GRATIS', nappaa: 'FÅNGA', lainaa: 'LÅN' },
+// Map from post type to i18n key for pin labels
+const PIN_LABEL_KEYS: Record<string, string> = {
+  tarvitsen: 'feed.pinTarvitsen',
+  tarjoan: 'feed.pinTarjoan',
+  ilmaista: 'feed.pinIlmaista',
+  nappaa: 'feed.pinNappaa',
+  lainaa: 'feed.pinLainaa',
 }
 
 /** Pin icon by category */
@@ -276,8 +278,8 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         {/* Post markers — custom colored pins */}
         {mappablePosts.map(mp => {
           const color = PIN_COLORS[mp.post.type] ?? '#888'
-          const labels = TYPE_LABELS[locale] ?? TYPE_LABELS.fi
-          const label = labels[mp.post.type] ?? ''
+          const labelKey = PIN_LABEL_KEYS[mp.post.type]
+          const label = labelKey ? t(labelKey) : ''
           return (
             <Marker
               key={`p-${mp.post.id}`}
@@ -311,7 +313,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
             <View style={s.markerWrap} pointerEvents="none">
               <View style={[s.markerBubble, { backgroundColor: EVENT_COLOR }]}>
                 <Calendar size={13} color="#fff" strokeWidth={2.5} />
-                <Text style={s.markerLabel}>{locale === 'fi' ? 'TAPAHTUMA' : locale === 'sv' ? 'EVENEMANG' : 'EVENT'}</Text>
+                <Text style={s.markerLabel}>{t('feed.pinTapahtuma')}</Text>
               </View>
               <View style={[s.markerArrow, { borderTopColor: EVENT_COLOR }]} />
             </View>
@@ -360,7 +362,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
                 <Text style={[s.previewCat, { color: colors.mutedForeground }]}>
                   {selected.kind === 'post'
                     ? t(CATEGORIES[selected.data.type as PostType]?.label ?? '')
-                    : (t('common.event') ?? 'Tapahtuma')}
+                    : t('common.event')}
                 </Text>
               </View>
               <Text style={[s.previewTitle, { color: colors.foreground }]} numberOfLines={2}>

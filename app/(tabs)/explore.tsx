@@ -232,6 +232,10 @@ function ExploreScreenInner() {
   // Community preview state
   const [communityEventPreviews, setCommunityEventPreviews] = useState<CommunityEventPreview[]>([])
 
+  // Mounted guard — prevents state updates after unmount in async fetchData
+  const mountedRef = useRef(true)
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
+
   // ── Fetch location ──
   const fetchLocation = useCallback(async () => {
     try {
@@ -300,6 +304,7 @@ function ExploreScreenInner() {
       // when those sources genuinely have no upcoming events, but in practice
       // the three together always have some Helsinki content.
       const externalCount = tmEvents.length + kideEvents.length + meteliEvents.length
+      if (!mountedRef.current) return
       setExternalSourcesLimited(externalCount === 0 && helsinkiEvents.length > 0)
       setCityEvents(futureCityEvents)
       setCommunityEvents(communityRes)
@@ -311,12 +316,14 @@ function ExploreScreenInner() {
         .gte('event_date', now)
         .order('event_date', { ascending: true }).limit(4)
         .then((r: any) => r).catch(() => ({ data: null, error: true }))
+      if (!mountedRef.current) return
       if (!communityEvtsRes.error && communityEvtsRes.data) setCommunityEventPreviews(communityEvtsRes.data)
     } catch (err) {
+      if (!mountedRef.current) return
       if (__DEV__) console.log('[explore] fetch error:', err)
       setFetchError(getNetworkAwareErrorSync(err, t, isConnected))
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }, [supabase, fetchLocation, t, isConnected])
 

@@ -57,7 +57,8 @@
     "image": "Image",
     "free": "Free",
     "backToHome": "Back to home",
-    "pageNotFound": "Page not found"
+    "pageNotFound": "Page not found",
+    "event": "Event"
   },
   "gallery": {
     "gestureHint": "Double-tap to zoom, pinch to resize"
@@ -165,6 +166,12 @@
     "listView": "List view",
     "postsOnMap": "posts on map",
     "tapToOpen": "Open post →",
+    "pinTarvitsen": "NEED",
+    "pinTarjoan": "OFFER",
+    "pinIlmaista": "FREE",
+    "pinNappaa": "GRAB",
+    "pinLainaa": "LEND",
+    "pinTapahtuma": "EVENT",
     "neighborsInBuilding": "{count} neighbors in your building",
     "weeklyPopular": "Popular this week",
     "weeklyPopularSub": "Events in your area",

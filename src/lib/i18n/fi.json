@@ -57,7 +57,8 @@
     "image": "Kuva",
     "free": "Ilmainen",
     "backToHome": "Takaisin etusivulle",
-    "pageNotFound": "Sivua ei löytynyt"
+    "pageNotFound": "Sivua ei löytynyt",
+    "event": "Tapahtuma"
   },
   "gallery": {
     "gestureHint": "Kaksoisnapauta zoomataksesi, nipistä suurentaaksesi"
@@ -165,6 +166,12 @@
     "listView": "Listanäkymä",
     "postsOnMap": "ilmoitusta kartalla",
     "tapToOpen": "Avaa ilmoitus →",
+    "pinTarvitsen": "TARVE",
+    "pinTarjoan": "TARJOUS",
+    "pinIlmaista": "ILMAINEN",
+    "pinNappaa": "NAPPAA",
+    "pinLainaa": "LAINAA",
+    "pinTapahtuma": "TAPAHTUMA",
     "neighborsInBuilding": "{count} naapuria talossasi",
     "weeklyPopular": "Viikon suosituimmat",
     "weeklyPopularSub": "Tapahtumat lähialueellasi",

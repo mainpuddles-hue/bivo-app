@@ -14,6 +14,7 @@ export function usePriceSuggestion(type: string | null, tags: string[], neighbor
   const [suggestion, setSuggestion] = useState<PriceSuggestion | null>(null)
   const [loading, setLoading] = useState(false)
   const supabase = useSupabase()
+  const tagsKey = tags.join(',')
 
   useEffect(() => {
     if (!type || (type !== 'tarjoan' && type !== 'lainaa')) {
@@ -23,6 +24,7 @@ export function usePriceSuggestion(type: string | null, tags: string[], neighbor
 
     setLoading(true)
     const controller = new AbortController()
+    const tagsList = tagsKey ? tagsKey.split(',') : []
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -32,7 +34,7 @@ export function usePriceSuggestion(type: string | null, tags: string[], neighbor
       return fetch(`${FUNCTIONS_URL}/price-suggestion`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ type, tags, neighborhood }),
+        body: JSON.stringify({ type, tags: tagsList, neighborhood }),
         signal: controller.signal,
       })
     })
@@ -44,8 +46,7 @@ export function usePriceSuggestion(type: string | null, tags: string[], neighbor
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
 
     return () => { controller.abort() }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, JSON.stringify(tags), neighborhood, supabase])
+  }, [type, tagsKey, neighborhood, supabase])
 
   return { suggestion, loading }
 }
