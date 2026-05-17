@@ -42,6 +42,8 @@ import { getCachedUserId } from '@/lib/authCache'
 import { checkRateLimit, getRateLimitMessage } from '@/lib/rateLimiter'
 import { ModalCloseButton, PressableOpacity, KeyboardDoneAccessory, KEYBOARD_DONE_ID } from '@/components/ui'
 import { getImageUrl } from '@/lib/imageUtils'
+import { useFeedLocation } from '@/hooks/feed/useFeedLocation'
+import { haversineKm } from '@/lib/geo'
 import type { Post, PostType, PostComment, PostStatus } from '@/lib/types'
 
 // Module-level latches: once we learn the live schema cannot accept a
@@ -73,6 +75,7 @@ function PostDetailScreenInner() {
   const { colors, isDark } = useTheme()
   const { t, locale } = useI18n()
   const toast = useToast()
+  const userLocation = useFeedLocation()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   // Safe back: when create.tsx (or any other entry point) used router.replace
@@ -1146,6 +1149,14 @@ function PostDetailScreenInner() {
 
   const isItemExchange = post?.type === 'ilmaista' || post?.type === 'lainaa' || (post?.type === 'tarjoan' && post?.tags?.includes('tarjoan_item'))
 
+  const distanceKm = userLocation && (post as any).latitude && (post as any).longitude
+    ? haversineKm(userLocation.latitude, userLocation.longitude, (post as any).latitude, (post as any).longitude)
+    : null
+
+  const distanceLabel = distanceKm != null
+    ? distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m` : `~${distanceKm.toFixed(1)} km`
+    : '—'
+
   return (
     <FadeIn style={{ flex: 1 }}>
     <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -1378,7 +1389,7 @@ function PostDetailScreenInner() {
           <View style={[styles.factsGrid, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
             <View style={[styles.fact, { borderRightColor: colors.border }]}>
               <Text style={[styles.factLabel, { color: colors.mutedForeground }]}>{t('post.distance') ?? 'ETÄISYYS'}</Text>
-              <Text style={[styles.factValue, { color: colors.foreground }]}>{post.location ? '~1 km' : '—'}</Text>
+              <Text style={[styles.factValue, { color: colors.foreground }]}>{distanceLabel}</Text>
             </View>
             <View style={[styles.fact, { borderRightColor: colors.border }]}>
               <Text style={[styles.factLabel, { color: colors.mutedForeground }]}>{post.type === 'lainaa' ? (t('post.deposit') ?? 'VAKUUS') : (t('post.category') ?? 'KATEGORIA')}</Text>
@@ -1493,7 +1504,7 @@ function PostDetailScreenInner() {
               <View style={styles.locText}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.locName, { color: colors.foreground }]}>{post.location}</Text>
-                  <Text style={[styles.locDistance, { color: colors.mutedForeground }]}>{t('post.distanceFromYou', { distance: '1 km' })}</Text>
+                  <Text style={[styles.locDistance, { color: colors.mutedForeground }]}>{distanceKm != null ? t('post.distanceFromYou', { distance: distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m` : `${distanceKm.toFixed(1)} km` }) : post.location}</Text>
                 </View>
                 <ChevronRight size={18} color={colors.mutedForeground} />
               </View>
@@ -1651,7 +1662,7 @@ function PostDetailScreenInner() {
         style={[
           styles.compactHeader,
           {
-            paddingTop: insets.top + 8,
+            paddingTop: insets.top + 16,
             backgroundColor: colors.background,
             borderBottomColor: colors.border,
             opacity: compactOpacity,
