@@ -8,11 +8,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import MapView, { Marker, Circle, Callout, PROVIDER_DEFAULT } from 'react-native-maps'
+import ClusteredMapView from 'react-native-map-clustering'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as Haptics from 'expo-haptics'
-import { Heart, Wrench, Gift, HandHelping, BookOpen, Calendar, X, MapPin } from 'lucide-react-native'
+import { Heart, Wrench, Gift, HandHelping, BookOpen, Calendar, X, MapPin, SlidersHorizontal } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -20,9 +21,10 @@ import { CATEGORIES } from '@/lib/constants'
 import type { PostType, CityEvent } from '@/lib/types'
 import { formatPrice, formatTimeAgo } from '@/lib/format'
 import { getImageUrl } from '@/lib/imageUtils'
-import { DARK_MAP_STYLE } from '@/components/map/useMapData'
+import { DARK_MAP_STYLE, NEIGHBORHOOD_CENTERS } from '@/components/map/useMapData'
 import { PressableOpacity } from '@/components/ui'
 import type { Post } from '@/lib/types'
+import { MapFilterSheet, DEFAULT_MAP_FILTERS, type MapFilterState } from '@/components/map/MapFilterSheet'
 
 // Helsinki center fallback
 const HELSINKI_CENTER = { latitude: 60.1699, longitude: 24.9384, latitudeDelta: 0.06, longitudeDelta: 0.06 }
@@ -77,6 +79,22 @@ function deterministicOffset(id: string): { dLat: number; dLng: number } {
   }
 }
 
+/** Resolve post location or user neighborhood to center coordinates */
+function resolveNeighborhoodCenter(location: string | null, userNaapurusto?: string | null): { latitude: number; longitude: number } | null {
+  if (location) {
+    const exact = NEIGHBORHOOD_CENTERS[location]
+    if (exact) return exact
+    const lower = location.toLowerCase()
+    for (const [name, coords] of Object.entries(NEIGHBORHOOD_CENTERS)) {
+      if (lower.includes(name.toLowerCase())) return coords
+    }
+  }
+  if (userNaapurusto) {
+    return NEIGHBORHOOD_CENTERS[userNaapurusto] ?? null
+  }
+  return null
+}
+
 interface MappablePost {
   post: Post
   latitude: number
@@ -101,6 +119,8 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
   const insets = useSafeAreaInsets()
   const mapRef = useRef<MapView | null>(null)
   const [selected, setSelected] = useState<SelectedItem | null>(null)
+  const [showFilters, setShowFilters] = useState(false)
+  const [mapFilters, setMapFilters] = useState<MapFilterState>(DEFAULT_MAP_FILTERS)
   const deselectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hasMounted = useRef(false)
 
@@ -136,26 +156,48 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
 
   const mappablePosts = useMemo(() => {
     return filteredPosts
-      .filter((p) => p.latitude != null && p.longitude != null && p.latitude !== 0 && p.longitude !== 0)
-      .map((p): MappablePost => {
-        // Micro-jitter (~30m) so pins at exact same address don't stack perfectly
-        const jitter = deterministicOffset(p.id)
-        return {
-          post: p,
-          latitude: p.latitude! + jitter.dLat * 0.1,
-          longitude: p.longitude! + jitter.dLng * 0.1,
+      .map((p): MappablePost | null => {
+        // Real coordinates — use with micro-jitter (~30m)
+        if (p.latitude != null && p.longitude != null && p.latitude !== 0 && p.longitude !== 0) {
+          const jitter = deterministicOffset(p.id)
+          return {
+            post: p,
+            latitude: p.latitude + jitter.dLat * 0.1,
+            longitude: p.longitude + jitter.dLng * 0.1,
+          }
         }
+        // Neighborhood-center fallback from post location or user naapurusto
+        const center = resolveNeighborhoodCenter(p.location, p.user?.naapurusto)
+        if (center) {
+          const offset = deterministicOffset(p.id)
+          return {
+            post: p,
+            latitude: center.latitude + offset.dLat,
+            longitude: center.longitude + offset.dLng,
+          }
+        }
+        return null
       })
+      .filter((mp): mp is MappablePost => mp !== null)
   }, [filteredPosts])
 
   // Only show events when no category filter or tapahtuma filter
   const mappableEvents = useMemo(() => {
     if (activeFilter && activeFilter !== 'tapahtuma') return []
-    return cityEvents.filter(e =>
+    let events = cityEvents.filter(e =>
       e.latitude != null && e.longitude != null &&
       e.latitude !== 0 && e.longitude !== 0
     )
-  }, [cityEvents, activeFilter])
+    // Apply map filter: event subcategories
+    if (mapFilters.eventSubcategories.length > 0) {
+      events = events.filter(e => mapFilters.eventSubcategories.includes(e.category))
+    }
+    // Apply map filter: free only
+    if (mapFilters.freeOnly) {
+      events = events.filter(e => e.is_free)
+    }
+    return events
+  }, [cityEvents, activeFilter, mapFilters.eventSubcategories, mapFilters.freeOnly])
 
   const initialRegion = useMemo(() => {
     if (center) {
@@ -210,6 +252,27 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
     }
   }, [selected, router])
 
+  const handleRenderCluster = useCallback((cluster: any) => {
+    const { id, geometry, onPress, properties } = cluster
+    const points = properties.point_count
+    const size = points < 10 ? 36 : points < 50 ? 42 : 48
+    return (
+      <Marker
+        key={`cluster-${id}`}
+        coordinate={{
+          longitude: geometry.coordinates[0],
+          latitude: geometry.coordinates[1],
+        }}
+        onPress={onPress}
+        tracksViewChanges={false}
+      >
+        <View style={[s.clusterBubble, { width: size, height: size, borderRadius: size / 2, backgroundColor: colors.primary }]}>
+          <Text style={s.clusterText}>{points}</Text>
+        </View>
+      </Marker>
+    )
+  }, [colors.primary])
+
   // Zoom to fit all markers — skip initial mount (uses initialRegion), run on filter changes
   useEffect(() => {
     if (!hasMounted.current) {
@@ -244,8 +307,8 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
 
   return (
     <View style={s.container}>
-      <MapView
-        ref={mapRef}
+      <ClusteredMapView
+        ref={mapRef as any}
         style={s.map}
         provider={PROVIDER_DEFAULT}
         initialRegion={initialRegion}
@@ -256,6 +319,12 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
         onMarkerSelect={handleMarkerSelect}
         onMarkerDeselect={handleMarkerDeselect}
         userInterfaceStyle={isDark ? 'dark' : 'light'}
+        clusterColor={colors.primary}
+        clusterTextColor="#FFFFFF"
+        clusterFontFamily={fonts.bodySemi}
+        renderCluster={handleRenderCluster}
+        radius={40}
+        animationEnabled={false}
       >
         {/* 10km radius circle — always show around center point */}
         <Circle
@@ -312,7 +381,7 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
             </Callout>
           </Marker>
         ))}
-      </MapView>
+      </ClusteredMapView>
 
       {/* Count badge */}
       <View style={[s.badge, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -321,6 +390,31 @@ export function FeedMapView({ posts, cityEvents = [], userLocation, activeFilter
           {totalCount} {t('feed.postsOnMap')}
         </Text>
       </View>
+
+      {/* Filter FAB */}
+      {!showFilters && (
+        <PressableOpacity
+          onPress={() => { try { Haptics.selectionAsync() } catch {} setShowFilters(true) }}
+          style={[s.filterFab, { backgroundColor: colors.card, borderColor: colors.border }]}
+          accessibilityLabel={t('feed.mapFilters')}
+          accessibilityRole="button"
+        >
+          <SlidersHorizontal size={18} color={colors.foreground} />
+          {(mapFilters.eventSubcategories.length > 0 || mapFilters.freeOnly || mapFilters.sortMode !== 'newest') && (
+            <View style={[s.filterDot, { backgroundColor: colors.primary }]} />
+          )}
+        </PressableOpacity>
+      )}
+
+      {/* Filter sheet */}
+      {showFilters && (
+        <MapFilterSheet
+          filters={mapFilters}
+          onChange={setMapFilters}
+          onClose={() => setShowFilters(false)}
+          resultCount={totalCount}
+        />
+      )}
 
       {/* Preview card when marker selected */}
       {selected && (
@@ -414,6 +508,15 @@ const s = StyleSheet.create({
     marginTop: -1,
   },
   noCallout: { width: 0, height: 0 },
+  // Cluster
+  clusterBubble: {
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25, shadowRadius: 3, elevation: 4,
+  },
+  clusterText: {
+    color: '#fff', fontSize: 14, fontFamily: fonts.bodySemi, fontWeight: '700',
+  },
   // Count badge
   badge: {
     position: 'absolute', top: 12, alignSelf: 'center',
@@ -421,6 +524,19 @@ const s = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1,
   },
   badgeText: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16 },
+  // Filter FAB
+  filterFab: {
+    position: 'absolute', top: 12, right: 16,
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12, shadowRadius: 4, elevation: 4,
+  },
+  filterDot: {
+    position: 'absolute', top: 8, right: 8,
+    width: 8, height: 8, borderRadius: 4,
+  },
   // Preview card
   preview: {
     position: 'absolute', left: 22, right: 22,
