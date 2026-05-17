@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, BigBtn } from '@/components/rental';
@@ -7,6 +7,7 @@ import { useLegacyTokens } from '@/lib/rental/theme';
 import { decodeHandoverPayload, verifyHandoverToken } from '@/lib/rental';
 import { useSupabase } from '@/hooks/useSupabase';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 let ExpoCamera: any = null;
 try {
@@ -16,6 +17,7 @@ try {
 function ScanScreenInner() {
   const BIVO = useLegacyTokens();
   const { t } = useI18n();
+  const toast = useToast();
   const { CameraView, useCameraPermissions } = ExpoCamera;
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -60,11 +62,8 @@ function ScanScreenInner() {
       return;
     }
     // Onnistui — siirry rental-näkymälle, joka näyttää nyt "in_use" -tilan
-    Alert.alert(
-      t('rentalFlow.pickupConfirmed'),
-      t('rentalFlow.pickupConfirmedBody'),
-      [{ text: 'OK', onPress: () => router.replace(`/rental/${parsed.bookingId}`) }],
-    );
+    toast.show({ message: t('rentalFlow.pickupConfirmedBody'), type: 'success' });
+    router.replace(`/rental/${parsed.bookingId}`);
   };
 
   const handleRetry = () => {

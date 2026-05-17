@@ -411,7 +411,7 @@ function SavedScreenInner() {
                         accessibilityRole="button"
                         accessibilityLabel={t('saved.unsave')}
                       >
-                        <Heart size={13} color="#F5F6F7" fill="#F5F6F7" />
+                        <Heart size={13} color="#FFFFFF" fill="#FFFFFF" />
                       </Pressable>
                     </View>
 

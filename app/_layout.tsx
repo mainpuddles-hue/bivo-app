@@ -707,7 +707,7 @@ export default function RootLayout() {
   if (!fontsLoaded) {
     return (
       <View style={splashStyles.container}>
-        <BivoTextLogo width={220} color="#E8E6E0" />
+        <BivoTextLogo width={220} color="#FFFFFF" />
       </View>
     )
   }
@@ -732,7 +732,7 @@ export default function RootLayout() {
 const splashStyles = RNStyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A1D1F',
+    backgroundColor: '#0A0A0A',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, StickyCTA, Eyebrow, Pill, StarIcon, StarOIcon } from '@/components/rental';
@@ -8,12 +8,14 @@ import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { submitReview } from '@/lib/rental';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 const TRAIT_KEYS = ['traitPunctual', 'traitGoodCommunication', 'traitReturnedSameCondition', 'traitFriendly', 'traitRespectedRules'];
 
 export default function OwnerReviewScreen() {
   const BIVO = useLegacyTokens();
   const { t } = useI18n();
+  const toast = useToast();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -54,12 +56,11 @@ export default function OwnerReviewScreen() {
     setSubmitting(false);
 
     if (error) {
-      Alert.alert(t('common.error'), error);
+      toast.show({ message: error, type: 'error' });
       return;
     }
-    Alert.alert(t('rentalFlow.reviewSentAlert'), t('rentalFlow.reviewSentAlertBody'), [
-      { text: 'OK', onPress: () => router.back() },
-    ]);
+    toast.show({ message: t('rentalFlow.reviewSentAlertBody'), type: 'success' });
+    router.back();
   };
 
   const styles = useMemo(() => StyleSheet.create({

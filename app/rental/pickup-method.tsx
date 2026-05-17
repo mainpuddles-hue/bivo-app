@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, StickyCTA, Eyebrow, PinIcon, HomeIcon, CheckIcon } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 type PickupMethod = 'meetup' | 'doorstep' | 'locker';
 const DB_METHOD: Record<PickupMethod, string> = { meetup: 'address', doorstep: 'address', locker: 'hub' };
@@ -21,6 +22,7 @@ export default function PickupMethodScreen() {
   const insets = useSafeAreaInsets();
   const supabase = useSupabase();
   const { t } = useI18n();
+  const toast = useToast();
   const { rentalId, itemId } = useLocalSearchParams<{ rentalId: string; itemId: string }>();
   const [selected, setSelected] = useState<PickupMethod | null>(null);
   const [saving, setSaving] = useState(false);
@@ -36,7 +38,7 @@ export default function PickupMethodScreen() {
         .eq('id', rentalId);
       setSaving(false);
       if (error) {
-        Alert.alert(t('rentalFlow.pickupMethodFailed'), '');
+        toast.show({ message: t('rentalFlow.pickupMethodFailed'), type: 'error' });
         return;
       }
       router.back();

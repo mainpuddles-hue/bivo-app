@@ -368,7 +368,7 @@ export default function RentalStatusScreen() {
                 </>
               )}
               {b.conversation_id && booking.pickup_state !== 'completed_pickup_flow' && (
-                <BigBtn secondary onPress={() => router.push(`/chat/${b.conversation_id}`)}>
+                <BigBtn secondary onPress={() => router.push(`/messages/${b.conversation_id}`)}>
                   {t('rentalFlow.openChat')}
                 </BigBtn>
               )}
@@ -419,7 +419,7 @@ export default function RentalStatusScreen() {
                 </Sheet>
               )}
               {b.conversation_id && (
-                <BigBtn secondary onPress={() => router.push(`/chat/${b.conversation_id}`)}>
+                <BigBtn secondary onPress={() => router.push(`/messages/${b.conversation_id}`)}>
                   {t('rentalFlow.openChat')}
                 </BigBtn>
               )}
@@ -545,7 +545,7 @@ function createStyles(BIVO: LegacyTokens) {
     },
     pulseDot: { width: 12, height: 12, borderRadius: 999 },
     stage: {
-      fontSize: 11, fontWeight: '600', fontFamily: BIVO.sansSemiBold, letterSpacing: 1.6, textTransform: 'uppercase',
+      fontSize: 11, fontWeight: '600', fontFamily: BIVO.sansSemiBold, letterSpacing: 0.88, textTransform: 'uppercase',
       color: BIVO.ink3, marginTop: 38,
     },
     title: {
@@ -573,7 +573,7 @@ function createStyles(BIVO: LegacyTokens) {
     rowLabel: { fontSize: 13, fontFamily: BIVO.sans, color: BIVO.ink2 },
     rowValue: { fontSize: 13, fontWeight: '600', fontFamily: BIVO.sansSemiBold, color: BIVO.ink },
 
-    notesLabel: { fontSize: 11, color: BIVO.ink2, letterSpacing: 0.9, textTransform: 'uppercase', fontWeight: '600', fontFamily: BIVO.sansSemiBold },
+    notesLabel: { fontSize: 11, color: BIVO.ink2, letterSpacing: 0.88, textTransform: 'uppercase', fontWeight: '600', fontFamily: BIVO.sansSemiBold },
     notesBody: { fontSize: 14, fontFamily: BIVO.sans, color: BIVO.ink, marginTop: 6, lineHeight: 21 },
 
     activeBanner: {

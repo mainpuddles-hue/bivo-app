@@ -109,9 +109,9 @@ export default function OverdueBorrowerScreen() {
             <Text style={styles.ownerSub}>{t('rentalFlow.sendMessageWhenOnWay')}</Text>
           </View>
           <RoundBtn size={36} onPress={() => {
-            if (conversationId) router.push(`/chat/${conversationId}`);
+            if (conversationId) router.push(`/messages/${conversationId}`);
           }}>
-            <ChatIcon size={16} />
+            <ChatIcon size={16} color={BIVO.ink} />
           </RoundBtn>
         </Sheet>
       </ScrollView>

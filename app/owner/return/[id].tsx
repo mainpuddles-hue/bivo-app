@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, BigBtn, Pill, Eyebrow, StageTag, CheckIcon } from '@/components/rental';
@@ -7,6 +7,7 @@ import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { confirmReceipt } from '@/lib/rental';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 type Condition = 'ok' | 'minor' | 'damaged';
 
@@ -19,6 +20,7 @@ const CONDITIONS: { key: Condition; labelKey: string; descKey: string }[] = [
 export default function OwnerReturnScreen() {
   const BIVO = useLegacyTokens();
   const { t } = useI18n();
+  const toast = useToast();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -49,7 +51,7 @@ export default function OwnerReturnScreen() {
 
     if (condition === 'damaged') {
       setSubmitting(false);
-      router.push(`/damage/report?rentalId=${id}`);
+      toast.show({ message: t('rentalFlow.damageReportBody'), type: 'info' });
       return;
     }
 
@@ -58,12 +60,11 @@ export default function OwnerReturnScreen() {
     const error = confirmError ? { message: confirmError } : null;
 
     if (error) {
-      Alert.alert(t('common.error'), error.message);
+      toast.show({ message: error.message, type: 'error' });
       return;
     }
-    Alert.alert(t('rentalFlow.returnConfirmed'), t('rentalFlow.depositReleasedToBorrower'), [
-      { text: 'OK', onPress: () => router.back() },
-    ]);
+    toast.show({ message: t('rentalFlow.depositReleasedToBorrower'), type: 'success' });
+    router.back();
   };
 
   const styles = useMemo(() => StyleSheet.create({

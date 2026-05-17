@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  Image, TextInput, Alert,
+  Image, TextInput,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { TopNav, Sheet, StickyCTA, StageTag, Eyebrow, CheckIcon, PlusIcon } from
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 interface PhotoSlot {
   id: string;
@@ -27,6 +28,7 @@ const INITIAL_SLOTS: PhotoSlot[] = [
 export default function PickupPhotosScreen() {
   const BIVO = useLegacyTokens();
   const { t } = useI18n();
+  const toast = useToast();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const supabase = useSupabase();
@@ -51,7 +53,7 @@ export default function PickupPhotosScreen() {
       const uri = result.assets[0].uri;
       setSlots(prev => prev.map(s => s.id === slotId ? { ...s, uri } : s));
     } catch {
-      Alert.alert(t('rentalFlow.photoCaptureFailed'), t('rentalFlow.photoCaptureFailed'));
+      toast.show({ message: t('rentalFlow.photoCaptureFailed'), type: 'error' });
     }
   }
 
@@ -76,7 +78,7 @@ export default function PickupPhotosScreen() {
 
   async function handleConfirm() {
     if (!allRequiredDone) {
-      Alert.alert(t('rentalFlow.photosMissing'), t('rentalFlow.photosMissingBody', { count: String(requiredCount) }));
+      toast.show({ message: t('rentalFlow.photosMissingBody', { count: String(requiredCount) }), type: 'error' });
       return;
     }
 
@@ -98,7 +100,7 @@ export default function PickupPhotosScreen() {
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t('rentalFlow.unknownError');
-      Alert.alert(t('rentalFlow.photoCaptureFailed'), msg);
+      toast.show({ message: msg, type: 'error' });
     } finally {
       setSubmitting(false);
     }

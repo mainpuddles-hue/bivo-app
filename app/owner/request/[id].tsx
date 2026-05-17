@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, BigBtn, Eyebrow, StageTag, ProductThumb } from '@/components/rental';
@@ -8,10 +8,12 @@ import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { approveRental, rejectRental } from '@/lib/rental';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 export default function OwnerRequestScreen() {
   const BIVO = useLegacyTokens();
   const { t } = useI18n();
+  const toast = useToast();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -40,14 +42,14 @@ export default function OwnerRequestScreen() {
       : await rejectRental(supabase, id);
     setResponding(false);
     if (result.error) {
-      Alert.alert(t('common.error'), result.error);
+      toast.show({ message: result.error, type: 'error' });
       return;
     }
-    Alert.alert(
-      status === 'approved' ? t('rentalFlow.requestApproved') : t('rentalFlow.requestRejected'),
-      status === 'approved' ? t('rentalFlow.requestApprovedBody') : t('rentalFlow.requestRejectedBody'),
-      [{ text: 'OK', onPress: () => router.back() }],
-    );
+    toast.show({
+      message: status === 'approved' ? t('rentalFlow.requestApprovedBody') : t('rentalFlow.requestRejectedBody'),
+      type: 'success',
+    });
+    router.back();
   };
 
   const styles = useMemo(() => StyleSheet.create({

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   View, Text, ScrollView, Image, StyleSheet, ActivityIndicator, TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +11,7 @@ import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens, type LegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&q=80&auto=format';
 
@@ -33,6 +33,7 @@ interface ItemData {
 export default function ProductScreen() {
   const BIVO = useLegacyTokens();
   const { t } = useI18n();
+  const toast = useToast();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -78,7 +79,7 @@ export default function ProductScreen() {
       <View style={[styles.container, styles.centerState]}>
         <View style={[styles.floatingBack, { top: insets.top + 10 }]}>
           <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel={t('common.back')}>
-            <BackIcon size={18} strokeWidth={2} />
+            <BackIcon size={18} color={BIVO.ink} strokeWidth={2} />
           </RoundBtn>
         </View>
         <ActivityIndicator color={BIVO.ink} />
@@ -91,7 +92,7 @@ export default function ProductScreen() {
       <View style={[styles.container, styles.centerState]}>
         <View style={[styles.floatingBack, { top: insets.top + 10 }]}>
           <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel={t('common.back')}>
-            <BackIcon size={18} strokeWidth={2} />
+            <BackIcon size={18} color={BIVO.ink} strokeWidth={2} />
           </RoundBtn>
         </View>
         <Text style={styles.notFoundTitle}>{t('itemDetail.notFound')}</Text>
@@ -120,7 +121,7 @@ export default function ProductScreen() {
       .maybeSingle();
 
     if (existing) {
-      router.push(`/chat/${(existing as any).id}`);
+      router.push(`/messages/${(existing as any).id}`);
       return;
     }
 
@@ -131,10 +132,10 @@ export default function ProductScreen() {
     }).select('id').single();
 
     if (error || !created) {
-      Alert.alert(t('common.error'), t('itemDetail.chatOpenFailed'));
+      toast.show({ message: t('itemDetail.chatOpenFailed'), type: 'error' });
       return;
     }
-    router.push(`/chat/${created.id}`);
+    router.push(`/messages/${created.id}`);
   };
 
   return (
@@ -154,7 +155,7 @@ export default function ProductScreen() {
           )}
           <View style={[styles.floatingNav, { top: insets.top + 10 }]}>
             <RoundBtn size={44} onPress={() => router.back()} accessibilityLabel={t('common.back')}>
-              <BackIcon size={18} strokeWidth={2} />
+              <BackIcon size={18} color={BIVO.ink} strokeWidth={2} />
             </RoundBtn>
             {/* Tallennetut tulee Phase 2:ssa — saved_items-taulu olemassa
                 mutta UI-flow ei vielä. Piilotetaan heart-painike kunnes
@@ -218,7 +219,7 @@ export default function ProductScreen() {
                       onPress={handleMessageOwner}
                       accessibilityLabel={t('itemDetail.sendMessage', { name: ownerName })}
                     >
-                      <ChatIcon size={18} />
+                      <ChatIcon size={18} color={BIVO.ink} />
                     </RoundBtn>
                   )}
                 </View>
@@ -243,7 +244,7 @@ export default function ProductScreen() {
           </View>
         </View>
       ) : item.is_free ? (
-        <StickyCTA onPress={() => router.push(`/free/${item.id}`)} hint={t('itemDetail.freeHint')}>
+        <StickyCTA onPress={() => handleMessageOwner()} hint={t('itemDetail.freeHint')}>
           {t('itemDetail.reserveForMe')}
         </StickyCTA>
       ) : (

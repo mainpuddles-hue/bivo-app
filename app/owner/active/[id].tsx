@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, BigBtn, Pill, Eyebrow, RoundBtn, ProductThumb, ChatIcon, ClockIcon } from '@/components/rental';
@@ -8,11 +8,13 @@ import { useLegacyTokens } from '@/lib/rental/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 export default function OwnerActiveScreen() {
   const BIVO = useLegacyTokens();
   const { colors } = useTheme();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const toast = useToast();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -146,12 +148,12 @@ export default function OwnerActiveScreen() {
             </View>
             <RoundBtn onPress={() => {
               if (!rental?.conversation_id) {
-                Alert.alert(t('rentalFlow.noConversation'), t('rentalFlow.noConversationBody'));
+                toast.show({ message: t('rentalFlow.noConversationBody'), type: 'error' });
                 return;
               }
-              router.push(`/chat/${rental.conversation_id}`);
+              router.push(`/messages/${rental.conversation_id}`);
             }}>
-              <ChatIcon size={18} />
+              <ChatIcon size={18} color={BIVO.ink} />
             </RoundBtn>
           </View>
 
@@ -166,7 +168,7 @@ export default function OwnerActiveScreen() {
             </View>
             {hoursLeft !== null && (
               <Text style={styles.timeLeft}>
-                {t('rentalFlow.hoursLeft', { hours: String(hoursLeft) })}{endDate ? ` · palautus ${endDate.toLocaleDateString('fi', { weekday: 'short' })} ${endDate.toLocaleTimeString('fi', { hour: '2-digit', minute: '2-digit' })}` : ''}
+                {t('rentalFlow.hoursLeft', { hours: String(hoursLeft) })}{endDate ? ` · ${t('rentalFlow.returnBy')} ${endDate.toLocaleDateString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', { weekday: 'short' })} ${endDate.toLocaleTimeString(locale === 'fi' ? 'fi-FI' : locale === 'sv' ? 'sv-SE' : 'en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''}
               </Text>
             )}
           </View>
@@ -176,10 +178,10 @@ export default function OwnerActiveScreen() {
         <View style={styles.managementGrid}>
           <TouchableOpacity style={styles.mgmtTile} onPress={() => {
             if (!rental?.conversation_id) {
-              Alert.alert(t('rentalFlow.noConversation'), t('rentalFlow.noConversationBody'));
+              toast.show({ message: t('rentalFlow.noConversationBody'), type: 'error' });
               return;
             }
-            router.push(`/chat/${rental.conversation_id}`);
+            router.push(`/messages/${rental.conversation_id}`);
           }}>
             <Text style={styles.mgmtLabel}>{t('rentalFlow.openChat')}</Text>
             <Text style={styles.mgmtSub}>{t('rentalFlow.messages')}</Text>

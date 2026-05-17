@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, BigBtn, Eyebrow, Pill, ClockIcon } from '@/components/rental';
@@ -7,10 +7,12 @@ import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/components/Toast';
 
 export default function OwnerOverdueScreen() {
   const BIVO = useLegacyTokens();
   const { t } = useI18n();
+  const toast = useToast();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -112,15 +114,15 @@ export default function OwnerOverdueScreen() {
           disabled={!rental?.conversation_id}
           onPress={() => {
             if (!rental?.conversation_id) {
-              Alert.alert(t('common.error'), t('rentalFlow.conversationNotFound'));
+              toast.show({ message: t('rentalFlow.conversationNotFound'), type: 'error' });
               return;
             }
-            router.push(`/chat/${rental.conversation_id}`);
+            router.push(`/messages/${rental.conversation_id}`);
           }}
         >
           {t('rentalFlow.sendMessageToBorrower')}
         </BigBtn>
-        <BigBtn secondary onPress={() => router.push('/support-chat')}>
+        <BigBtn secondary onPress={() => router.push('/help' as any)}>
           {t('rentalFlow.contactSupport')}
         </BigBtn>
       </View>
