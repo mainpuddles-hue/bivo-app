@@ -5,13 +5,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, StickyCTA, Eyebrow, PinIcon, HomeIcon, CheckIcon } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 type PickupMethod = 'meetup' | 'doorstep' | 'locker';
 const DB_METHOD: Record<PickupMethod, string> = { meetup: 'address', doorstep: 'address', locker: 'hub' };
 
-const METHODS: { key: PickupMethod; label: string; desc: string; icon: typeof PinIcon }[] = [
-  { key: 'meetup', label: 'Tapaaminen', desc: 'Sovitte ajan ja paikan kasvotusten', icon: PinIcon },
-  { key: 'doorstep', label: 'Oven eteen', desc: 'Omistaja jättää tavaran osoitteeseensa', icon: HomeIcon },
+const METHODS: { key: PickupMethod; labelKey: string; descKey: string; icon: typeof PinIcon }[] = [
+  { key: 'meetup', labelKey: 'rentalFlow.meetup', descKey: 'rentalFlow.meetupDesc', icon: PinIcon },
+  { key: 'doorstep', labelKey: 'rentalFlow.doorstep', descKey: 'rentalFlow.doorstepDesc', icon: HomeIcon },
 ];
 
 export default function PickupMethodScreen() {
@@ -19,6 +20,7 @@ export default function PickupMethodScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const supabase = useSupabase();
+  const { t } = useI18n();
   const { rentalId, itemId } = useLocalSearchParams<{ rentalId: string; itemId: string }>();
   const [selected, setSelected] = useState<PickupMethod | null>(null);
   const [saving, setSaving] = useState(false);
@@ -34,7 +36,7 @@ export default function PickupMethodScreen() {
         .eq('id', rentalId);
       setSaving(false);
       if (error) {
-        Alert.alert('Virhe', 'Noutotavan tallennus epäonnistui.');
+        Alert.alert(t('rentalFlow.pickupMethodFailed'), '');
         return;
       }
       router.back();
@@ -64,10 +66,10 @@ export default function PickupMethodScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Nouto" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.pickupMethodTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Eyebrow style={styles.stage}>Noutotapa</Eyebrow>
-        <Text style={styles.headline}>Miten haluat{'\n'}noutaa tavaran?</Text>
+        <Eyebrow style={styles.stage}>{t('rentalFlow.pickupMethodLabel')}</Eyebrow>
+        <Text style={styles.headline}>{t('rentalFlow.howToPickup')}</Text>
 
         {METHODS.map((method) => {
           const isSelected = selected === method.key;
@@ -86,8 +88,8 @@ export default function PickupMethodScreen() {
                     {isSelected ? <CheckIcon size={16} color="#fff" /> : <Icon size={20} color={BIVO.ink2} />}
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.methodLabel, isSelected && styles.methodLabelSelected]}>{method.label}</Text>
-                    <Text style={styles.methodDesc}>{method.desc}</Text>
+                    <Text style={[styles.methodLabel, isSelected && styles.methodLabelSelected]}>{t(method.labelKey)}</Text>
+                    <Text style={styles.methodDesc}>{t(method.descKey)}</Text>
                   </View>
                 </View>
               </Sheet>
@@ -97,7 +99,7 @@ export default function PickupMethodScreen() {
       </ScrollView>
 
       <StickyCTA onPress={handleConfirm} disabled={!selected || saving}>
-        {saving ? 'Tallennetaan…' : 'Jatka'}
+        {saving ? t('rentalFlow.verifying') : t('rentalFlow.continue')}
       </StickyCTA>
     </View>
   );

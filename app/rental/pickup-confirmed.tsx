@@ -5,9 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { TopNav, Sheet, StickyCTA, StageTag, Eyebrow } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
+import { useI18n } from '@/lib/i18n';
 
 export default function PickupConfirmedScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { rentalId, itemTitle, returnDate, ownerName } = useLocalSearchParams<{
@@ -37,7 +39,7 @@ export default function PickupConfirmedScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Nouto vahvistettu" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.pickupConfirmedTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <View style={styles.iconCircle}>
@@ -45,27 +47,27 @@ export default function PickupConfirmedScreen() {
               <Path d="M20 6L9 17l-5-5" />
             </Svg>
           </View>
-          <StageTag style={{ marginTop: 48 }}>NOUTO VAHVISTETTU</StageTag>
+          <StageTag style={{ marginTop: 48 }}>{t('rentalFlow.pickupConfirmedTag')}</StageTag>
           <Text style={styles.headline}>
-            {itemTitle ?? 'Tavara'} <Text style={{ color: BIVO.ink2 }}>on sinulla</Text>
-            {returnDate ? `\n${returnDate} asti` : ''}
+            {itemTitle ?? t('rentalFlow.itemFallback')} <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.itemWithYou')}</Text>
+            {returnDate ? `\n${t('rentalFlow.untilDate', { date: returnDate })}` : ''}
           </Text>
           <Text style={styles.sub}>
-            Palautus {returnDate ?? 'sovittuun aikaan'} · {ownerName ?? 'Omistajalle'}
+            {t('rentalFlow.returnTo', { date: returnDate ?? '', name: ownerName ?? t('rentalFlow.ownerFallback') })}
           </Text>
         </View>
 
         <Sheet padding={18} style={styles.sheet}>
-          <Eyebrow>Muista palautuksessa</Eyebrow>
+          <Eyebrow>{t('rentalFlow.rememberOnReturn')}</Eyebrow>
           <View style={styles.checklistArea}>
             {[
-              'Puhdista tavara käytön jälkeen',
-              'Pakkaa kaikki osat mukaan',
-              'Palauta sovitussa kunnossa',
-            ].map((t, i) => (
+              t('rentalFlow.checklistClean'),
+              t('rentalFlow.checklistParts'),
+              t('rentalFlow.checklistCondition'),
+            ].map((item, i) => (
               <View key={i} style={styles.checkItem}>
                 <View style={styles.bullet} />
-                <Text style={styles.checkText}>{t}</Text>
+                <Text style={styles.checkText}>{item}</Text>
               </View>
             ))}
           </View>
@@ -73,7 +75,7 @@ export default function PickupConfirmedScreen() {
       </ScrollView>
 
       <StickyCTA onPress={() => { if (rentalId) router.push(`/rental/${rentalId}`); }}>
-        Avaa aktiivinen laina
+        {t('rentalFlow.openActiveRental')}
       </StickyCTA>
     </View>
   );

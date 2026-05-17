@@ -5,16 +5,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { TopNav, Sheet, BigBtn, StageTag, Eyebrow } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
+import { useI18n } from '@/lib/i18n';
 
 export default function RejectedScreen() {
   const BIVO = useLegacyTokens();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   const { ownerName, ownerMessage, itemTitle } = useLocalSearchParams<{
     ownerName?: string; ownerMessage?: string; itemTitle?: string;
   }>();
 
-  const name = ownerName ?? 'Omistaja';
+  const name = ownerName ?? t('rentalFlow.ownerFallback');
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: BIVO.bg },
@@ -44,7 +46,7 @@ export default function RejectedScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Hylätty" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.rejectedTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <View style={styles.iconCircle}>
@@ -52,27 +54,26 @@ export default function RejectedScreen() {
               <Path d="M6 6L18 18M18 6L6 18" />
             </Svg>
           </View>
-          <StageTag style={{ marginTop: 48 }}>EI TÄLLÄ KERTAA</StageTag>
+          <StageTag style={{ marginTop: 48 }}>{t('rentalFlow.notThisTime')}</StageTag>
           <Text style={styles.headline}>
-            {name} ei voinut{'\n'}
-            lainata <Text style={{ color: BIVO.ink2 }}>tällä viikolla</Text>
+            {t('rentalFlow.ownerCouldntLend', { name })}
           </Text>
           <Text style={styles.body}>
-            Vakuusvaraus on jo peruttu. Voit etsiä toisen {itemTitle ?? 'tavaran'} lähistöltä.
+            {t('rentalFlow.depositCancelledBody', { item: itemTitle ?? t('rentalFlow.itemFallback').toLowerCase() })}
           </Text>
         </View>
 
         {ownerMessage ? (
           <Sheet padding={16} style={styles.messageSheet}>
-            <Eyebrow>{name}n viesti</Eyebrow>
+            <Eyebrow>{t('rentalFlow.ownersMessage', { name })}</Eyebrow>
             <Text style={styles.messageText}>{ownerMessage}</Text>
           </Sheet>
         ) : null}
       </ScrollView>
 
       <View style={[styles.ctaArea, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <BigBtn onPress={() => router.replace('/search')}>Etsi toinen {itemTitle ?? 'tavara'}</BigBtn>
-        <BigBtn secondary onPress={() => router.back()}>Palaa lainoihin</BigBtn>
+        <BigBtn onPress={() => router.replace('/search')}>{t('rentalFlow.searchAnother', { item: itemTitle ?? t('rentalFlow.itemFallback').toLowerCase() })}</BigBtn>
+        <BigBtn secondary onPress={() => router.back()}>{t('rentalFlow.backToLoans')}</BigBtn>
       </View>
     </View>
   );

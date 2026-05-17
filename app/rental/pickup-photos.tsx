@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, StickyCTA, StageTag, Eyebrow, CheckIcon, PlusIcon } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 interface PhotoSlot {
   id: string;
@@ -17,14 +18,15 @@ interface PhotoSlot {
 }
 
 const INITIAL_SLOTS: PhotoSlot[] = [
-  { id: 'front', label: 'Edestä', required: true, uri: null },
-  { id: 'back', label: 'Takaa', required: true, uri: null },
-  { id: 'acc', label: 'Lisävarusteet', required: false, uri: null },
-  { id: 'flaw', label: 'Mahdolliset vauriot', required: false, uri: null },
+  { id: 'front', label: 'photoFront', required: true, uri: null },
+  { id: 'back', label: 'photoBack', required: true, uri: null },
+  { id: 'acc', label: 'photoAccessories', required: false, uri: null },
+  { id: 'flaw', label: 'photoDamage', required: false, uri: null },
 ];
 
 export default function PickupPhotosScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const supabase = useSupabase();
@@ -49,7 +51,7 @@ export default function PickupPhotosScreen() {
       const uri = result.assets[0].uri;
       setSlots(prev => prev.map(s => s.id === slotId ? { ...s, uri } : s));
     } catch {
-      Alert.alert('Virhe', 'Kuvan ottaminen epäonnistui.');
+      Alert.alert(t('rentalFlow.photoCaptureFailed'), t('rentalFlow.photoCaptureFailed'));
     }
   }
 
@@ -74,7 +76,7 @@ export default function PickupPhotosScreen() {
 
   async function handleConfirm() {
     if (!allRequiredDone) {
-      Alert.alert('Kuvat puuttuvat', `Ota vähintään ${requiredCount} pakollista kuvaa.`);
+      Alert.alert(t('rentalFlow.photosMissing'), t('rentalFlow.photosMissingBody', { count: String(requiredCount) }));
       return;
     }
 
@@ -95,8 +97,8 @@ export default function PickupPhotosScreen() {
         params: { rentalId },
       });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Tuntematon virhe';
-      Alert.alert('Virhe', msg);
+      const msg = err instanceof Error ? err.message : t('rentalFlow.unknownError');
+      Alert.alert(t('rentalFlow.photoCaptureFailed'), msg);
     } finally {
       setSubmitting(false);
     }
@@ -159,15 +161,15 @@ export default function PickupPhotosScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Dokumentoi kunto" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.documentCondition')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <StageTag>VAIHE 2 / 3</StageTag>
+        <StageTag>{t('rentalFlow.phase2of3')}</StageTag>
         <Text style={styles.headline}>
-          Ota muutama kuva{'\n'}
-          <Text style={{ color: BIVO.ink2 }}>nykytilasta</Text>
+          {t('rentalFlow.takePhotos')}{'\n'}
+          <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.currentState')}</Text>
         </Text>
         <Text style={styles.subtext}>
-          Kuvilla dokumentoidaan tavaran lähtötila. Molemmat osapuolet näkevät kuvat.
+          {t('rentalFlow.photosExplanation')}
         </Text>
 
         <View style={styles.photoGrid}>
@@ -185,7 +187,7 @@ export default function PickupPhotosScreen() {
                     <CheckIcon size={10} color="#fff" />
                   </View>
                   <View style={styles.slotLabelOverlay}>
-                    <Text style={styles.slotLabelFilled}>{slot.label.toUpperCase()}</Text>
+                    <Text style={styles.slotLabelFilled}>{t(`rentalFlow.${slot.label}`).toUpperCase()}</Text>
                   </View>
                 </>
               ) : (
@@ -193,20 +195,20 @@ export default function PickupPhotosScreen() {
                   <View style={styles.slotPlusCircle}>
                     <PlusIcon size={18} color="#fff" />
                   </View>
-                  <Text style={styles.slotLabel}>{slot.label}</Text>
-                  {!slot.required && <Text style={styles.slotOptional}>vapaaehtoinen</Text>}
+                  <Text style={styles.slotLabel}>{t(`rentalFlow.${slot.label}`)}</Text>
+                  {!slot.required && <Text style={styles.slotOptional}>{t('rentalFlow.optional')}</Text>}
                 </View>
               )}
             </TouchableOpacity>
           ))}
         </View>
 
-        <Eyebrow style={{ marginTop: 22 }}>Lisää huomio (valinnainen)</Eyebrow>
+        <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.addNote')}</Eyebrow>
         <Sheet padding={16} style={{ marginTop: 8 }}>
           <TextInput
             value={note}
             onChangeText={setNote}
-            placeholder='Esim. "Toisessa akussa pieni naarmu" tai "Laturin johto on taittunut"'
+            placeholder={t('rentalFlow.notePlaceholder')}
             placeholderTextColor={BIVO.ink3}
             style={styles.noteInput}
             multiline
@@ -219,7 +221,7 @@ export default function PickupPhotosScreen() {
             <Text style={styles.infoBadgeText}>i</Text>
           </View>
           <Text style={styles.infoText}>
-            Kuvat tallentuvat lainan tietoihin. Palautuksessa omistaja näkee saman kuvasarjan rinnakkain.
+            {t('rentalFlow.photoInfoText')}
           </Text>
         </View>
       </ScrollView>
@@ -227,9 +229,9 @@ export default function PickupPhotosScreen() {
       <StickyCTA
         onPress={handleConfirm}
         disabled={!allRequiredDone || submitting}
-        hint={`${filledCount} / ${requiredCount} pakollista kuvaa otettu`}
+        hint={t('rentalFlow.requiredPhotosCount', { filled: String(filledCount), total: String(requiredCount) })}
       >
-        {submitting ? 'Tallennetaan…' : 'Vahvista nouto'}
+        {submitting ? t('rentalFlow.verifying') : t('rentalFlow.confirmPickup')}
       </StickyCTA>
     </View>
   );

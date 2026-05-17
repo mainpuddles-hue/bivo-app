@@ -7,11 +7,13 @@ import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { submitReview } from '@/lib/rental';
+import { useI18n } from '@/lib/i18n';
 
-const TRAITS = ['Täsmällinen', 'Hyvä viestintä', 'Tavara palautui samassa kunnossa', 'Ystävällinen', 'Kunnioitti sääntöjä'];
+const TRAIT_KEYS = ['traitPunctual', 'traitGoodCommunication', 'traitReturnedSameCondition', 'traitFriendly', 'traitRespectedRules'];
 
 export default function OwnerReviewScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,9 +43,9 @@ export default function OwnerReviewScreen() {
     return () => { mounted = false; };
   }, [id]);
 
-  const borrowerName = rental?.borrower?.display_name || rental?.borrower?.name || 'Lainaaja';
-  const toggleTrait = (t: string) =>
-    setSelectedTraits(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+  const borrowerName = rental?.borrower?.display_name || rental?.borrower?.name || t('rentalFlow.borrowerFallback');
+  const toggleTrait = (key: string) =>
+    setSelectedTraits(prev => prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]);
 
   const handleSubmit = async () => {
     if (!id || !userId || rating === 0) return;
@@ -52,10 +54,10 @@ export default function OwnerReviewScreen() {
     setSubmitting(false);
 
     if (error) {
-      Alert.alert('Virhe', error);
+      Alert.alert(t('common.error'), error);
       return;
     }
-    Alert.alert('Arvio lähetetty', 'Arvio näkyy lainaajalle, kun molemmat ovat arvioineet.', [
+    Alert.alert(t('rentalFlow.reviewSentAlert'), t('rentalFlow.reviewSentAlertBody'), [
       { text: 'OK', onPress: () => router.back() },
     ]);
   };
@@ -78,16 +80,16 @@ export default function OwnerReviewScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title={`Arvioi ${borrowerName}`} onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.ownerReviewTitle', { name: borrowerName })} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.avatarSection}>
           <Avatar url={rental?.borrower?.avatar_url} name={borrowerName} size={76} />
           <Text style={styles.headline}>
-            Miten meni {borrowerName}n{'\n'}kanssa?
+            {t('rentalFlow.howWasItWith', { name: borrowerName })}
           </Text>
         </View>
 
-        <Eyebrow>Yleisarvio</Eyebrow>
+        <Eyebrow>{t('rentalFlow.overallRating')}</Eyebrow>
         <View style={styles.stars}>
           {[1, 2, 3, 4, 5].map((n) => (
             <TouchableOpacity key={n} onPress={() => setRating(n)} activeOpacity={0.7}>
@@ -98,21 +100,21 @@ export default function OwnerReviewScreen() {
           ))}
         </View>
 
-        <Eyebrow style={{ marginTop: 22 }}>Mikä toimi hyvin</Eyebrow>
+        <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.whatWorkedWell')}</Eyebrow>
         <View style={styles.traitRow}>
-          {TRAITS.map(t => (
-            <TouchableOpacity key={t} onPress={() => toggleTrait(t)} activeOpacity={0.7}>
-              <Pill tone={selectedTraits.includes(t) ? 'on' : 'soft'}>{t}</Pill>
+          {TRAIT_KEYS.map(key => (
+            <TouchableOpacity key={key} onPress={() => toggleTrait(key)} activeOpacity={0.7}>
+              <Pill tone={selectedTraits.includes(key) ? 'on' : 'soft'}>{t('rentalFlow.' + key)}</Pill>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Eyebrow style={{ marginTop: 22 }}>Yksityinen palaute (vain Bivolle)</Eyebrow>
+        <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.privateFeedback')}</Eyebrow>
         <Sheet padding={16} style={styles.sheet}>
           <TextInput
             value={comment}
             onChangeText={setComment}
-            placeholder="Kerro lyhyesti kokemuksestasi…"
+            placeholder={t('rentalFlow.feedbackPlaceholder')}
             placeholderTextColor={BIVO.ink3}
             style={styles.input}
             multiline
@@ -126,9 +128,9 @@ export default function OwnerReviewScreen() {
       <StickyCTA
         onPress={handleSubmit}
         disabled={rating === 0 || submitting}
-        hint={`${borrowerName}n arvio sinusta julkaistaan samaan aikaan`}
+        hint={t('rentalFlow.reviewPublishedSameTime', { name: borrowerName })}
       >
-        {submitting ? 'Lähetetään…' : 'Lähetä arvio'}
+        {submitting ? t('rentalFlow.sendingReview') : t('rentalFlow.sendReview')}
       </StickyCTA>
     </View>
   );

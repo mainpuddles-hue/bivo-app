@@ -9,6 +9,7 @@ import { TopNav, Sheet, StickyCTA, Eyebrow, Pill } from '@/components/rental';
 import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 const MAX_RENTAL_DAYS = 6;
 
@@ -35,6 +36,7 @@ interface RentalData {
 
 export default function RentalExtendScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const supabase = useSupabase();
@@ -94,7 +96,7 @@ export default function RentalExtendScreen() {
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
       if (!token) {
-        Alert.alert('Virhe', 'Et ole kirjautunut.');
+        Alert.alert(t('rentalFlow.extendTitle'), t('rentalFlow.notLoggedIn'));
         return;
       }
 
@@ -112,7 +114,7 @@ export default function RentalExtendScreen() {
 
       const payload = await res.json();
       if (!res.ok || !payload.url) {
-        Alert.alert('Virhe', payload.error ?? 'Pidennys epäonnistui.');
+        Alert.alert(t('rentalFlow.extendTitle'), payload.error ?? t('rentalFlow.extensionFailed'));
         return;
       }
 
@@ -123,17 +125,17 @@ export default function RentalExtendScreen() {
 
       if (result.type === 'success' && result.url?.includes('extend-success')) {
         Alert.alert(
-          'Laina-aika pidennetty',
-          `Vuokra-aikaa pidennetty ${selected} päivällä. Uusi palautus: ${newEndDate ? formatDateLong(newEndDate) : ''}`,
+          t('rentalFlow.extensionSuccess'),
+          t('rentalFlow.extensionSuccessBody', { days: String(selected), date: newEndDate ? formatDateLong(newEndDate) : '' }),
           [{ text: 'OK', onPress: () => router.back() }],
         );
       } else if (result.type === 'cancel' || result.type === 'dismiss') {
         // Ei tehdä mitään
       } else {
-        Alert.alert('Virhe', 'Maksu ei onnistunut.');
+        Alert.alert(t('rentalFlow.extendTitle'), t('rentalFlow.paymentNotCompleted'));
       }
     } catch {
-      Alert.alert('Virhe', 'Pidennys epäonnistui. Yritä uudelleen.');
+      Alert.alert(t('rentalFlow.extendTitle'), t('rentalFlow.extensionFailedRetry'));
     } finally {
       setSubmitting(false);
     }
@@ -177,7 +179,7 @@ export default function RentalExtendScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Pidennä laina" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.extendTitle')} onBack={() => router.back()} />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={BIVO.ink} />
         </View>
@@ -188,10 +190,10 @@ export default function RentalExtendScreen() {
   if (!rental || maxExtend === 0) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Pidennä laina" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.extendTitle')} onBack={() => router.back()} />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 }}>
           <Text style={styles.emptyText}>
-            {!rental ? 'Lainaa ei löytynyt.' : `Laina on jo ${rental.currentDays} vuorokautta, enimmäisaika on ${MAX_RENTAL_DAYS} vuorokautta.`}
+            {!rental ? t('rentalFlow.rentalNotFoundShort') : t('rentalFlow.maxDurationReached', { current: String(rental.currentDays), max: String(MAX_RENTAL_DAYS) })}
           </Text>
         </View>
       </View>
@@ -200,7 +202,7 @@ export default function RentalExtendScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Pidennä laina" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.extendTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Sheet padding={14} style={styles.itemCard}>
           <View style={styles.itemRow}>
@@ -212,14 +214,14 @@ export default function RentalExtendScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.itemTitle}>{rental.itemTitle}</Text>
               <Text style={styles.itemSub}>
-                {rental.ownerName}lta · palautus {currentEndDate ? formatDateFi(currentEndDate) : ''}
+                {t('rentalFlow.returnFrom', { name: rental.ownerName, date: currentEndDate ? formatDateFi(currentEndDate) : '' })}
               </Text>
             </View>
-            <Pill tone="live">Käynnissä</Pill>
+            <Pill tone="live">{t('rentalFlow.active')}</Pill>
           </View>
         </Sheet>
 
-        <Eyebrow style={styles.sectionEyebrow}>LISÄÄ AIKAA</Eyebrow>
+        <Eyebrow style={styles.sectionEyebrow}>{t('rentalFlow.addTime')}</Eyebrow>
         <View style={styles.optionsRow}>
           {options.map(days => {
             const sel = selected === days;
@@ -231,36 +233,36 @@ export default function RentalExtendScreen() {
                 onPress={() => setSelected(days)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.optionLabel, sel && { color: '#fff' }]}>+ {days} vrk</Text>
+                <Text style={[styles.optionLabel, sel && { color: '#fff' }]}>+ {t('rentalFlow.durationDays', { days: String(days) })}</Text>
                 <Text style={[styles.optionPrice, sel && { color: 'rgba(255,255,255,0.75)' }]}>{optCost} €</Text>
               </TouchableOpacity>
             );
           })}
         </View>
 
-        <Eyebrow style={styles.sectionEyebrow}>UUSI PALAUTUS</Eyebrow>
+        <Eyebrow style={styles.sectionEyebrow}>{t('rentalFlow.newReturn')}</Eyebrow>
         <Sheet padding={18}>
           <Text style={styles.oldDate}>
-            Nykyinen: {currentEndDate ? formatDateFi(currentEndDate) : '—'}
+            {t('rentalFlow.current')} {currentEndDate ? formatDateFi(currentEndDate) : '—'}
           </Text>
           <Text style={styles.newDate}>
             {newEndDate ? formatDateLong(newEndDate) : '—'}
           </Text>
           <Text style={styles.dayCount}>
-            Yhteensä {rental.currentDays + selected} / {MAX_RENTAL_DAYS} vrk
+            {t('rentalFlow.totalDays', { current: String(rental.currentDays + selected), max: String(MAX_RENTAL_DAYS) })}
           </Text>
         </Sheet>
 
         <Sheet padding={14} style={styles.approvalNote}>
           <Avatar name={rental.ownerName} url={rental.ownerAvatar} size={36} />
           <Text style={styles.approvalText}>
-            Pidennys veloitetaan heti. Omistajalle ilmoitetaan uudesta palautuspäivästä.
+            {t('rentalFlow.extendNow')}
           </Text>
         </Sheet>
       </ScrollView>
 
       <StickyCTA onPress={handleExtend} disabled={submitting}>
-        {submitting ? 'Käsitellään…' : `Maksa pidennys · ${cost} €`}
+        {submitting ? t('rentalFlow.verifying') : t('rentalFlow.payExtension', { cost: String(cost) })}
       </StickyCTA>
     </View>
   );

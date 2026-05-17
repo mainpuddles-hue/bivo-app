@@ -9,9 +9,11 @@ import { TopNav, StickyCTA, Eyebrow } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useRentalBooking, submitReview } from '@/lib/rental';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 export default function ReviewScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -69,8 +71,8 @@ export default function ReviewScreen() {
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <TopNav title="" onBack={() => router.back()} />
         <View style={styles.center}>
-          <Text style={styles.errorTitle}>Vuokrausta ei löytynyt</Text>
-          <Text style={styles.errorBody}>Linkki on vanhentunut.</Text>
+          <Text style={styles.errorTitle}>{t('rentalFlow.rentalNotFound')}</Text>
+          <Text style={styles.errorBody}>{t('rentalFlow.linkExpired')}</Text>
         </View>
       </View>
     );
@@ -78,7 +80,7 @@ export default function ReviewScreen() {
 
   const isBorrower = userId === booking.borrower_id;
   const isLender = userId === booking.lender_id;
-  const reviewedRole = isBorrower ? 'omistajaa' : 'lainaajaa';
+  const reviewedRole = isBorrower ? t('rentalFlow.ownerAccusative') : t('rentalFlow.borrowerAccusative');
 
   // Cast to access DB fields not in typed interface
   const b = booking as any;
@@ -87,9 +89,9 @@ export default function ReviewScreen() {
   if (!isBorrower && !isLender) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Arvio" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.reviewTitle')} onBack={() => router.back()} />
         <View style={styles.center}>
-          <Text style={styles.errorTitle}>Et voi arvioida tätä vuokrausta</Text>
+          <Text style={styles.errorTitle}>{t('rentalFlow.cannotReviewThisRental')}</Text>
         </View>
       </View>
     );
@@ -98,10 +100,10 @@ export default function ReviewScreen() {
   if (alreadySubmitted) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Arvio" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.reviewTitle')} onBack={() => router.back()} />
         <View style={styles.center}>
-          <Text style={styles.errorTitle}>Olet jo arvioinut</Text>
-          <Text style={styles.errorBody}>Toisen arvio tulee näkyviin kun hän on lähettänyt sen.</Text>
+          <Text style={styles.errorTitle}>{t('rentalFlow.alreadyReviewed')}</Text>
+          <Text style={styles.errorBody}>{t('rentalFlow.otherReviewVisibleWhenSent')}</Text>
         </View>
       </View>
     );
@@ -110,10 +112,10 @@ export default function ReviewScreen() {
   if (booking.status !== 'completed') {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Arvio" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.reviewTitle')} onBack={() => router.back()} />
         <View style={styles.center}>
-          <Text style={styles.errorTitle}>Lainaus ei ole vielä päättynyt</Text>
-          <Text style={styles.errorBody}>Arviointi avautuu kun palautus on vahvistettu.</Text>
+          <Text style={styles.errorTitle}>{t('rentalFlow.rentalNotYetCompleted')}</Text>
+          <Text style={styles.errorBody}>{t('rentalFlow.reviewOpensAfterReturn')}</Text>
         </View>
       </View>
     );
@@ -121,19 +123,19 @@ export default function ReviewScreen() {
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      Alert.alert('Valitse arvosana', 'Anna 1–5 tähteä.');
+      Alert.alert(t('rentalFlow.selectRating'), t('rentalFlow.selectRatingBody'));
       return;
     }
     setSubmitting(true);
     const res = await submitReview(supabase, booking.id, rating, content.trim());
     setSubmitting(false);
     if (res.error) {
-      Alert.alert('Arvion lähetys epäonnistui', res.error);
+      Alert.alert(t('rentalFlow.reviewSubmitFailed'), res.error);
       return;
     }
     Alert.alert(
-      'Kiitos arviostasi',
-      'Toisen osapuolen arvio tulee näkyviin kun hän on myös lähettänyt sen.',
+      t('rentalFlow.thankYouForReview'),
+      t('rentalFlow.otherReviewVisibleWhenBothSent'),
       [{ text: 'OK', onPress: () => router.replace(`/rental/${booking.id}`) }],
     );
   };
@@ -143,17 +145,17 @@ export default function ReviewScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={[styles.container, { paddingTop: insets.top }]}
     >
-      <TopNav title="Arvio" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.reviewTitle')} onBack={() => router.back()} />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: 180 }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Miten {reviewedRole} sujui?</Text>
+        <Text style={styles.title}>{t('rentalFlow.howWasOwner', { role: reviewedRole })}</Text>
         <Text style={styles.subtitle}>
-          Arvio näkyy toiselle vasta kun hän on myös arvioinut sinut, tai 14 päivän kuluttua.
+          {t('rentalFlow.reviewVisibility')}
         </Text>
 
-        <Eyebrow style={{ marginTop: 28, marginBottom: 12 }}>Tähdet</Eyebrow>
+        <Eyebrow style={{ marginTop: 28, marginBottom: 12 }}>{t('rentalFlow.stars')}</Eyebrow>
         <View style={styles.starsRow}>
           {[1, 2, 3, 4, 5].map(n => (
             <TouchableOpacity
@@ -161,7 +163,7 @@ export default function ReviewScreen() {
               onPress={() => setRating(n)}
               activeOpacity={0.6}
               hitSlop={10}
-              accessibilityLabel={`${n} tähteä`}
+              accessibilityLabel={t('rentalFlow.nStars', { n: String(n) })}
             >
               <Text style={[styles.star, n <= rating && styles.starFilled]}>
                 {n <= rating ? '★' : '☆'}
@@ -170,11 +172,11 @@ export default function ReviewScreen() {
           ))}
         </View>
 
-        <Eyebrow style={{ marginTop: 24, marginBottom: 10 }}>Sanat (valinnainen)</Eyebrow>
+        <Eyebrow style={{ marginTop: 24, marginBottom: 10 }}>{t('rentalFlow.wordsOptional')}</Eyebrow>
         <TextInput
           value={content}
           onChangeText={setContent}
-          placeholder="Kuvaile lyhyesti millaista yhteistyö oli. Mitä toivottavasti tapahtuu uudestaan, mitä parannettavaa."
+          placeholder={t('rentalFlow.reviewPlaceholder')}
           placeholderTextColor={BIVO.ink3}
           style={styles.field}
           multiline
@@ -186,9 +188,9 @@ export default function ReviewScreen() {
       <StickyCTA
         onPress={handleSubmit}
         disabled={submitting || rating === 0}
-        hint="Arvio on julkinen kun toinen on myös lähettänyt. Arviota ei voi peruuttaa."
+        hint={t('rentalFlow.reviewHint')}
       >
-        {submitting ? 'Lähetetään…' : 'Lähetä arvio'}
+        {submitting ? t('rentalFlow.sendingReview') : t('rentalFlow.sendReview')}
       </StickyCTA>
     </KeyboardAvoidingView>
   );

@@ -10,11 +10,13 @@ import { TopNav, BigBtn } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { mintHandoverToken, encodeHandoverPayload, useRentalBooking } from '@/lib/rental';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 // Tumma näkymä — Jessen designin mukaisesti handover QR näytetään
 // kontrastilla joka tekee QR:stä helposti skannattavan ulkona/sisätiloissa.
 export default function OwnerHandoverScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -49,7 +51,7 @@ export default function OwnerHandoverScreen() {
     try {
       const res = await mintHandoverToken(supabase, id);
       if (res.error || !res.data) {
-        setMintError(res.error ?? 'QR-koodin luonti epäonnistui');
+        setMintError(res.error ?? t('rentalFlow.qrCreationFailed'));
         return;
       }
       setToken(res.data.token);
@@ -99,8 +101,8 @@ export default function OwnerHandoverScreen() {
   useEffect(() => {
     if (booking?.pickup_state === 'in_use') {
       Alert.alert(
-        'Nouto vahvistettu',
-        'Lainaaja on skannannut QR-koodin. Tavara on nyt heidän käytössään.',
+        t('rentalFlow.handoverConfirmed'),
+        t('rentalFlow.borrowerScannedQR'),
         [{ text: 'OK', onPress: () => router.replace(`/rental/${id}`) }],
       );
     }
@@ -157,9 +159,9 @@ export default function OwnerHandoverScreen() {
   if (userId !== booking.lender_id) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Nouto" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.handoverTitle')} onBack={() => router.back()} />
         <View style={styles.center}>
-          <Text style={styles.errorText}>Vain omistaja voi näyttää nouto-QR:n.</Text>
+          <Text style={styles.errorText}>{t('rentalFlow.onlyOwnerCanShow')}</Text>
         </View>
       </View>
     );
@@ -168,10 +170,10 @@ export default function OwnerHandoverScreen() {
   if (booking.status !== 'confirmed') {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Nouto" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.handoverTitle')} onBack={() => router.back()} />
         <View style={styles.center}>
           <Text style={styles.errorText}>
-            Lainaa ei voi luovuttaa kun se on tilassa "{booking.status}".
+            {t('rentalFlow.cannotHandoverInStatus', { status: booking.status })}
           </Text>
         </View>
       </View>
@@ -181,10 +183,10 @@ export default function OwnerHandoverScreen() {
   if (booking.pickup_state === 'in_use') {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Nouto" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.handoverTitle')} onBack={() => router.back()} />
         <View style={styles.center}>
           <Text style={styles.success}>✓</Text>
-          <Text style={styles.successText}>Nouto valmis</Text>
+          <Text style={styles.successText}>{t('rentalFlow.pickupComplete')}</Text>
         </View>
       </View>
     );
@@ -196,12 +198,11 @@ export default function OwnerHandoverScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Nouto" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.handoverTitle')} onBack={() => router.back()} />
       <View style={styles.content}>
-        <Text style={styles.title}>Näytä tämä lainaajalle</Text>
+        <Text style={styles.title}>{t('rentalFlow.showToBorrower')}</Text>
         <Text style={styles.subtitle}>
-          Pyydä lainaajaa skannaamaan koodi puhelimellaan. Kun se on skannattu,
-          tavara on virallisesti heidän vastuullaan.
+          {t('rentalFlow.askBorrowerToScan')}
         </Text>
 
         <View style={styles.qrFrame}>
@@ -225,20 +226,20 @@ export default function OwnerHandoverScreen() {
 
         {remainingMs > 0 ? (
           <Text style={styles.timer}>
-            Voimassa {minutes} min {seconds.toString().padStart(2, '0')} s
+            {t('rentalFlow.validFor', { min: String(minutes), sec: seconds.toString().padStart(2, '0') })}
           </Text>
         ) : token ? (
-          <Text style={styles.timerExpired}>QR vanhentui. Päivitä uusi.</Text>
+          <Text style={styles.timerExpired}>{t('rentalFlow.qrExpired')}</Text>
         ) : null}
 
         {mintError && (
           <View style={{ marginTop: 22, paddingHorizontal: 22 }}>
-            <BigBtn onPress={mintToken}>Yritä uudelleen</BigBtn>
+            <BigBtn onPress={mintToken}>{t('rentalFlow.renewQR')}</BigBtn>
           </View>
         )}
         {remainingMs <= 0 && token && (
           <View style={{ marginTop: 22, paddingHorizontal: 22 }}>
-            <BigBtn onPress={mintToken}>Uudista QR</BigBtn>
+            <BigBtn onPress={mintToken}>{t('rentalFlow.renewQR')}</BigBtn>
           </View>
         )}
       </View>

@@ -6,9 +6,11 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import { TopNav, Sheet, BigBtn, StageTag, Eyebrow, RoundBtn, ChatIcon } from '@/components/rental';
 import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
+import { useI18n } from '@/lib/i18n';
 
 export default function OverdueBorrowerScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const {
@@ -68,7 +70,7 @@ export default function OverdueBorrowerScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Laina · myöhässä" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.overdueTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <View style={styles.iconCircle}>
@@ -77,21 +79,21 @@ export default function OverdueBorrowerScreen() {
               <Path d="M12 7v5l3 2" />
             </Svg>
           </View>
-          <StageTag style={{ marginTop: 24 }}>{hoursLate} T {minutesLate} MIN MYÖHÄSSÄ</StageTag>
+          <StageTag style={{ marginTop: 24 }}>{t('rentalFlow.lateBy', { hours: hoursLate, minutes: minutesLate })}</StageTag>
           <Text style={styles.headline}>
-            Palauta {itemTitle.toLowerCase()}{'\n'}
-            <Text style={{ color: BIVO.ink2 }}>{ownerName}lle</Text>
+            {t('rentalFlow.returnItem', { item: itemTitle.toLowerCase() })}{'\n'}
+            <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.toOwner', { name: ownerName })}</Text>
           </Text>
           <Text style={styles.body}>
-            Sovittu palautus oli su klo 19.00. Jokainen alkava tunti veloittaa 1,5 € vakuudesta.
+            {t('rentalFlow.overdueBody')}
           </Text>
         </View>
 
         <Sheet padding={0} style={styles.feeSheet}>
           {[
-            { l: 'Vakuus', v: `${deposit} €` },
-            { l: 'Veloitettu nyt', v: `${charged} €`, bold: true },
-            { l: 'Jäljellä', v: `${remaining} €` },
+            { l: t('rentalFlow.depositLabel'), v: `${deposit} €` },
+            { l: t('rentalFlow.chargedNow'), v: `${charged} €`, bold: true },
+            { l: t('rentalFlow.remaining'), v: `${remaining} €` },
           ].map((r, i, a) => (
             <View key={r.l} style={[styles.feeRow, i < a.length - 1 && styles.feeBorder]}>
               <Text style={styles.feeLabel}>{r.l}</Text>
@@ -103,8 +105,8 @@ export default function OverdueBorrowerScreen() {
         <Sheet padding={14} style={styles.ownerCard}>
           <Avatar url={null} name={ownerName} size={36} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.ownerName}>{ownerName} odottaa.</Text>
-            <Text style={styles.ownerSub}>Lähetä viesti kun olet matkalla.</Text>
+            <Text style={styles.ownerName}>{t('rentalFlow.ownerWaiting', { name: ownerName })}</Text>
+            <Text style={styles.ownerSub}>{t('rentalFlow.sendMessageWhenOnWay')}</Text>
           </View>
           <RoundBtn size={36} onPress={() => {
             if (conversationId) router.push(`/chat/${conversationId}`);
@@ -115,10 +117,10 @@ export default function OverdueBorrowerScreen() {
       </ScrollView>
 
       <View style={[styles.ctaArea, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <BigBtn onPress={() => router.back()}>Olen matkalla</BigBtn>
+        <BigBtn onPress={() => router.back()}>{t('rentalFlow.onMyWay')}</BigBtn>
         <BigBtn secondary onPress={() => {
           if (rentalId) router.push(`/rental/extend?rentalId=${rentalId}`);
-        }}>Pyydä virallinen pidennys</BigBtn>
+        }}>{t('rentalFlow.requestExtension')}</BigBtn>
       </View>
     </View>
   );

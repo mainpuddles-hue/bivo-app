@@ -4,9 +4,11 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopNav, Sheet, StickyCTA, StageTag } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
+import { useI18n } from '@/lib/i18n';
 
 export default function DepositScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { deposit = '30', rentalId } = useLocalSearchParams<{ deposit?: string; rentalId?: string }>();
@@ -50,24 +52,24 @@ export default function DepositScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Vakuus" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.depositTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <StageTag style={{ marginTop: 8 }}>VARMISTA VAKUUS</StageTag>
+          <StageTag style={{ marginTop: 8 }}>{t('rentalFlow.confirmDeposit')}</StageTag>
           <Text style={styles.headline}>
-            {amount} € <Text style={{ color: BIVO.ink2 }}>varataan</Text>
-            {'\n'}kortiltasi
+            {amount} € <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.amountReserved')}</Text>
+            {'\n'}{t('rentalFlow.fromYourCard')}
           </Text>
           <Text style={styles.body}>
-            Summa <Text style={{ fontFamily: BIVO.sansSemiBold, fontWeight: '600', color: BIVO.ink }}>varataan</Text>, sitä ei veloiteta. Vakuus vapautuu automaattisesti kun palautat tavaran kunnossa.
+            {t('rentalFlow.reservedNotCharged')}
           </Text>
         </View>
 
         <Sheet padding={0} style={styles.sheet}>
           {[
-            { l: 'Vuokra', v: '0 €' },
-            { l: 'Vakuus (varataan)', v: `${amount} €` },
-            { l: 'Palvelumaksu', v: '0 €' },
+            { l: t('rentalFlow.rentalFeeLabel'), v: '0 €' },
+            { l: t('rentalFlow.depositReserved'), v: `${amount} €` },
+            { l: t('rentalFlow.serviceFee'), v: '0 €' },
           ].map((r, i, a) => (
             <View key={r.l} style={[styles.row, i < a.length - 1 && styles.rowBorder]}>
               <Text style={styles.rowLabel}>{r.l}</Text>
@@ -75,7 +77,7 @@ export default function DepositScreen() {
             </View>
           ))}
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Yhteensä veloitetaan</Text>
+            <Text style={styles.totalLabel}>{t('rentalFlow.totalChargedLabel')}</Text>
             <Text style={styles.totalValue}>0 €</Text>
           </View>
         </Sheet>
@@ -86,19 +88,19 @@ export default function DepositScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.cardNumber}>•••• 4821</Text>
-            <Text style={styles.cardExp}>Voimassa 11/27</Text>
+            <Text style={styles.cardExp}>{t('rentalFlow.validUntil')} 11/27</Text>
           </View>
           <TouchableOpacity onPress={() => router.push('/payments')}>
-            <Text style={styles.changeLink}>Vaihda</Text>
+            <Text style={styles.changeLink}>{t('rentalFlow.changeCard')}</Text>
           </TouchableOpacity>
         </Sheet>
       </ScrollView>
 
       <StickyCTA
         onPress={() => router.back()}
-        hint="Vakuus vapautetaan 24 t kuluessa palautuksesta."
+        hint={t('rentalFlow.depositReleaseHint')}
       >
-        Vahvista ja lähetä pyyntö
+        {t('rentalFlow.confirmAndSend')}
       </StickyCTA>
     </View>
   );

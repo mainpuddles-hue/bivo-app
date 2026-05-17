@@ -7,10 +7,12 @@ import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 export default function OwnerActiveScreen() {
   const BIVO = useLegacyTokens();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -101,14 +103,14 @@ export default function OwnerActiveScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Aktiivinen laina" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.activeRental')} onBack={() => router.back()} />
         <ActivityIndicator style={{ marginTop: 40 }} color={BIVO.ink} />
       </View>
     );
   }
 
-  const borrowerName = rental?.borrower?.name || 'Lainaaja';
-  const itemTitle = rental?.item?.title || 'Tavara';
+  const borrowerName = rental?.borrower?.name || t('rentalFlow.borrowerFallback');
+  const itemTitle = rental?.item?.title || t('rentalFlow.itemFallback');
   const itemImage = rental?.item?.images?.[0]?.image_url;
   const startDate = rental?.start_date ? new Date(rental.start_date) : null;
   const endDate = rental?.end_date ? new Date(rental.end_date) : null;
@@ -130,7 +132,7 @@ export default function OwnerActiveScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Annettu</Text>
+        <Text style={styles.headerTitle}>{t('rentalFlow.ownerActiveLent')}</Text>
         <Pill tone="live">{borrowerName}lla</Pill>
       </View>
 
@@ -140,11 +142,11 @@ export default function OwnerActiveScreen() {
             <ProductThumb uri={itemImage} size="sm" />
             <View style={{ flex: 1 }}>
               <Text style={styles.itemTitle}>{itemTitle}</Text>
-              <Text style={styles.itemSub}>{borrowerName} · lähellä</Text>
+              <Text style={styles.itemSub}>{borrowerName} · {t('rentalFlow.nearbyFallback')}</Text>
             </View>
             <RoundBtn onPress={() => {
               if (!rental?.conversation_id) {
-                Alert.alert('Ei keskustelua', 'Tälle lainalle ei ole vielä keskustelua.');
+                Alert.alert(t('rentalFlow.noConversation'), t('rentalFlow.noConversationBody'));
                 return;
               }
               router.push(`/chat/${rental.conversation_id}`);
@@ -155,8 +157,8 @@ export default function OwnerActiveScreen() {
 
           <View style={styles.timeSection}>
             <View style={styles.timeLabelRow}>
-              {startDate && <Text style={styles.timeLabel}>NOUDETTU {fmtDate(startDate)}</Text>}
-              {endDate && <Text style={styles.timeLabel}>PALAUTUS {fmtDate(endDate)}</Text>}
+              {startDate && <Text style={styles.timeLabel}>{t('rentalFlow.pickupLabel2', { date: fmtDate(startDate) })}</Text>}
+              {endDate && <Text style={styles.timeLabel}>{t('rentalFlow.returnLabel2', { date: fmtDate(endDate) })}</Text>}
             </View>
             <View style={styles.progressTrack}>
               <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
@@ -164,39 +166,39 @@ export default function OwnerActiveScreen() {
             </View>
             {hoursLeft !== null && (
               <Text style={styles.timeLeft}>
-                {hoursLeft} tuntia jäljellä{endDate ? ` · palautus ${endDate.toLocaleDateString('fi', { weekday: 'short' })} ${endDate.toLocaleTimeString('fi', { hour: '2-digit', minute: '2-digit' })}` : ''}
+                {t('rentalFlow.hoursLeft', { hours: String(hoursLeft) })}{endDate ? ` · palautus ${endDate.toLocaleDateString('fi', { weekday: 'short' })} ${endDate.toLocaleTimeString('fi', { hour: '2-digit', minute: '2-digit' })}` : ''}
               </Text>
             )}
           </View>
         </Sheet>
 
-        <Eyebrow style={{ marginTop: 20 }}>Hallinta</Eyebrow>
+        <Eyebrow style={{ marginTop: 20 }}>{t('rentalFlow.management')}</Eyebrow>
         <View style={styles.managementGrid}>
           <TouchableOpacity style={styles.mgmtTile} onPress={() => {
             if (!rental?.conversation_id) {
-              Alert.alert('Ei keskustelua', 'Tälle lainalle ei ole vielä keskustelua.');
+              Alert.alert(t('rentalFlow.noConversation'), t('rentalFlow.noConversationBody'));
               return;
             }
             router.push(`/chat/${rental.conversation_id}`);
           }}>
-            <Text style={styles.mgmtLabel}>Avaa keskustelu</Text>
-            <Text style={styles.mgmtSub}>Viestit</Text>
+            <Text style={styles.mgmtLabel}>{t('rentalFlow.openChat')}</Text>
+            <Text style={styles.mgmtSub}>{t('rentalFlow.messages')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.mgmtTile} onPress={() => router.push(`/rental/extend?rentalId=${id}`)}>
-            <Text style={styles.mgmtLabel}>Pidennä lainaa</Text>
-            <Text style={styles.mgmtSub}>Lainaaja voi pyytää</Text>
+            <Text style={styles.mgmtLabel}>{t('rentalFlow.extendRental')}</Text>
+            <Text style={styles.mgmtSub}>{t('rentalFlow.borrowerCanRequest')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.mgmtTile, { opacity: 0.4 }]} disabled>
-            <Text style={styles.mgmtLabel}>Merkitse myöhästyneeksi</Text>
-            <Text style={styles.mgmtSub}>Jos viivästyy</Text>
+            <Text style={styles.mgmtLabel}>{t('rentalFlow.markOverdue')}</Text>
+            <Text style={styles.mgmtSub}>{t('rentalFlow.ifDelayed')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.mgmtTile}>
-            <Text style={styles.mgmtLabelDanger}>Päätä laina</Text>
-            <Text style={styles.mgmtSub}>Hätätilanteessa</Text>
+            <Text style={styles.mgmtLabelDanger}>{t('rentalFlow.endRental')}</Text>
+            <Text style={styles.mgmtSub}>{t('rentalFlow.inEmergency')}</Text>
           </TouchableOpacity>
         </View>
 
-        <Eyebrow style={{ marginTop: 22 }}>Tämä viikko</Eyebrow>
+        <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.thisWeek')}</Eyebrow>
         <Sheet padding={0} style={{ marginTop: 8 }}>
           <View style={styles.weekRow}>
             <View style={[styles.weekDot, { backgroundColor: BIVO.live }]} />

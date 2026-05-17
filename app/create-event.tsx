@@ -176,7 +176,7 @@ function CreateEventScreenInner() {
   const pickImage = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== 'granted') {
-      toast.show({ message: 'Camera roll permission is needed.', type: 'error' })
+      toast.show({ message: t('rentalFlow.cameraRollPermission'), type: 'error' })
       return
     }
     const result = await ImagePicker.launchImageLibraryAsync({

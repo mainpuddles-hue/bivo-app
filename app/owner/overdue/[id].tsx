@@ -6,9 +6,11 @@ import { TopNav, Sheet, BigBtn, Eyebrow, Pill, ClockIcon } from '@/components/re
 import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 export default function OwnerOverdueScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -51,28 +53,28 @@ export default function OwnerOverdueScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Myöhässä" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.ownerOverdueTitle')} onBack={() => router.back()} />
         <ActivityIndicator style={{ marginTop: 40 }} color={BIVO.ink} />
       </View>
     );
   }
 
-  const borrowerName = rental?.borrower?.name || 'Lainaaja';
-  const itemTitle = rental?.item?.title || 'Tavara';
+  const borrowerName = rental?.borrower?.name || t('rentalFlow.borrowerFallback');
+  const itemTitle = rental?.item?.title || t('rentalFlow.itemFallback');
   const endDate = rental?.end_date ? new Date(rental.end_date) : null;
   const hoursLate = endDate ? Math.max(0, Math.ceil((Date.now() - endDate.getTime()) / (1000 * 60 * 60))) : 0;
   const lateFee = (hoursLate * 1.5).toFixed(2);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Myöhässä" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.ownerOverdueTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Sheet padding={18} style={styles.card}>
           <View style={styles.itemRow}>
             <View style={styles.itemThumb} />
             <View style={styles.itemInfo}>
               <Text style={styles.itemTitle}>{itemTitle}</Text>
-              <View style={{ marginTop: 6 }}><Pill tone="on">Myöhässä</Pill></View>
+              <View style={{ marginTop: 6 }}><Pill tone="on">{t('rentalFlow.overdueLabel')}</Pill></View>
             </View>
           </View>
         </Sheet>
@@ -82,26 +84,26 @@ export default function OwnerOverdueScreen() {
             <Avatar url={rental?.borrower?.avatar_url} name={borrowerName} size={42} />
             <View style={{ flex: 1 }}>
               <Text style={styles.borrowerName}>{borrowerName}</Text>
-              <Text style={styles.borrowerSub}>Lainaaja</Text>
+              <Text style={styles.borrowerSub}>{t('rentalFlow.borrowerFallback')}</Text>
             </View>
           </View>
         </Sheet>
 
-        <Eyebrow style={{ marginTop: 4 }}>Myöhästyminen</Eyebrow>
+        <Eyebrow style={{ marginTop: 4 }}>{t('rentalFlow.overdueLabel')}</Eyebrow>
         <Sheet padding={0} style={styles.card}>
           <View style={[styles.row, styles.rowBorder]}>
             <ClockIcon size={18} color={BIVO.ink2} />
-            <Text style={styles.rowLabel}>Myöhässä</Text>
-            <Text style={styles.rowValue}>{hoursLate} tuntia</Text>
+            <Text style={styles.rowLabel}>{t('rentalFlow.overdueLabel')}</Text>
+            <Text style={styles.rowValue}>{t('rentalFlow.overdueHours', { hours: String(hoursLate) })}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Myöhästymismaksu</Text>
+            <Text style={styles.rowLabel}>{t('rentalFlow.lateFee')}</Text>
             <Text style={styles.rowValueBold}>{lateFee} €</Text>
           </View>
         </Sheet>
 
         <Text style={styles.footnote}>
-          Bivo on lähettänyt lainaajalle muistutuksia palautuksesta. Myöhästymismaksu 1,50 € / alkava tunti veloitetaan automaattisesti vakuudesta.
+          {t('rentalFlow.overdueFootnote')}
         </Text>
       </ScrollView>
 
@@ -110,16 +112,16 @@ export default function OwnerOverdueScreen() {
           disabled={!rental?.conversation_id}
           onPress={() => {
             if (!rental?.conversation_id) {
-              Alert.alert('Virhe', 'Keskustelua ei löydy.');
+              Alert.alert(t('common.error'), t('rentalFlow.conversationNotFound'));
               return;
             }
             router.push(`/chat/${rental.conversation_id}`);
           }}
         >
-          Lähetä viesti lainaajalle
+          {t('rentalFlow.sendMessageToBorrower')}
         </BigBtn>
         <BigBtn secondary onPress={() => router.push('/support-chat')}>
-          Ota yhteyttä tukeen
+          {t('rentalFlow.contactSupport')}
         </BigBtn>
       </View>
     </View>

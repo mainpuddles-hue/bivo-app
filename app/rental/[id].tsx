@@ -12,6 +12,7 @@ import {
 } from '@/lib/rental';
 import { triggerPush } from '@/lib/pushTrigger';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 interface ItemData {
   id: string;
@@ -22,6 +23,7 @@ interface ItemData {
 
 export default function RentalStatusScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -67,7 +69,7 @@ export default function RentalStatusScreen() {
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <TopNav title="" onBack={() => router.back()} />
         <View style={styles.centered}>
-          <Text style={styles.errorTitle}>Pyyntöä ei löytynyt</Text>
+          <Text style={styles.errorTitle}>{t('rentalFlow.requestNotFound')}</Text>
         </View>
       </View>
     );
@@ -75,29 +77,29 @@ export default function RentalStatusScreen() {
 
   const isBorrower = userId === booking.borrower_id;
   const isLender = userId === booking.lender_id;
-  const counterpartName = isBorrower ? (item?.owner?.name ?? 'Omistaja') : 'Lainaaja';
+  const counterpartName = isBorrower ? (item?.owner?.name ?? t('rentalFlow.ownerFallback')) : t('rentalFlow.borrowerFallback');
 
-  const statusContent = renderStatusContent(booking.status, counterpartName, isLender, BIVO, styles);
+  const statusContent = renderStatusContent(booking.status, counterpartName, isLender, BIVO, styles, t);
 
   const handleApprove = () => {
     Alert.alert(
-      'Hyväksy pyyntö',
-      `Vahvistat, että ${item?.title ?? 'tavara'} on ${formatDate(booking.start_date)} alkaen ${booking.days} vrk ajan lainaajan käytössä.`,
+      t('rentalFlow.approveRequest'),
+      t('rentalFlow.approveConfirmBody', { item: item?.title ?? t('rentalFlow.itemFallback'), date: formatDate(booking.start_date), days: String(booking.days) }),
       [
-        { text: 'Peruuta', style: 'cancel' },
+        { text: t('rentalFlow.cancelNo'), style: 'cancel' },
         {
-          text: 'Hyväksy',
+          text: t('rentalFlow.approveRequest'),
           onPress: async () => {
             const res = await approveRental(supabase, booking.id);
             if (res.error) {
-              Alert.alert('Hyväksyntä epäonnistui', res.error);
+              Alert.alert(t('rentalFlow.approveFailed'), res.error);
               return;
             }
             // Push lainaajalle (fire-and-forget)
             triggerPush({
               user_id: booking.borrower_id,
-              title: 'Lainapyyntösi hyväksyttiin',
-              body: `${item?.title ?? 'Tavara'} on hyväksytty. Sopikaa noutoaika keskustelussa.`,
+              title: t('rentalFlow.pushApprovedTitle'),
+              body: t('rentalFlow.pushApprovedBody', { item: item?.title ?? t('rentalFlow.itemFallback') }),
               type: 'rental_approved',
               data: { booking_id: booking.id, conversation_id: res.conversationId ?? '' },
             }).catch(() => { /* hiljainen */ });
@@ -109,23 +111,23 @@ export default function RentalStatusScreen() {
 
   const handleReject = () => {
     Alert.alert(
-      'Hylkää pyyntö',
-      'Haluatko varmasti hylätä tämän lainapyynnön? Lainaaja saa ilmoituksen.',
+      t('rentalFlow.rejectRequest'),
+      t('rentalFlow.rejectConfirmBody'),
       [
-        { text: 'Peruuta', style: 'cancel' },
+        { text: t('rentalFlow.cancelNo'), style: 'cancel' },
         {
-          text: 'Hylkää',
+          text: t('rentalFlow.rejectRequest'),
           style: 'destructive',
           onPress: async () => {
             const res = await rejectRental(supabase, booking.id);
             if (res.error) {
-              Alert.alert('Hylkäys epäonnistui', res.error);
+              Alert.alert(t('rentalFlow.rejectFailed'), res.error);
               return;
             }
             triggerPush({
               user_id: booking.borrower_id,
-              title: 'Lainapyyntösi hylättiin',
-              body: `${item?.title ?? 'Tavara'} ei tällä kertaa onnistunut. Selaa muita naapureita.`,
+              title: t('rentalFlow.pushRejectedTitle'),
+              body: t('rentalFlow.pushRejectedBody', { item: item?.title ?? t('rentalFlow.itemFallback') }),
               type: 'rental_rejected',
               data: { booking_id: booking.id },
             }).catch(() => { /* hiljainen */ });
@@ -137,23 +139,23 @@ export default function RentalStatusScreen() {
 
   const handleMarkReturned = () => {
     Alert.alert(
-      'Olen palauttanut',
-      'Vahvistat, että olet luovuttanut tavaran omistajalle. Omistaja vahvistaa vastaanoton.',
+      t('rentalFlow.markReturned'),
+      t('rentalFlow.markReturnedBody'),
       [
-        { text: 'Peruuta', style: 'cancel' },
+        { text: t('rentalFlow.cancelNo'), style: 'cancel' },
         {
-          text: 'Vahvista palautus',
+          text: t('rentalFlow.confirmReturn'),
           onPress: async () => {
             const res = await markReturned(supabase, booking.id);
             if (res.error) {
-              Alert.alert('Palautuksen merkitseminen epäonnistui', res.error);
+              Alert.alert(t('rentalFlow.returnFailed'), res.error);
               return;
             }
             // Push omistajalle
             triggerPush({
               user_id: booking.lender_id,
-              title: 'Tavara palautettu',
-              body: `${item?.title ?? 'Tavara'} on palautettu. Vahvista vastaanotto.`,
+              title: t('rentalFlow.pushReturnedTitle'),
+              body: t('rentalFlow.pushReturnedBody', { item: item?.title ?? t('rentalFlow.itemFallback') }),
               type: 'rental_returned',
               data: { booking_id: booking.id },
             }).catch(() => {});
@@ -165,22 +167,22 @@ export default function RentalStatusScreen() {
 
   const handleConfirmReceipt = () => {
     Alert.alert(
-      'Vahvista vastaanotto',
-      `Vahvistat, että ${item?.title ?? 'tavara'} on palautunut sinulle. Tämän jälkeen voitte molemmat jättää arviot.`,
+      t('rentalFlow.confirmReceipt'),
+      t('rentalFlow.confirmReceiptBody', { item: item?.title ?? t('rentalFlow.itemFallback') }),
       [
-        { text: 'Peruuta', style: 'cancel' },
+        { text: t('rentalFlow.cancelNo'), style: 'cancel' },
         {
-          text: 'Vahvistan',
+          text: t('rentalFlow.confirmReceiptBtn'),
           onPress: async () => {
             const res = await confirmReceipt(supabase, booking.id);
             if (res.error) {
-              Alert.alert('Vahvistus epäonnistui', res.error);
+              Alert.alert(t('rentalFlow.confirmFailed'), res.error);
               return;
             }
             triggerPush({
               user_id: booking.borrower_id,
-              title: 'Lainaus päättyi',
-              body: `${item?.title ?? 'Tavara'} on vastaanotettu. Voit nyt jättää arvion.`,
+              title: t('rentalFlow.pushCompletedTitle'),
+              body: t('rentalFlow.pushCompletedBody', { item: item?.title ?? t('rentalFlow.itemFallback') }),
               type: 'rental_completed',
               data: { booking_id: booking.id },
             }).catch(() => {});
@@ -195,16 +197,16 @@ export default function RentalStatusScreen() {
     // Confirmed/active-tilojen peruutus vaatii Stripe-refundin (Stage 5 työ),
     // joten siellä napissa on pelkkä info kunnes flow on rakennettu.
     Alert.alert(
-      'Peruuta pyyntö',
-      'Haluatko varmasti peruuttaa lainapyynnön? Omistaja saa ilmoituksen.',
+      t('rentalFlow.cancelRequest'),
+      t('rentalFlow.cancelConfirmBody'),
       [
-        { text: 'En', style: 'cancel' },
+        { text: t('rentalFlow.cancelNo'), style: 'cancel' },
         {
-          text: 'Peruuta pyyntö',
+          text: t('rentalFlow.cancelRequest'),
           style: 'destructive',
           onPress: async () => {
             const res = await cancelRental(supabase, booking.id);
-            if (res.error) Alert.alert('Peruutus epäonnistui', res.error);
+            if (res.error) Alert.alert(t('rentalFlow.cancelFailed'), res.error);
           },
         },
       ],
@@ -216,7 +218,7 @@ export default function RentalStatusScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Lainaus" onBack={() => router.replace('/(tabs)')} />
+      <TopNav title={t('rentalFlow.rentalTitle')} onBack={() => router.replace('/(tabs)')} />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 22, paddingBottom: 60 }}>
         {/* Hero */}
@@ -232,7 +234,7 @@ export default function RentalStatusScreen() {
         {/* Aikajana */}
         <Sheet padding={18} style={{ marginTop: 22 }}>
           <TimelineItem
-            label="Pyyntö lähetetty"
+            label={t('rentalFlow.requestSent')}
             sub={new Date(booking.created_at).toLocaleString('fi-FI', {
               day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit',
             })}
@@ -241,24 +243,24 @@ export default function RentalStatusScreen() {
             styles={styles}
           />
           <TimelineItem
-            label="Hyväksyntä"
-            sub={booking.status === 'pending' ? 'odottaa…' :
-              ['rejected', 'cancelled'].includes(booking.status) ? 'hylätty' :
-              ['confirmed', 'paid', 'completed'].includes(booking.status) ? 'hyväksytty' : '—'}
+            label={t('rentalFlow.approval')}
+            sub={booking.status === 'pending' ? t('rentalFlow.pending') :
+              ['rejected', 'cancelled'].includes(booking.status) ? t('rentalFlow.rejected') :
+              ['confirmed', 'paid', 'completed'].includes(booking.status) ? t('rentalFlow.approved') : '—'}
             done={!['pending', 'rejected', 'cancelled'].includes(booking.status)}
             BIVO={BIVO}
             styles={styles}
           />
           <TimelineItem
-            label="Nouto"
-            sub={`${formatDate(booking.start_date)} alkaen`}
+            label={t('rentalFlow.pickup')}
+            sub={t('rentalFlow.fromDate', { date: formatDate(booking.start_date) })}
             done={booking.status === 'paid' || booking.status === 'completed'}
             BIVO={BIVO}
             styles={styles}
           />
           <TimelineItem
-            label="Palautus"
-            sub={`${formatDate(booking.end_date)} mennessä`}
+            label={t('rentalFlow.returnLabel')}
+            sub={t('rentalFlow.byDate', { date: formatDate(booking.end_date) })}
             done={booking.status === 'completed'}
             last
             BIVO={BIVO}
@@ -270,15 +272,15 @@ export default function RentalStatusScreen() {
         {item && (
           <Sheet padding={14} style={{ marginTop: 14 }}>
             <View style={styles.row}>
-              <Text style={styles.rowLabel}>Tavara</Text>
+              <Text style={styles.rowLabel}>{t('rentalFlow.itemLabel')}</Text>
               <Text style={styles.rowValue}>{item.title}</Text>
             </View>
             <View style={[styles.row, styles.rowBorder]}>
-              <Text style={styles.rowLabel}>Vuokra ({booking.days} vrk)</Text>
+              <Text style={styles.rowLabel}>{t('rentalFlow.rentalFee', { days: String(booking.days) })}</Text>
               <Text style={styles.rowValue}>{booking.total_fee} €</Text>
             </View>
             <View style={[styles.row, styles.rowBorder]}>
-              <Text style={styles.rowLabel}>Vakuus</Text>
+              <Text style={styles.rowLabel}>{t('rentalFlow.deposit')}</Text>
               <Text style={styles.rowValue}>{booking.deposit_amount} €</Text>
             </View>
           </Sheet>
@@ -286,7 +288,7 @@ export default function RentalStatusScreen() {
 
         {booking.notes && (
           <Sheet padding={14} style={{ marginTop: 14 }}>
-            <Text style={styles.notesLabel}>Viesti omistajalle</Text>
+            <Text style={styles.notesLabel}>{t('rentalFlow.messageToOwner')}</Text>
             <Text style={styles.notesBody}>{booking.notes}</Text>
           </Sheet>
         )}
@@ -295,8 +297,8 @@ export default function RentalStatusScreen() {
         <View style={{ marginTop: 22 }}>
           {booking.status === 'pending' && isLender && (
             <View style={{ gap: 10 }}>
-              <BigBtn onPress={handleApprove}>Hyväksy pyyntö</BigBtn>
-              <BigBtn secondary onPress={handleReject}>Hylkää</BigBtn>
+              <BigBtn onPress={handleApprove}>{t('rentalFlow.approveRequest')}</BigBtn>
+              <BigBtn secondary onPress={handleReject}>{t('rentalFlow.rejectRequest')}</BigBtn>
             </View>
           )}
           {booking.status === 'pending' && isBorrower && (
@@ -305,16 +307,16 @@ export default function RentalStatusScreen() {
             // alempana tekstilinkkinä ettei kilpaile pääpainikkeen kanssa.
             <View style={{ gap: 14 }}>
               <View style={styles.activeBanner}>
-                <Text style={styles.activeBannerTitle}>Odotetaan vastausta</Text>
+                <Text style={styles.activeBannerTitle}>{t('rentalFlow.awaitingResponse')}</Text>
                 <Text style={styles.activeBannerBody}>
-                  Saat ilmoituksen heti kun omistaja vastaa pyyntöösi.
+                  {t('rentalFlow.notificationWhenOwnerReplies')}
                 </Text>
               </View>
               <BigBtn secondary onPress={() => router.replace('/(tabs)')}>
-                Takaisin etusivulle
+                {t('rentalFlow.backToHome')}
               </BigBtn>
               <TouchableOpacity onPress={handleCancel} style={styles.cancelLink}>
-                <Text style={styles.cancelLinkText}>Peruuta pyyntö</Text>
+                <Text style={styles.cancelLinkText}>{t('rentalFlow.cancelRequest')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -323,28 +325,28 @@ export default function RentalStatusScreen() {
               {/* Pickup-tila ohjaa mitä nappia näytetään */}
               {isLender && ['awaiting_lender_dropoff', 'awaiting_borrower_pickup'].includes(booking.pickup_state) && (
                 <BigBtn onPress={() => router.push(`/owner/handover/${booking.id}`)}>
-                  Näytä nouto-QR
+                  {t('rentalFlow.showPickupQR')}
                 </BigBtn>
               )}
               {isBorrower && ['awaiting_lender_dropoff', 'awaiting_borrower_pickup'].includes(booking.pickup_state) && (
                 <BigBtn onPress={() => router.push(`/rental/scan?expectedBookingId=${booking.id}`)}>
-                  Skannaa nouto-QR
+                  {t('rentalFlow.scanPickupQR')}
                 </BigBtn>
               )}
               {booking.pickup_state === 'in_use' && (
                 <>
                   <View style={styles.activeBanner}>
                     <Text style={styles.activeBannerTitle}>
-                      {isBorrower ? 'Tavara on käytössäsi' : 'Lainaajalla nyt'}
+                      {isBorrower ? t('rentalFlow.itemInUse') : t('rentalFlow.withBorrower')}
                     </Text>
                     <Text style={styles.activeBannerBody}>
                       {isBorrower
-                        ? `Muista palauttaa ${formatDate(booking.end_date)} mennessä.`
-                        : `Palautus ${formatDate(booking.end_date)} mennessä.`}
+                        ? t('rentalFlow.rememberToReturn', { date: formatDate(booking.end_date) })
+                        : t('rentalFlow.returnBy', { date: formatDate(booking.end_date) })}
                     </Text>
                   </View>
                   {isBorrower && (
-                    <BigBtn onPress={handleMarkReturned}>Olen palauttanut tavaran</BigBtn>
+                    <BigBtn onPress={handleMarkReturned}>{t('rentalFlow.returnedItem')}</BigBtn>
                   )}
                 </>
               )}
@@ -352,22 +354,22 @@ export default function RentalStatusScreen() {
                 <>
                   <View style={styles.activeBanner}>
                     <Text style={styles.activeBannerTitle}>
-                      {isLender ? 'Lainaaja palautti' : 'Palautus vahvistettavissa'}
+                      {isLender ? t('rentalFlow.borrowerReturned') : t('rentalFlow.returnConfirmable')}
                     </Text>
                     <Text style={styles.activeBannerBody}>
                       {isLender
-                        ? 'Tarkista, että tavara on kunnossa, ja vahvista vastaanotto.'
-                        : 'Odotetaan, että omistaja vahvistaa saaneensa tavaran.'}
+                        ? t('rentalFlow.checkItemCondition')
+                        : t('rentalFlow.waitingOwnerConfirm')}
                     </Text>
                   </View>
                   {isLender && (
-                    <BigBtn onPress={handleConfirmReceipt}>Vahvistan vastaanoton</BigBtn>
+                    <BigBtn onPress={handleConfirmReceipt}>{t('rentalFlow.confirmReceiptAction')}</BigBtn>
                   )}
                 </>
               )}
               {b.conversation_id && booking.pickup_state !== 'completed_pickup_flow' && (
                 <BigBtn secondary onPress={() => router.push(`/chat/${b.conversation_id}`)}>
-                  Avaa keskustelu
+                  {t('rentalFlow.openChat')}
                 </BigBtn>
               )}
             </View>
@@ -384,16 +386,16 @@ export default function RentalStatusScreen() {
                 if (!myReviewSubmitted && (isBorrower || isLender)) {
                   return (
                     <BigBtn onPress={() => router.push(`/rental/review/${booking.id}`)}>
-                      Anna arvio
+                      {t('rentalFlow.giveReview')}
                     </BigBtn>
                   );
                 }
                 if (myReviewSubmitted && !otherReviewSubmitted) {
                   return (
                     <View style={styles.activeBanner}>
-                      <Text style={styles.activeBannerTitle}>Arviosi lähetetty</Text>
+                      <Text style={styles.activeBannerTitle}>{t('rentalFlow.reviewSent')}</Text>
                       <Text style={styles.activeBannerBody}>
-                        Toisen osapuolen arvio tulee näkyviin kun hän on myös lähettänyt sen, tai 14 päivän kuluttua.
+                        {t('rentalFlow.reviewWaitBody')}
                       </Text>
                     </View>
                   );
@@ -402,13 +404,13 @@ export default function RentalStatusScreen() {
               })()}
               {reviews.length > 0 && (
                 <Sheet padding={14} style={{ marginTop: 4 }}>
-                  <Text style={styles.notesLabel}>Arviot</Text>
+                  <Text style={styles.notesLabel}>{t('rentalFlow.reviews')}</Text>
                   {reviews.map(r => (
                     <View key={r.id} style={styles.reviewBlock}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Text style={styles.reviewStars}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</Text>
                         <Text style={styles.reviewRole}>
-                          {r.role === 'borrower' ? 'Lainaajalta' : 'Omistajalta'}
+                          {r.role === 'borrower' ? t('rentalFlow.fromBorrower') : t('rentalFlow.fromOwner')}
                         </Text>
                       </View>
                       {r.content && <Text style={styles.reviewContent}>{r.content}</Text>}
@@ -418,7 +420,7 @@ export default function RentalStatusScreen() {
               )}
               {b.conversation_id && (
                 <BigBtn secondary onPress={() => router.push(`/chat/${b.conversation_id}`)}>
-                  Avaa keskustelu
+                  {t('rentalFlow.openChat')}
                 </BigBtn>
               )}
             </View>
@@ -457,6 +459,7 @@ function renderStatusContent(
   isLender: boolean,
   BIVO: LegacyTokens,
   styles: ReturnType<typeof createStyles>,
+  t: (key: string, params?: Record<string, string | number>) => string,
 ) {
   switch (status) {
     case 'pending':
@@ -465,18 +468,18 @@ function renderStatusContent(
           icon: <View style={[styles.heroIcon, { backgroundColor: BIVO.surface }]}>
             <View style={[styles.pulseDot, { backgroundColor: BIVO.ink }]} />
           </View>,
-          stage: 'UUSI PYYNTÖ',
-          title: `${counterpart} haluaa lainata.`,
-          subtitle: 'Vastaa 24 h sisällä.',
+          stage: t('rentalFlow.statusNewRequest'),
+          title: t('rentalFlow.statusWantsToLend', { name: counterpart }),
+          subtitle: t('rentalFlow.statusReplyIn24h'),
         };
       }
       return {
         icon: <View style={[styles.heroIcon, { backgroundColor: BIVO.surface }]}>
           <View style={[styles.pulseDot, { backgroundColor: BIVO.ink }]} />
         </View>,
-        stage: 'PYYNTÖ MATKALLA',
-        title: `Odotetaan ${counterpart}a…`,
-        subtitle: 'Vastausta yleensä alle tunti. Saat ilmoituksen.',
+        stage: t('rentalFlow.statusRequestOnWay'),
+        title: t('rentalFlow.statusWaiting', { name: counterpart }),
+        subtitle: t('rentalFlow.statusUsuallyUnder1h'),
       };
     case 'confirmed':
     case 'paid':
@@ -484,38 +487,38 @@ function renderStatusContent(
         icon: <View style={[styles.heroIcon, { backgroundColor: BIVO.ink }]}>
           <CheckIcon size={46} color="#fff" strokeWidth={2.4} />
         </View>,
-        stage: `${counterpart.toUpperCase()} HYVÄKSYI`,
-        title: 'Hyväksytty',
-        subtitle: 'Sopikaa noutoajasta keskustelussa.',
+        stage: t('rentalFlow.statusApproved', { name: counterpart.toUpperCase() }),
+        title: t('rentalFlow.statusApprovedTitle'),
+        subtitle: t('rentalFlow.statusArrangePickup'),
       };
     case 'rejected':
       return {
         icon: <View style={[styles.heroIcon, { backgroundColor: BIVO.surface }]} />,
-        stage: 'PYYNTÖ HYLÄTTY',
-        title: `${counterpart} hylkäsi pyynnön.`,
-        subtitle: 'Kokeile muita naapuruston tavaroita.',
+        stage: t('rentalFlow.statusRejectedLabel'),
+        title: t('rentalFlow.statusRejectedTitle', { name: counterpart }),
+        subtitle: t('rentalFlow.statusTryOther'),
       };
     case 'active':
       return {
         icon: <View style={[styles.heroIcon, { backgroundColor: BIVO.live }]} />,
-        stage: 'KÄYNNISSÄ',
-        title: 'Tavara on sinulla.',
-        subtitle: 'Muista palauttaa ajoissa.',
+        stage: t('rentalFlow.statusActive'),
+        title: t('rentalFlow.statusItemWithYou'),
+        subtitle: t('rentalFlow.statusReturnOnTime'),
       };
     case 'completed':
       return {
         icon: <View style={[styles.heroIcon, { backgroundColor: BIVO.live }]}>
           <CheckIcon size={46} color="#fff" strokeWidth={2.4} />
         </View>,
-        stage: 'VALMIS',
-        title: 'Laina päättyi.',
-        subtitle: 'Jos et vielä arvioinut, sen voi tehdä nyt.',
+        stage: t('rentalFlow.statusCompleted'),
+        title: t('rentalFlow.statusLoanEnded'),
+        subtitle: t('rentalFlow.statusReviewNow'),
       };
     case 'cancelled':
       return {
         icon: <View style={[styles.heroIcon, { backgroundColor: BIVO.surface }]} />,
-        stage: 'PERUUTETTU',
-        title: 'Lainaus peruutettu.',
+        stage: t('rentalFlow.statusCancelled'),
+        title: t('rentalFlow.statusLoanCancelled'),
         subtitle: null,
       };
     default:

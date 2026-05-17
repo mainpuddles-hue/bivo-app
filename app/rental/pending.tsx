@@ -6,30 +6,32 @@ import { TopNav, Sheet, BigBtn, StageTag } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { cancelRental } from '@/lib/rental';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 export default function PendingRequestScreen() {
   const BIVO = useLegacyTokens();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const supabase = useSupabase();
+  const { t } = useI18n();
   const { rentalId, itemTitle, ownerName, conversationId } = useLocalSearchParams<{
     rentalId?: string; itemTitle?: string; ownerName?: string; conversationId?: string;
   }>();
 
   const handleCancel = async () => {
     Alert.alert(
-      'Peruuta pyyntö',
-      `Haluatko perua lainapyynnön?`,
+      t('rentalFlow.cancelRequest'),
+      t('rentalFlow.cancelConfirmBody'),
       [
-        { text: 'Ei', style: 'cancel' },
+        { text: t('rentalFlow.cancelNo'), style: 'cancel' },
         {
-          text: 'Peruuta',
+          text: t('rentalFlow.cancelRequest'),
           style: 'destructive',
           onPress: async () => {
             if (rentalId) {
               const res = await cancelRental(supabase, rentalId);
               if (res.error) {
-                Alert.alert('Peruutus epäonnistui', res.error);
+                Alert.alert(t('rentalFlow.cancelFailed'), res.error);
                 return;
               }
             }
@@ -71,26 +73,26 @@ export default function PendingRequestScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Odottaa vastausta" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.pendingTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <View style={styles.pulseCircle}>
             <View style={styles.pulseDot} />
           </View>
-          <StageTag style={{ marginTop: 48 }}>PYYNTÖ LÄHETETTY</StageTag>
+          <StageTag style={{ marginTop: 48 }}>{t('rentalFlow.requestSentTag')}</StageTag>
           <Text style={styles.headline}>
-            Odottaa {ownerName ?? 'omistajan'}{'\n'}
-            <Text style={{ color: BIVO.ink2 }}>vastausta</Text>
+            {t('rentalFlow.waitingForOwner', { name: ownerName ?? t('rentalFlow.ownerFallback') })}{'\n'}
+            <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.response')}</Text>
           </Text>
-          <Text style={styles.subtext}>Vastaa yleensä tunnin kuluessa.</Text>
+          <Text style={styles.subtext}>{t('rentalFlow.usuallyResponds')}</Text>
         </View>
 
         <Sheet padding={18} style={styles.sheet}>
-          <Text style={styles.sheetLabel}>Pyyntö koskee</Text>
+          <Text style={styles.sheetLabel}>{t('rentalFlow.requestRegarding')}</Text>
           <View style={styles.itemRow}>
             <View style={styles.itemThumb} />
             <View style={{ flex: 1 }}>
-              <Text style={styles.itemTitle}>{itemTitle ?? 'Tavara'}</Text>
+              <Text style={styles.itemTitle}>{itemTitle ?? t('rentalFlow.itemFallback')}</Text>
             </View>
           </View>
         </Sheet>
@@ -98,14 +100,14 @@ export default function PendingRequestScreen() {
 
       <View style={[styles.ctaArea, { paddingBottom: Math.max(insets.bottom, 24) }]}>
         <BigBtn secondary onPress={() => { if (conversationId) router.push(`/chat/${conversationId}`); }}>
-          Avaa keskustelu
+          {t('rentalFlow.openChat')}
         </BigBtn>
         <BigBtn
           secondary
           onPress={handleCancel}
           style={{ backgroundColor: 'transparent', borderWidth: 0 }}
         >
-          Peruuta pyyntö
+          {t('rentalFlow.cancelRequestAction')}
         </BigBtn>
       </View>
     </View>

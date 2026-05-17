@@ -5,14 +5,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { StickyCTA, StageTag } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
+import { useI18n } from '@/lib/i18n';
 
 export default function CancelledScreen() {
   const BIVO = useLegacyTokens();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   const { ownerName } = useLocalSearchParams<{ ownerName?: string }>();
 
-  const name = ownerName ?? 'Omistaja';
+  const name = ownerName ?? t('rentalFlow.ownerFallback');
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: BIVO.bg },
@@ -44,18 +46,18 @@ export default function CancelledScreen() {
             <Path d="M6 6L18 18M18 6L6 18" />
           </Svg>
         </View>
-        <StageTag>PYYNTÖ PERUTTU</StageTag>
+        <StageTag>{t('rentalFlow.cancelledTag')}</StageTag>
         <Text style={styles.headline}>
-          Selvä.{'\n'}
-          <Text style={{ color: BIVO.ink2 }}>{name} sai ilmoituksen.</Text>
+          {t('rentalFlow.cancelledConfirm')}{'\n'}
+          <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.ownerNotified', { name })}</Text>
         </Text>
         <Text style={styles.body}>
-          Mitään ei veloitettu. Voit kysyä uudestaan myöhemmin.
+          {t('rentalFlow.nothingCharged')}
         </Text>
       </View>
 
       <StickyCTA onPress={() => router.replace('/(tabs)')}>
-        Takaisin etsimään
+        {t('rentalFlow.backToSearch')}
       </StickyCTA>
     </View>
   );

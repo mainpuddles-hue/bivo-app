@@ -5,11 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { Sheet, StickyCTA, StageTag } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
+import { useI18n } from '@/lib/i18n';
 
 export default function DepositReleasedScreen() {
   const BIVO = useLegacyTokens();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   const { deposit = '30', days = '3', rentalId } = useLocalSearchParams<{
     deposit?: string; days?: string; rentalId?: string;
   }>();
@@ -55,20 +57,20 @@ export default function DepositReleasedScreen() {
               <Path d="M20 6L9 17l-5-5" />
             </Svg>
           </View>
-          <StageTag>VAKUUS VAPAUTETTU</StageTag>
+          <StageTag>{t('rentalFlow.depositReleasedTag')}</StageTag>
           <Text style={styles.headline}>
             {amount} €{'\n'}
-            <Text style={{ color: BIVO.ink2 }}>palaa kortillesi</Text>
+            <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.returnsToCard')}</Text>
           </Text>
           <Text style={styles.body}>
-            Näkyy tiliotteella 1–3 arkipäivän kuluessa.
+            {t('rentalFlow.visibleInStatement')}
           </Text>
         </View>
 
         <Sheet padding={0} style={styles.sheet}>
           {[
-            { l: 'Lainan kesto', v: `${days} päivää` },
-            { l: 'Lopullinen kulu', v: '0 €' },
+            { l: t('rentalFlow.loanDurationLabel'), v: t('rentalFlow.daysCount', { days }) },
+            { l: t('rentalFlow.finalCost'), v: '0 €' },
           ].map((r, i, a) => (
             <View key={r.l} style={[styles.row, i < a.length - 1 && styles.rowBorder]}>
               <Text style={styles.rowLabel}>{r.l}</Text>
@@ -79,7 +81,7 @@ export default function DepositReleasedScreen() {
       </ScrollView>
 
       <StickyCTA onPress={() => { if (rentalId) router.push(`/rental/review/${rentalId}`); }}>
-        Jätä arvio
+        {t('rentalFlow.leaveReview')}
       </StickyCTA>
     </View>
   );

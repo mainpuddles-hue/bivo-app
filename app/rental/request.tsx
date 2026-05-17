@@ -11,6 +11,7 @@ import { createRentalRequest, cancelRental, formatDate, isoDate, addDays } from 
 import { startRentalCheckout } from '@/lib/rental/stripe';
 import { triggerPush } from '@/lib/pushTrigger';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 interface ItemData {
   id: string;
@@ -32,34 +33,34 @@ interface PickupOption {
 
 interface DurationOption {
   key: string;
-  label: string;
   days: number;
 }
 
-function getPickupOptions(): PickupOption[] {
+function getPickupOptions(t: (key: string) => string): PickupOption[] {
   const today = isoDate(new Date());
   return [
-    { key: 'today', label: 'Tänään', iso: today },
-    { key: 'tomorrow', label: 'Huomenna', iso: addDays(today, 1) },
-    { key: 'overmorrow', label: 'Ylihuomenna', iso: addDays(today, 2) },
+    { key: 'today', label: t('rentalFlow.today'), iso: today },
+    { key: 'tomorrow', label: t('rentalFlow.tomorrow'), iso: addDays(today, 1) },
+    { key: 'overmorrow', label: t('rentalFlow.dayAfterTomorrow'), iso: addDays(today, 2) },
   ];
 }
 
 // Max 6 vrk koska Stripe authorization hold vanhenee 7 vrk:ssa.
 // MVP-vaiheessa pitää captere/uudistaa hold ennen vanhentumista.
 const DURATIONS: DurationOption[] = [
-  { key: '1', label: '1 vrk', days: 1 },
-  { key: '2', label: '2 vrk', days: 2 },
-  { key: '3', label: '3 vrk', days: 3 },
-  { key: '4', label: '4 vrk', days: 4 },
-  { key: '5', label: '5 vrk', days: 5 },
-  { key: '6', label: '6 vrk', days: 6 },
+  { key: '1', days: 1 },
+  { key: '2', days: 2 },
+  { key: '3', days: 3 },
+  { key: '4', days: 4 },
+  { key: '5', days: 5 },
+  { key: '6', days: 6 },
 ];
 
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&q=80&auto=format';
 
 export default function RequestScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
@@ -82,7 +83,7 @@ export default function RequestScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const pickupOptions = useMemo(getPickupOptions, []);
+  const pickupOptions = useMemo(() => getPickupOptions(t), [t]);
   const [pickup, setPickup] = useState(pickupOptions[1]); // default: huomenna
   const [duration, setDuration] = useState(DURATIONS[1]); // default: 2 vrk
   const [message, setMessage] = useState('');
@@ -148,7 +149,7 @@ export default function RequestScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={{ color: BIVO.ink2, fontFamily: BIVO.sans }}>Ladataan…</Text>
+        <Text style={{ color: BIVO.ink2, fontFamily: BIVO.sans }}>{t('rentalFlow.loading')}</Text>
       </View>
     );
   }
@@ -156,8 +157,8 @@ export default function RequestScreen() {
   if (!item) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, padding: 32, alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={styles.errorTitle}>Tavaraa ei löytynyt</Text>
-        <Text style={styles.errorBody}>Linkki on vanhentunut.</Text>
+        <Text style={styles.errorTitle}>{t('rentalFlow.itemNotFound')}</Text>
+        <Text style={styles.errorBody}>{t('rentalFlow.linkExpired')}</Text>
       </View>
     );
   }
@@ -165,8 +166,8 @@ export default function RequestScreen() {
   if (item.is_free) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, padding: 32, alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={styles.errorTitle}>Tämä on ilmainen</Text>
-        <Text style={styles.errorBody}>Ilmaiset tavarat varataan eri tavalla. Palaa takaisin ja paina "Varaa itselleni".</Text>
+        <Text style={styles.errorTitle}>{t('rentalFlow.itemIsFree')}</Text>
+        <Text style={styles.errorBody}>{t('rentalFlow.freeItemsBookDifferently')}</Text>
       </View>
     );
   }
@@ -174,8 +175,8 @@ export default function RequestScreen() {
   if (!userId) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, padding: 32, alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={styles.errorTitle}>Kirjaudu sisään</Text>
-        <Text style={styles.errorBody}>Sinun täytyy olla kirjautunut tehdäksesi lainapyynnön.</Text>
+        <Text style={styles.errorTitle}>{t('rentalFlow.loginRequired')}</Text>
+        <Text style={styles.errorBody}>{t('rentalFlow.loginRequiredBody')}</Text>
       </View>
     );
   }
@@ -183,8 +184,8 @@ export default function RequestScreen() {
   if (item.owner_id === userId) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, padding: 32, alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={styles.errorTitle}>Oma ilmoituksesi</Text>
-        <Text style={styles.errorBody}>Et voi lainata omaa tavaraasi.</Text>
+        <Text style={styles.errorTitle}>{t('rentalFlow.ownListing')}</Text>
+        <Text style={styles.errorBody}>{t('rentalFlow.cannotBorrowOwnItem')}</Text>
       </View>
     );
   }
@@ -209,7 +210,7 @@ export default function RequestScreen() {
 
     if ('error' in result) {
       setSubmitting(false);
-      Alert.alert('Pyynnön lähetys epäonnistui', result.error);
+      Alert.alert(t('rentalFlow.requestFailed'), result.error);
       return;
     }
 
@@ -221,15 +222,15 @@ export default function RequestScreen() {
     if (pay.errorCode === 'lender_not_onboarded') {
       // Erikoistapaus: omistaja ei vielä viimeistellyt Stripe-onboardingia.
       Alert.alert(
-        'Omistaja ei voi vielä vastaanottaa maksuja',
-        `${item.owner?.name ?? 'Omistaja'} ei ole vielä lisännyt maksutietoja Bivoon. Pyyntö ei lähtenyt, yritä myöhemmin.`,
+        t('rentalFlow.lenderNotOnboarded'),
+        t('rentalFlow.lenderNotOnboardedBody', { name: item.owner?.name ?? t('rentalFlow.ownerFallback') }),
       );
       // Peruuta pending-rivi jottei jää roikkumaan ilman maksua
       await cancelRental(supabase, result.id);
       return;
     }
     if (pay.error) {
-      Alert.alert('Maksu epäonnistui', pay.error);
+      Alert.alert(t('rentalFlow.paymentFailed'), pay.error);
       await cancelRental(supabase, result.id);
       return;
     }
@@ -237,7 +238,7 @@ export default function RequestScreen() {
       try {
         await cancelRental(supabase, result.id);
       } catch {
-        Alert.alert('Peruutus epäonnistui', 'Pyyntö jäi odottamaan. Yritä uudelleen.');
+        Alert.alert(t('rentalFlow.cancellationFailed'), t('rentalFlow.cancellationFailedBody'));
         return;
       }
       router.back();
@@ -248,8 +249,8 @@ export default function RequestScreen() {
     // Lähetä push omistajalle (fire-and-forget, ei estä navigointia)
     triggerPush({
       user_id: item.owner_id,
-      title: 'Uusi lainapyyntö',
-      body: `${userName ?? 'Naapuri'} haluaa lainata: ${item.title}`,
+      title: t('rentalFlow.pushNewRequestTitle'),
+      body: t('rentalFlow.pushNewRequestBody', { name: userName ?? t('rentalFlow.neighborFallback'), item: item.title }),
       type: 'rental_request',
       data: { booking_id: result.id, item_id: item.id },
     }).catch(() => { /* hiljainen */ });
@@ -262,7 +263,7 @@ export default function RequestScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={[styles.container, { paddingTop: insets.top }]}
     >
-      <TopNav title="Pyydä lainaksi" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.requestTitle')} onBack={() => router.back()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -276,17 +277,17 @@ export default function RequestScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.itemTitle}>{item.title}</Text>
               <Text style={styles.itemSub}>
-                {item.owner?.name ?? 'Naapuri'} · {item.location ?? 'lähellä'}
+                {item.owner?.name ?? t('rentalFlow.neighborFallback')} · {item.location ?? t('rentalFlow.nearbyFallback')}
               </Text>
               <Text style={styles.itemPrice}>
-                {item.daily_fee} €/vrk · vakuus {deposit} €
+                {t('rentalFlow.perDay', { fee: String(item.daily_fee), deposit: String(deposit) })}
               </Text>
             </View>
           </View>
         </Sheet>
 
         {/* Nouto-päivä */}
-        <Eyebrow style={{ marginTop: 22 }}>Nouto</Eyebrow>
+        <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.pickupLabel')}</Eyebrow>
         <View style={styles.pillRow}>
           {pickupOptions.map((p) => (
             <TouchableOpacity key={p.key} onPress={() => setPickup(p)} activeOpacity={0.7}>
@@ -296,21 +297,21 @@ export default function RequestScreen() {
         </View>
 
         {/* Kesto */}
-        <Eyebrow style={{ marginTop: 18 }}>Kesto</Eyebrow>
+        <Eyebrow style={{ marginTop: 18 }}>{t('rentalFlow.durationLabel')}</Eyebrow>
         <View style={styles.pillRow}>
           {DURATIONS.map((d) => (
             <TouchableOpacity key={d.key} onPress={() => setDuration(d)} activeOpacity={0.7}>
-              <Pill tone={duration.key === d.key ? 'on' : 'off'}>{d.label}</Pill>
+              <Pill tone={duration.key === d.key ? 'on' : 'off'}>{t('rentalFlow.durationDays', { days: String(d.days) })}</Pill>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Viesti */}
-        <Eyebrow style={{ marginTop: 18 }}>Viesti {item.owner?.name ?? 'omistajalle'}</Eyebrow>
+        <Eyebrow style={{ marginTop: 18 }}>{t('rentalFlow.messageTo', { name: item.owner?.name ?? t('rentalFlow.ownerFallback') })}</Eyebrow>
         <TextInput
           value={message}
           onChangeText={setMessage}
-          placeholder="Esim. Tarvitsisin viikonlopuksi seinähyllyjen asennukseen. Tulen noutamaan klo 17."
+          placeholder={t('rentalFlow.messagePlaceholder')}
           placeholderTextColor={BIVO.ink3}
           style={styles.messageField}
           multiline
@@ -320,23 +321,23 @@ export default function RequestScreen() {
         {/* Yhteenveto */}
         <Sheet padding={16} style={{ marginTop: 22 }}>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Lainan kesto</Text>
+            <Text style={styles.summaryLabel}>{t('rentalFlow.loanDuration')}</Text>
             <Text style={styles.summaryValue}>
               {formatDate(pickup.iso)} → {formatDate(endDateIso)}
             </Text>
           </View>
           <View style={[styles.summaryRow, styles.summaryBorder]}>
-            <Text style={styles.summaryLabel}>Vuokra {duration.days} vrk</Text>
+            <Text style={styles.summaryLabel}>{t('rentalFlow.rentalFeeDays', { days: String(duration.days) })}</Text>
             <Text style={styles.summaryValue}>{totalFee} €</Text>
           </View>
           {deposit > 0 && (
             <View style={[styles.summaryRow, styles.summaryBorder]}>
-              <Text style={styles.summaryLabel}>Vakuus (ei veloiteta vielä)</Text>
+              <Text style={styles.summaryLabel}>{t('rentalFlow.depositNotCharged')}</Text>
               <Text style={[styles.summaryValue, { color: BIVO.ink3 }]}>{deposit} €</Text>
             </View>
           )}
           <View style={[styles.summaryRow, styles.summaryBorder, styles.summaryTotal]}>
-            <Text style={styles.summaryTotalLabel}>Veloitettava summa</Text>
+            <Text style={styles.summaryTotalLabel}>{t('rentalFlow.totalCharged')}</Text>
             <Text style={styles.summaryTotalValue}>{totalFee} €</Text>
           </View>
         </Sheet>
@@ -346,7 +347,7 @@ export default function RequestScreen() {
             <CheckIcon size={14} color="#fff" />
           </View>
           <Text style={styles.termsText}>
-            Hyväksyn käyttöehdot ja sitoudun palauttamaan tavaran sovittuna aikana samassa kunnossa.
+            {t('rentalFlow.termsAcceptance')}
           </Text>
         </View>
       </ScrollView>
@@ -354,9 +355,9 @@ export default function RequestScreen() {
       <StickyCTA
         onPress={handleSubmit}
         disabled={submitting}
-        hint={`Kortilta pidätetään ${totalFee} € välittömästi. Raha siirtyy omistajalle vasta kun hän hyväksyy. Jos ${item.owner?.name ?? 'omistaja'} hylkää, pidätys vapautuu 5–10 arkipäivässä.`}
+        hint={t('rentalFlow.ctaHint', { fee: String(totalFee), owner: item.owner?.name ?? t('rentalFlow.ownerFallback') })}
       >
-        {submitting ? 'Avataan maksu…' : `Maksa ${totalFee} € & lähetä pyyntö`}
+        {submitting ? t('rentalFlow.openingPayment') : t('rentalFlow.payAndSend', { fee: String(totalFee) })}
       </StickyCTA>
     </KeyboardAvoidingView>
   );

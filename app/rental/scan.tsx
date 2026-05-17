@@ -6,6 +6,7 @@ import { TopNav, BigBtn } from '@/components/rental';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { decodeHandoverPayload, verifyHandoverToken } from '@/lib/rental';
 import { useSupabase } from '@/hooks/useSupabase';
+import { useI18n } from '@/lib/i18n';
 
 let ExpoCamera: any = null;
 try {
@@ -14,6 +15,7 @@ try {
 
 function ScanScreenInner() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const { CameraView, useCameraPermissions } = ExpoCamera;
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -40,11 +42,11 @@ function ScanScreenInner() {
 
     const parsed = decodeHandoverPayload(data);
     if (!parsed) {
-      setError('Tämä ei ole Bivo-noutokoodi.');
+      setError(t('rentalFlow.notBivoCode'));
       return;
     }
     if (expectedBookingId && parsed.bookingId !== expectedBookingId) {
-      setError('QR ei kuulu tähän lainaan. Tarkista että olet oikealla pyyntösivulla.');
+      setError(t('rentalFlow.qrWrongRental'));
       return;
     }
     setVerifying(true);
@@ -59,8 +61,8 @@ function ScanScreenInner() {
     }
     // Onnistui — siirry rental-näkymälle, joka näyttää nyt "in_use" -tilan
     Alert.alert(
-      'Nouto vahvistettu',
-      'Tavara on nyt sinun käytössäsi. Muista palauttaa sovittuna aikana.',
+      t('rentalFlow.pickupConfirmed'),
+      t('rentalFlow.pickupConfirmedBody'),
       [{ text: 'OK', onPress: () => router.replace(`/rental/${parsed.bookingId}`) }],
     );
   };
@@ -114,14 +116,14 @@ function ScanScreenInner() {
   if (!permission.granted) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Skannaa nouto-QR" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.scanTitle')} onBack={() => router.back()} />
         <View style={styles.center}>
-          <Text style={styles.title}>Tarvitsemme kameran</Text>
+          <Text style={styles.title}>{t('rentalFlow.cameraNeedTitle')}</Text>
           <Text style={styles.body}>
-            Bivo tarvitsee pääsyn kameraan jotta voit skannata omistajan näyttämän nouto-QR-koodin.
+            {t('rentalFlow.cameraNeedBody')}
           </Text>
           <View style={{ marginTop: 28, width: '100%' }}>
-            <BigBtn onPress={requestPermission}>Salli kamera</BigBtn>
+            <BigBtn onPress={requestPermission}>{t('rentalFlow.allowCamera')}</BigBtn>
           </View>
         </View>
       </View>
@@ -137,7 +139,7 @@ function ScanScreenInner() {
         barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
       />
       <View style={[StyleSheet.absoluteFillObject, styles.overlay]}>
-        <TopNav title="Skannaa nouto-QR" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.scanTitle')} onBack={() => router.back()} />
         <View style={styles.scanArea}>
           <View style={styles.reticle} />
         </View>
@@ -145,19 +147,19 @@ function ScanScreenInner() {
           {verifying ? (
             <View style={styles.hint}>
               <ActivityIndicator color="#fff" />
-              <Text style={styles.hintText}>Tarkistetaan…</Text>
+              <Text style={styles.hintText}>{t('rentalFlow.verifying')}</Text>
             </View>
           ) : error ? (
             <View style={styles.errorBox}>
-              <Text style={styles.errorTitle}>Virhe</Text>
+              <Text style={styles.errorTitle}>{t('common.error')}</Text>
               <Text style={styles.errorBody}>{error}</Text>
               <BigBtn onPress={handleRetry}>
-                Yritä uudelleen
+                {t('rentalFlow.tryAgain')}
               </BigBtn>
             </View>
           ) : (
             <Text style={styles.helperText}>
-              Suuntaa kamera omistajan QR-koodiin
+              {t('rentalFlow.pointCamera')}
             </Text>
           )}
         </View>
@@ -168,6 +170,7 @@ function ScanScreenInner() {
 
 export default function ScanScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -181,11 +184,11 @@ export default function ScanScreen() {
   if (!ExpoCamera) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Skannaa nouto-QR" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.scanTitle')} onBack={() => router.back()} />
         <View style={styles.center}>
-          <Text style={styles.title}>Kamera ei saatavilla</Text>
+          <Text style={styles.title}>{t('rentalFlow.cameraNotAvailable')}</Text>
           <Text style={styles.body}>
-            Kamera ei ole käytettävissä tällä laitteella.
+            {t('rentalFlow.cameraNotAvailableBody')}
           </Text>
         </View>
       </View>

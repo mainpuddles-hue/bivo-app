@@ -7,9 +7,11 @@ import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { approveRental, rejectRental } from '@/lib/rental';
+import { useI18n } from '@/lib/i18n';
 
 export default function OwnerRequestScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -38,12 +40,12 @@ export default function OwnerRequestScreen() {
       : await rejectRental(supabase, id);
     setResponding(false);
     if (result.error) {
-      Alert.alert('Virhe', result.error);
+      Alert.alert(t('common.error'), result.error);
       return;
     }
     Alert.alert(
-      status === 'approved' ? 'Hyväksytty' : 'Hylätty',
-      status === 'approved' ? 'Lainauspyyntö hyväksytty.' : 'Lainauspyyntö hylätty.',
+      status === 'approved' ? t('rentalFlow.requestApproved') : t('rentalFlow.requestRejected'),
+      status === 'approved' ? t('rentalFlow.requestApprovedBody') : t('rentalFlow.requestRejectedBody'),
       [{ text: 'OK', onPress: () => router.back() }],
     );
   };
@@ -99,14 +101,14 @@ export default function OwnerRequestScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <TopNav title="Lainauspyyntö" onBack={() => router.back()} />
+        <TopNav title={t('rentalFlow.ownerRequestTitle')} onBack={() => router.back()} />
         <ActivityIndicator style={{ marginTop: 40 }} color={BIVO.ink} />
       </View>
     );
   }
 
-  const borrowerName = rental?.borrower?.display_name || rental?.borrower?.name || 'Lainaaja';
-  const itemTitle = rental?.item?.title || 'Tavara';
+  const borrowerName = rental?.borrower?.display_name || rental?.borrower?.name || t('rentalFlow.borrowerFallback');
+  const itemTitle = rental?.item?.title || t('rentalFlow.itemFallback');
   const itemImage = rental?.item?.images?.[0]?.image_url;
   const borrowerRating = rental?.borrower?.avg_rating;
   const borrowerCreated = rental?.borrower?.created_at
@@ -122,17 +124,16 @@ export default function OwnerRequestScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Lainapyyntö" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.ownerRequestTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.borrowerSection}>
           <Avatar url={rental?.borrower?.avatar_url} name={borrowerName} size={84} />
-          <StageTag style={{ marginTop: 24 }}>UUSI PYYNTÖ</StageTag>
+          <StageTag style={{ marginTop: 24 }}>{t('rentalFlow.newRequestTag')}</StageTag>
           <Text style={styles.heroTitle}>
-            {borrowerName}{' '}
-            <Text style={{ color: BIVO.ink2 }}>haluaa lainata</Text>
-            {'\n'}{itemTitle.toLowerCase()}si
+            <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.wantsToLend', { name: borrowerName })}</Text>
+            {'\n'}{t('rentalFlow.yourItemSuffix', { item: itemTitle.toLowerCase() })}
           </Text>
-          <Text style={styles.heroSub}>vastaa 24 h sisällä</Text>
+          <Text style={styles.heroSub}>{t('rentalFlow.respondIn24h')}</Text>
         </View>
 
         <Sheet padding={16} style={styles.itemCard}>
@@ -145,7 +146,7 @@ export default function OwnerRequestScreen() {
               )}
               {rental?.deposit_amount != null && (
                 <Text style={styles.itemDates}>
-                  Vakuus {rental.deposit_amount} €
+                  {t('rentalFlow.depositAmount', { amount: String(rental.deposit_amount) })}
                 </Text>
               )}
             </View>
@@ -154,19 +155,19 @@ export default function OwnerRequestScreen() {
 
         {rental?.notes && (
           <>
-            <Eyebrow style={{ marginTop: 22 }}>{borrowerName}n viesti</Eyebrow>
+            <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.messageFrom', { name: borrowerName })}</Eyebrow>
             <Sheet padding={16} style={{ marginTop: 8 }}>
               <Text style={styles.messageText}>"{rental.notes}"</Text>
             </Sheet>
           </>
         )}
 
-        <Eyebrow style={{ marginTop: 22 }}>{borrowerName}sta</Eyebrow>
+        <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.aboutBorrower', { name: borrowerName })}</Eyebrow>
         <Sheet padding={0} style={{ marginTop: 8 }}>
           {[
-            { l: 'Arvio', v: borrowerRating ? `★ ${borrowerRating.toFixed(1)}` : '—' },
-            { l: 'Bivo-jäsen', v: borrowerCreated ?? '—' },
-            { l: 'Vahvistettu', v: rental?.borrower?.identity_verified_at ? 'Kyllä' : 'Ei vielä' },
+            { l: t('rentalFlow.ratingLabel'), v: borrowerRating ? `★ ${borrowerRating.toFixed(1)}` : '—' },
+            { l: t('rentalFlow.bivoMember'), v: borrowerCreated ?? '—' },
+            { l: t('rentalFlow.verified'), v: rental?.borrower?.identity_verified_at ? t('rentalFlow.verifiedYes') : t('rentalFlow.verifiedNotYet') },
           ].map((r, i, a) => (
             <View key={r.l} style={[styles.infoRow, i < a.length - 1 && styles.infoRowBorder]}>
               <Text style={styles.infoLabel}>{r.l}</Text>
@@ -179,10 +180,10 @@ export default function OwnerRequestScreen() {
       <View style={[styles.ctaArea, { paddingBottom: Math.max(insets.bottom, 24) }]}>
         <View style={styles.ctaRow}>
           <BigBtn secondary onPress={() => handleResponse('rejected')} disabled={responding} style={{ flex: 1 }}>
-            Hylkää
+            {t('rentalFlow.rejectRequest')}
           </BigBtn>
           <BigBtn onPress={() => handleResponse('approved')} disabled={responding} style={{ flex: 1.4 }}>
-            {responding ? 'Käsitellään…' : 'Hyväksy'}
+            {responding ? t('rentalFlow.sendingReview') : t('rentalFlow.approveRequest')}
           </BigBtn>
         </View>
       </View>

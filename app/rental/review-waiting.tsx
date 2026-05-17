@@ -6,16 +6,18 @@ import Svg, { Circle as SvgCircle, Path } from 'react-native-svg';
 import { TopNav, Sheet, StickyCTA, StageTag, Eyebrow } from '@/components/rental';
 import { Avatar } from '@/components/Avatar';
 import { useLegacyTokens } from '@/lib/rental/theme';
+import { useI18n } from '@/lib/i18n';
 
 export default function ReviewWaitingScreen() {
   const BIVO = useLegacyTokens();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   const { ownerName, ownerAvatar } = useLocalSearchParams<{
     ownerName?: string; ownerAvatar?: string;
   }>();
 
-  const name = ownerName ?? 'toisen osapuolen';
+  const name = ownerName ?? t('rentalFlow.ownerFallback');
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: BIVO.bg },
@@ -49,7 +51,7 @@ export default function ReviewWaitingScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Arviointi" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.reviewWaitingTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <View style={styles.iconCircle}>
@@ -58,21 +60,21 @@ export default function ReviewWaitingScreen() {
               <Path d="M12 7v5l3 2" />
             </Svg>
           </View>
-          <StageTag style={{ marginTop: 48 }}>ARVIO LÄHETETTY</StageTag>
+          <StageTag style={{ marginTop: 48 }}>{t('rentalFlow.reviewSentTag')}</StageTag>
           <Text style={styles.headline}>
-            Odotetaan{'\n'}
-            <Text style={{ color: BIVO.ink2 }}>{name}n arviota</Text>
+            {t('rentalFlow.waitingForReview')}{'\n'}
+            <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.othersReview', { name })}</Text>
           </Text>
           <Text style={styles.body}>
-            Arviot paljastetaan molemmille kun {name} on myös arvioinut sinut. Näin pidetään ne rehellisinä.
+            {t('rentalFlow.reviewRevealBody', { name })}
           </Text>
         </View>
 
         <Sheet padding={18} style={styles.sheet}>
-          <Eyebrow>Sinun arviosi · piilotettu</Eyebrow>
+          <Eyebrow>{t('rentalFlow.yourReviewHidden')}</Eyebrow>
           <View style={styles.blurBox}>
             <Text style={styles.blurText}>
-              Arviosi paljastetaan kun molemmat ovat arvioineet.
+              {t('rentalFlow.reviewRevealWhenBoth')}
             </Text>
           </View>
         </Sheet>
@@ -80,14 +82,14 @@ export default function ReviewWaitingScreen() {
         <Sheet padding={14} style={styles.ownerCard}>
           <Avatar url={ownerAvatar} name={name} size={36} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.ownerName}>{name} · ei vielä arvioinut</Text>
-            <Text style={styles.ownerSub}>Yleensä 1–2 päivän kuluessa</Text>
+            <Text style={styles.ownerName}>{t('rentalFlow.notYetReviewed', { name })}</Text>
+            <Text style={styles.ownerSub}>{t('rentalFlow.usually1to2days')}</Text>
           </View>
         </Sheet>
       </ScrollView>
 
       <StickyCTA secondary onPress={() => router.replace('/(tabs)')}>
-        Palaa etusivulle
+        {t('rentalFlow.backToFeed')}
       </StickyCTA>
     </View>
   );

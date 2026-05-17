@@ -6,17 +6,19 @@ import { TopNav, Sheet, BigBtn, Pill, Eyebrow, StageTag, CheckIcon } from '@/com
 import { useLegacyTokens } from '@/lib/rental/theme';
 import { useSupabase } from '@/hooks/useSupabase';
 import { confirmReceipt } from '@/lib/rental';
+import { useI18n } from '@/lib/i18n';
 
 type Condition = 'ok' | 'minor' | 'damaged';
 
-const CONDITIONS: { key: Condition; label: string; desc: string }[] = [
-  { key: 'ok', label: 'Kunnossa', desc: 'Tavara on samassa kunnossa kuin luovutettaessa' },
-  { key: 'minor', label: 'Pieniä jälkiä', desc: 'Normaalista käytöstä aiheutuneita jälkiä' },
-  { key: 'damaged', label: 'Vaurioitunut', desc: 'Tavara on selvästi vaurioitunut tai rikki' },
+const CONDITIONS: { key: Condition; labelKey: string; descKey: string }[] = [
+  { key: 'ok', labelKey: 'rentalFlow.conditionOk', descKey: 'rentalFlow.conditionOkDesc' },
+  { key: 'minor', labelKey: 'rentalFlow.conditionMinor', descKey: 'rentalFlow.conditionMinorDesc' },
+  { key: 'damaged', labelKey: 'rentalFlow.conditionDamaged', descKey: 'rentalFlow.conditionDamagedDesc' },
 ];
 
 export default function OwnerReturnScreen() {
   const BIVO = useLegacyTokens();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,8 +37,8 @@ export default function OwnerReturnScreen() {
     return () => { mounted = false; };
   }, [id]);
 
-  const borrowerName = rental?.borrower?.name || 'Lainaaja';
-  const itemTitle = rental?.item?.title ?? 'tavara';
+  const borrowerName = rental?.borrower?.name || t('rentalFlow.borrowerFallback');
+  const itemTitle = rental?.item?.title ?? t('rentalFlow.itemFallback');
   const depositAmount = rental?.deposit_amount != null
     ? `${rental.deposit_amount} €`
     : '30 €';
@@ -56,10 +58,10 @@ export default function OwnerReturnScreen() {
     const error = confirmError ? { message: confirmError } : null;
 
     if (error) {
-      Alert.alert('Virhe', error.message);
+      Alert.alert(t('common.error'), error.message);
       return;
     }
-    Alert.alert('Palautus vahvistettu', 'Vakuus vapautetaan lainaajalle.', [
+    Alert.alert(t('rentalFlow.returnConfirmed'), t('rentalFlow.depositReleasedToBorrower'), [
       { text: 'OK', onPress: () => router.back() },
     ]);
   };
@@ -120,16 +122,16 @@ export default function OwnerReturnScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TopNav title="Palautus" onBack={() => router.back()} />
+      <TopNav title={t('rentalFlow.ownerReturnTitle')} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.heroSection}>
           <View style={styles.heroIcon}>
             <Text style={styles.heroIconText}>↩</Text>
           </View>
-          <StageTag style={{ marginTop: 24 }}>{borrowerName.toUpperCase()} PALAUTTAA</StageTag>
+          <StageTag style={{ marginTop: 24 }}>{t('rentalFlow.borrowerReturns', { name: borrowerName.toUpperCase() })}</StageTag>
           <Text style={styles.heroTitle}>
-            Tarkista {itemTitle.toLowerCase()}{'\n'}
-            <Text style={{ color: BIVO.ink2 }}>ja vapauta vakuus</Text>
+            {t('rentalFlow.inspectAndRelease', { item: itemTitle.toLowerCase() }).split('\n')[0]}{'\n'}
+            <Text style={{ color: BIVO.ink2 }}>{t('rentalFlow.inspectAndRelease', { item: itemTitle.toLowerCase() }).split('\n')[1]}</Text>
           </Text>
         </View>
 
@@ -137,10 +139,10 @@ export default function OwnerReturnScreen() {
           <View style={styles.scanCheck}>
             <CheckIcon size={12} color="#fff" />
           </View>
-          <Text style={styles.scanText}>QR-koodi skannattu</Text>
+          <Text style={styles.scanText}>{t('rentalFlow.qrScanned')}</Text>
         </View>
 
-        <Eyebrow style={{ marginTop: 22 }}>Tarkistuslista · kunto</Eyebrow>
+        <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.conditionChecklist')}</Eyebrow>
         {CONDITIONS.map((c) => {
           const selected = condition === c.key;
           return (
@@ -157,8 +159,8 @@ export default function OwnerReturnScreen() {
                     {selected && <CheckIcon size={14} color="#fff" />}
                   </View>
                   <View style={styles.condText}>
-                    <Text style={[styles.condLabel, selected && styles.condLabelSelected]}>{c.label}</Text>
-                    <Text style={styles.condDesc}>{c.desc}</Text>
+                    <Text style={[styles.condLabel, selected && styles.condLabelSelected]}>{t(c.labelKey)}</Text>
+                    <Text style={styles.condDesc}>{t(c.descKey)}</Text>
                   </View>
                 </View>
               </Sheet>
@@ -166,21 +168,21 @@ export default function OwnerReturnScreen() {
           );
         })}
 
-        <Eyebrow style={{ marginTop: 22 }}>Vakuus</Eyebrow>
+        <Eyebrow style={{ marginTop: 22 }}>{t('rentalFlow.depositSection')}</Eyebrow>
         <Sheet padding={16} style={{ marginTop: 8 }}>
           <View style={styles.depositRow}>
             <View>
-              <Text style={styles.depositLabel}>PIDÄTETTYNÄ</Text>
+              <Text style={styles.depositLabel}>{t('rentalFlow.held')}</Text>
               <Text style={styles.depositAmount}>{depositAmount}</Text>
             </View>
-            {condition === 'ok' && <Pill tone="soft">Vapautuu heti</Pill>}
+            {condition === 'ok' && <Pill tone="soft">{t('rentalFlow.releasedImmediately')}</Pill>}
           </View>
           <View style={styles.btnRow}>
             <BigBtn secondary onPress={() => {}} disabled={submitting} style={{ flex: 1 }}>
-              Veloita osuus
+              {t('rentalFlow.chargePartial')}
             </BigBtn>
             <BigBtn onPress={handleConfirm} disabled={submitting} style={{ flex: 1.4 }}>
-              {submitting ? 'Käsitellään…' : 'Vapauta vakuus'}
+              {submitting ? t('rentalFlow.sendingReview') : t('rentalFlow.releaseDeposit')}
             </BigBtn>
           </View>
         </Sheet>
