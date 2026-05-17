@@ -25,6 +25,7 @@ import { CATEGORIES, POST_SELECT, SERVICE_FEE_RATE, suggestDeposit, DEPOSIT_SUGG
 import { applyLocationAccuracy } from '@/lib/privacyUtils'
 import { FEATURES } from '@/lib/featureFlags'
 import { formatTimeAgo, formatPrice, formatEventDate } from '@/lib/format'
+import MapView, { Marker } from 'react-native-maps'
 import { useStripePayment } from '@/hooks/useStripePayment'
 import { useTrustLevel } from '@/hooks/useTrustLevel'
 import { TrustBadge } from '@/components/TrustBadge'
@@ -1463,11 +1464,32 @@ function PostDetailScreenInner() {
           {/* v3 Location card */}
           {post.location && (
             <View style={[styles.locCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={[styles.locMap, { backgroundColor: isDark ? colors.foreground : colors.muted }]}>
-                <View style={[styles.locPin, { backgroundColor: colors.foreground }]}>
-                  <MapPin size={12} color={colors.background} strokeWidth={2.4} />
+              {(post as any).latitude && (post as any).longitude ? (
+                <MapView
+                  style={styles.locMap}
+                  initialRegion={{
+                    latitude: (post as any).latitude,
+                    longitude: (post as any).longitude,
+                    latitudeDelta: 0.008,
+                    longitudeDelta: 0.008,
+                  }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}
+                  pitchEnabled={false}
+                  pointerEvents="none"
+                >
+                  <Marker
+                    coordinate={{ latitude: (post as any).latitude, longitude: (post as any).longitude }}
+                  />
+                </MapView>
+              ) : (
+                <View style={[styles.locMap, { backgroundColor: isDark ? colors.foreground : colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
+                  <View style={[styles.locPin, { backgroundColor: colors.foreground }]}>
+                    <MapPin size={12} color={colors.background} strokeWidth={2.4} />
+                  </View>
                 </View>
-              </View>
+              )}
               <View style={styles.locText}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.locName, { color: colors.foreground }]}>{post.location}</Text>
