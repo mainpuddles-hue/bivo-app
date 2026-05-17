@@ -1138,6 +1138,8 @@ function PostDetailScreenInner() {
   const allImages = allImagesRaw
   const allImagesMedium = allImagesRaw.map(url => getImageUrl(url, 'medium')!)
   const allImagesFull = allImagesRaw.map(url => getImageUrl(url, 'full')!)
+  const isEvent = post.type === 'tapahtuma'
+  const hasHeroImage = allImages.length > 0 && !heroImageError
 
   // expirationInfo moved before early returns (React hooks rules)
 
@@ -1168,7 +1170,7 @@ function PostDetailScreenInner() {
       </View>
 
       <Animated.ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, !hasHeroImage && !isEvent && { paddingTop: insets.top + 56 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         scrollEventThrottle={16}
@@ -1178,9 +1180,10 @@ function PostDetailScreenInner() {
         )}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPost() }} tintColor={colors.foreground} />}
       >
-        {/* v3 Hero — 1:1 aspect with gradient + glass controls */}
-        <View style={styles.heroWrap}>
-          {allImages.length > 0 && !heroImageError ? (
+        {/* v3 Hero — 1:1 aspect with gradient + glass controls.
+            Text-only posts (no images, not events) skip the hero entirely. */}
+        {(hasHeroImage || isEvent) && <View style={styles.heroWrap}>
+          {hasHeroImage ? (
             allImages.length === 1 ? (
               <PressableOpacity onPress={() => openGallery(0)} accessibilityRole="button" accessibilityLabel={t('post.openGallery') ?? 'Open image gallery'} style={{ flex: 1 }}>
                 <Image source={{ uri: allImagesMedium[0] }} style={styles.heroImage} contentFit="cover" transition={300} cachePolicy="memory-disk" onError={() => setHeroImageError(true)} />
@@ -1234,7 +1237,7 @@ function PostDetailScreenInner() {
               ))}
             </View>
           )}
-        </View>
+        </View>}
 
         {/* v3 Body */}
         <View style={[styles.bodyCard, { backgroundColor: colors.background }]}>
