@@ -1,8 +1,7 @@
-// Supabase Edge Function: generate-event-image
-// Generates a Bivo-branded AI placeholder image for community events without images.
-// Uses Hugging Face Inference API (FLUX.1-schnell) for fast text-to-image generation.
-// Style: Blender 3D monochrome render — smooth matte plastic, light aqua-cyan (#A5DDE0),
-// featureless sphere-headed figures, geometric primitives, soft shadows, no reflection.
+// Supabase Edge Function: process-image-queue
+// Cron-triggered (every minute via pg_cron). Picks pending items from
+// image_generation_queue, generates AI images, and updates the records.
+// Processes up to BATCH_SIZE items per invocation to stay within timeout.
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
@@ -13,22 +12,18 @@ function getEnvOrThrow(key: string): string {
   return val
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
 const supabaseUrl = getEnvOrThrow('SUPABASE_URL')
 const supabaseServiceKey = getEnvOrThrow('SUPABASE_SERVICE_ROLE_KEY')
 const hfToken = Deno.env.get('HF_API_TOKEN')
 
 const IMAGE_MODEL = 'black-forest-labs/FLUX.1-schnell'
 const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${IMAGE_MODEL}`
-const HF_TIMEOUT_MS = 60000 // 60s — image generation is slower
-const STORAGE_BUCKET = 'event-images'
+const HF_TIMEOUT_MS = 60000
+const BATCH_SIZE = 3
+const MAX_ATTEMPTS = 3
 
-// Title-to-scene mapping — geometric props in a monochrome miniature city.
-// Figures: large smooth sphere head (NO face, NO eyes, NO mouth), cylinder body/limbs.
+// ── Prompt building (same logic as generate-event-image) ──
+
 const TITLE_KEYWORDS: [RegExp, string][] = [
   [/lautapeli|board.?game|peli-ilta/i, 'two figures sitting on cube blocks around a flat table with small cube dice and cone game pawns between them, block buildings behind'],
   [/jalkapallo|football|futis/i, 'figures running near a large sphere ball, rectangular goal frame, block buildings and sphere-top trees in background'],
@@ -80,39 +75,26 @@ function buildPrompt(title: string, description: string | null, category: string
     || CATEGORY_SCENES.default
 
   return [
-    // Style — Blender 3D monochrome render
     'Blender 3D render of a monochrome miniature city diorama.',
     'Smooth matte plastic material like injection-molded toy figures.',
     'NOT claymation, NOT clay, NOT realistic. Clean 3D-printed plastic look.',
-
-    // Color — exact match
     'ENTIRE IMAGE IS ONE SINGLE COLOR: light aqua-cyan, hex #A5DDE0.',
     'Everything is #A5DDE0: background, ground plane, sky, buildings, figures, props, trees.',
     'The ground plane seamlessly blends into the background with no visible horizon line.',
     'There is absolutely NO color variation except through lighting and shadow.',
-
-    // Characters — completely featureless
     'Humanoid figures have oversized perfectly smooth sphere heads.',
     'Heads are COMPLETELY BLANK — NO eyes, NO mouth, NO nose, NO smile, NO face at all.',
     'Just a smooth featureless sphere. Bodies are simple cylinder torso and thin cylinder limbs.',
     'Figures are the SAME #A5DDE0 color as everything else.',
-
-    // Scene
     `Scene: ${sceneHint}.`,
-
-    // Environment
     'Background: rectangular block buildings of varying heights, no windows or doors.',
     'Trees are sphere on thin cylinder stick (lollipop shape).',
     'All objects are simple geometric primitives: cubes, cylinders, spheres, cones, flat planes.',
-
-    // Material and lighting
     'Smooth matte non-reflective plastic on everything. No glossy surfaces.',
     'No reflection, no specular highlights, no shine.',
     'No wood, metal, glass, fabric, grass, or any natural material texture.',
     'Soft directional light from upper left creating small visible shadows for depth.',
     'Shadows are a slightly darker shade of the same aqua-cyan, never black or gray.',
-
-    // Restrictions
     'NO text, letters, numbers, or writing anywhere in the image.',
     'NO realistic objects — everything is simplified geometric plastic.',
     'NO other colors — no black, white, brown, green, or any accent color.',
@@ -120,6 +102,8 @@ function buildPrompt(title: string, description: string | null, category: string
     'NO reflection or glossy surfaces.',
   ].join(' ')
 }
+
+// ── Image generation ──
 
 async function generateImage(prompt: string): Promise<Uint8Array> {
   if (!hfToken) throw new Error('HF_API_TOKEN not configured')
@@ -136,11 +120,7 @@ async function generateImage(prompt: string): Promise<Uint8Array> {
       },
       body: JSON.stringify({
         inputs: prompt,
-        parameters: {
-          num_inference_steps: 4,
-          width: 768,
-          height: 512,
-        },
+        parameters: { num_inference_steps: 4, width: 768, height: 512 },
       }),
       signal: controller.signal,
     })
@@ -152,8 +132,7 @@ async function generateImage(prompt: string): Promise<Uint8Array> {
       throw new Error(`HF API ${res.status}: ${errBody}`)
     }
 
-    const arrayBuffer = await res.arrayBuffer()
-    return new Uint8Array(arrayBuffer)
+    return new Uint8Array(await res.arrayBuffer())
   } catch (err) {
     clearTimeout(timeout)
     throw err
@@ -161,8 +140,7 @@ async function generateImage(prompt: string): Promise<Uint8Array> {
 }
 
 async function moderateImage(imageBytes: Uint8Array): Promise<boolean> {
-  if (!hfToken) return true // Skip moderation if no token
-
+  if (!hfToken) return true
   try {
     const res = await fetch(
       'https://router.huggingface.co/hf-inference/models/Falconsai/nsfw_image_detection',
@@ -175,120 +153,165 @@ async function moderateImage(imageBytes: Uint8Array): Promise<boolean> {
         body: imageBytes,
       },
     )
-
-    if (!res.ok) return true // Allow on moderation failure — image is AI-generated anyway
-
+    if (!res.ok) return true
     const results = await res.json()
-    // results is array of { label: 'nsfw'|'normal', score: number }
     const nsfwScore = results?.find?.((r: any) => r.label === 'nsfw')?.score ?? 0
-    return nsfwScore < 0.3 // Safe if NSFW score below 30%
+    return nsfwScore < 0.3
   } catch {
-    return true // Allow on error
+    return true
   }
 }
 
+// ── Queue processing ──
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      },
+    })
   }
 
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const results: { id: string; status: string; error?: string }[] = []
+
   try {
-    const { event_id, source, force } = await req.json()
-    if (!event_id) {
-      return new Response(JSON.stringify({ error: 'event_id required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    // Claim pending items atomically (SKIP LOCKED prevents concurrent processing)
+    const { data: items, error: claimErr } = await supabase.rpc('claim_image_queue_items', {
+      batch_size: BATCH_SIZE,
+    })
+
+    if (claimErr) {
+      // Fallback: direct query if RPC not yet created
+      console.warn('[process-image-queue] RPC fallback:', claimErr.message)
+      const { data: fallbackItems } = await (supabase
+        .from('image_generation_queue') as any)
+        .select('*')
+        .eq('status', 'pending')
+        .lt('attempts', MAX_ATTEMPTS)
+        .order('created_at', { ascending: true })
+        .limit(BATCH_SIZE)
+
+      if (!fallbackItems?.length) {
+        return jsonResponse({ processed: 0, message: 'Queue empty' })
+      }
+
+      // Mark as processing
+      const ids = fallbackItems.map((i: any) => i.id)
+      await (supabase.from('image_generation_queue') as any)
+        .update({ status: 'processing', attempts: supabase.rpc ? undefined : undefined })
+        .in('id', ids)
+
+      for (const item of fallbackItems) {
+        const result = await processItem(supabase, item)
+        results.push(result)
+      }
+
+      return jsonResponse({ processed: results.length, results })
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    if (!items?.length) {
+      return jsonResponse({ processed: 0, message: 'Queue empty' })
+    }
 
-    // Determine table based on source (post or community event)
-    const table = source === 'post' ? 'posts' : 'community_events'
-    const titleField = 'title'
-    const imageField = 'image_url'
+    // Process each claimed item
+    for (const item of items) {
+      const result = await processItem(supabase, item)
+      results.push(result)
+    }
 
-    // Fetch event details
+    return jsonResponse({ processed: results.length, results })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error('[process-image-queue]', message)
+    return jsonResponse({ error: message }, 500)
+  }
+})
+
+async function processItem(
+  supabase: any,
+  item: { id: string; event_id: string; source: string; attempts: number },
+): Promise<{ id: string; status: string; error?: string }> {
+  try {
+    // Fetch event/post details
+    const table = item.source === 'post' ? 'posts' : 'community_events'
+    const selectFields = item.source === 'post'
+      ? 'id, title, description, type'
+      : 'id, title, description, category'
+
     const { data: event, error: fetchErr } = await (supabase
       .from(table) as any)
-      .select(`id, ${titleField}, description, ${imageField}${source === 'community' ? ', category' : ', type'}`)
-      .eq('id', event_id)
+      .select(selectFields)
+      .eq('id', item.event_id)
       .single()
 
     if (fetchErr || !event) {
-      return new Response(JSON.stringify({ error: 'Event not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      await markFailed(supabase, item.id, 'Event not found')
+      return { id: item.id, status: 'failed', error: 'Event not found' }
     }
 
-    // Skip if event already has an image (unless force regeneration)
-    if (event[imageField] && !force) {
-      return new Response(JSON.stringify({ image_url: event[imageField], skipped: true }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Generate image
-    const category = source === 'post' ? 'default' : (event.category || 'default')
-    const prompt = buildPrompt(event[titleField], event.description, category)
+    // Build prompt and generate
+    const category = item.source === 'post' ? 'default' : (event.category || 'default')
+    const prompt = buildPrompt(event.title, event.description, category)
     const imageBytes = await generateImage(prompt)
 
-    // Moderate generated image
+    // Moderate
     const isSafe = await moderateImage(imageBytes)
     if (!isSafe) {
-      return new Response(JSON.stringify({ error: 'Generated image failed moderation' }), {
-        status: 422,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      await markFailed(supabase, item.id, 'Failed moderation')
+      return { id: item.id, status: 'failed', error: 'Failed moderation' }
     }
 
-    // Upload to Supabase Storage
-    const bucket = source === 'post' ? 'post-images' : STORAGE_BUCKET
-    const fileName = `generated/${event_id}.jpg`
+    // Upload to storage
+    const bucket = item.source === 'post' ? 'post-images' : 'event-images'
+    const fileName = `generated/${item.event_id}.jpg`
     const { error: uploadErr } = await supabase.storage
       .from(bucket)
-      .upload(fileName, imageBytes, {
-        contentType: 'image/jpeg',
-        upsert: true,
-      })
+      .upload(fileName, imageBytes, { contentType: 'image/jpeg', upsert: true })
 
     if (uploadErr) {
-      throw new Error(`Storage upload failed: ${uploadErr.message}`)
+      await markFailed(supabase, item.id, `Upload: ${uploadErr.message}`)
+      return { id: item.id, status: 'failed', error: uploadErr.message }
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(fileName)
-
-    // Append cache buster so clients fetch fresh image after regeneration
+    // Get public URL with cache buster
+    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName)
     const publicUrl = `${urlData.publicUrl}?v=${Date.now()}`
 
-    // Update record with generated image
-    const { error: updateErr } = await (supabase
-      .from(table) as any)
-      .update({ [imageField]: publicUrl })
-      .eq('id', event_id)
+    // Update the record
+    await (supabase.from(table) as any)
+      .update({ image_url: publicUrl })
+      .eq('id', item.event_id)
 
-    if (updateErr) {
-      throw new Error(`Record update failed: ${updateErr.message}`)
-    }
+    // Mark queue item complete
+    await (supabase.from('image_generation_queue') as any)
+      .update({ status: 'completed', processed_at: new Date().toISOString() })
+      .eq('id', item.id)
 
-    return new Response(
-      JSON.stringify({ image_url: publicUrl, generated: true }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      },
-    )
+    console.log(`[process-image-queue] Generated: ${event.title}`)
+    return { id: item.id, status: 'completed' }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[generate-event-image]', message)
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    await markFailed(supabase, item.id, msg)
+    return { id: item.id, status: 'failed', error: msg }
   }
-})
+}
+
+async function markFailed(supabase: any, queueId: string, error: string) {
+  await (supabase.from('image_generation_queue') as any)
+    .update({
+      status: 'failed',
+      error,
+      processed_at: new Date().toISOString(),
+    })
+    .eq('id', queueId)
+}
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
