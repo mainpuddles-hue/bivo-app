@@ -125,6 +125,7 @@ export const PostCard = memo(function PostCard({ post, userLocation, userId, onI
   const isAnonymous = post.is_anonymous === true
   const isUrgentPost = post.is_urgent && post.expires_at && new Date(post.expires_at).getTime() > Date.now()
   const isExpired = !!(post.expires_at && new Date(post.expires_at).getTime() <= Date.now())
+    || !!(post.type === 'tapahtuma' && post.event_date && new Date(post.event_date).getTime() <= Date.now())
 
   const expirationInfo = useMemo(() => getExpirationInfo(post.expires_at, t), [post.expires_at, t])
 

@@ -112,7 +112,9 @@ export function useFeedData() {
           // Filter out expired or inactive posts from cache
           const fresh = parsed.filter(p =>
             p.is_active !== false &&
-            (!p.expires_at || p.expires_at >= now)
+            (!p.expires_at || p.expires_at >= now) &&
+            // Exclude past events (tapahtuma with event_date in the past)
+            !(p.type === 'tapahtuma' && p.event_date && p.event_date < now)
           )
           setPosts(fresh)
         } catch {} // Intentional: corrupted cache
@@ -264,6 +266,7 @@ export function useFeedData() {
         .select(POST_SELECT)
         .eq('is_active', true)
         .or('expires_at.is.null,expires_at.gte.now()')
+        .or('type.neq.tapahtuma,event_date.is.null,event_date.gte.now()')
         .order('is_pro_listing', { ascending: false })
 
       // Apply sort order based on sortBy state

@@ -1585,9 +1585,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 999,
     paddingHorizontal: 18,
-    height: 48,
+    height: 50,
   },
   searchInput: {
     flex: 1,

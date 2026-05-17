@@ -676,9 +676,11 @@ export default function CreateScreen() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { toast.show({ message: t('auth.loginRequired'), type: 'error' }); return }
       const effectiveDays = expirationDays > 0 ? expirationDays : 30
-      const expiresAt = isUrgent
-        ? new Date(Date.now() + urgencyHours * 3600000).toISOString()
-        : new Date(Date.now() + effectiveDays * 86400000).toISOString()
+      const expiresAt = selectedType === 'tapahtuma' && eventDate
+        ? new Date(new Date(eventDate).getTime() + 86400000).toISOString() // event + 1 day grace
+        : isUrgent
+          ? new Date(Date.now() + urgencyHours * 3600000).toISOString()
+          : new Date(Date.now() + effectiveDays * 86400000).toISOString()
       try {
         const { data: { session: modSession } } = await supabase.auth.getSession()
         const modHeaders: Record<string, string> = { 'Content-Type': 'application/json' }

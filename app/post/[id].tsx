@@ -596,6 +596,13 @@ function PostDetailScreenInner() {
 
   // Expiration info — must be before any early returns (React hooks rules)
   const expirationInfo = useMemo(() => {
+    // Tapahtuma posts: expired when event_date has passed
+    if (post?.type === 'tapahtuma' && post.event_date) {
+      const eventEnd = new Date(post.event_date)
+      if (!isNaN(eventEnd.getTime()) && eventEnd.getTime() <= Date.now()) {
+        return { label: t('postCard.expired'), color: colors.destructive }
+      }
+    }
     if (!post?.expires_at) return null
     const now = new Date()
     const expires = new Date(post.expires_at)
@@ -608,7 +615,7 @@ function PostDetailScreenInner() {
     const diffDays = Math.ceil(diffMs / 86400000)
     if (diffDays <= 7) return { label: t('postCard.expiresIn', { count: diffDays }), color: colors.foreground }
     return null
-  }, [post?.expires_at, t, colors.destructive, colors.foreground])
+  }, [post?.expires_at, post?.type, post?.event_date, t, colors.destructive, colors.foreground])
 
   const isAuthor = userId !== null && post?.user_id === userId
 

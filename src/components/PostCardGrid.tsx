@@ -102,6 +102,7 @@ export const PostCardGrid = memo(function PostCardGrid({ post, userId, onInterac
   const variant = getCardVariant(post, hasImage)
   const isAnonymous = post.is_anonymous === true
   const isExpired = !!(post.expires_at && new Date(post.expires_at).getTime() <= Date.now())
+    || !!(post.type === 'tapahtuma' && post.event_date && new Date(post.event_date).getTime() <= Date.now())
   const isUrgent = post.is_urgent && !isExpired
   const user = post.user
   const authorName = isAnonymous ? t('postCard.anonymousNeighbor') : (user?.name ?? '')

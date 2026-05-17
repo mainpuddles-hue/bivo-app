@@ -410,12 +410,14 @@ function FeedScreenInner() {
   const [heroEventPosts, setHeroEventPosts] = useState<Post[]>([])
   useEffect(() => {
     let mounted = true
+    const now = new Date().toISOString()
     supabase
       .from('posts')
       .select('*')
       .eq('type', 'tapahtuma')
       .eq('is_active', true)
       .not('event_date', 'is', null)
+      .gte('event_date', now)
       .order('like_count', { ascending: false })
       .limit(10)
       .then(({ data, error }: any) => {
@@ -479,7 +481,7 @@ function FeedScreenInner() {
   }, [feed.activeFilter, feed.loading, categorySections, feedAds, t])
 
   const renderFeedItem = useCallback(({ item }: { item: FeedItem }) => {
-    const gCardWidth = (screenWidth - 44 - 12) / 2  // 22px padding each side, 12px gap
+    const gCardWidth = (screenWidth - 44 - 10) / 2  // 22px padding each side, 10px gap
 
     if (item._kind === 'eyebrow') {
       return (
@@ -684,7 +686,7 @@ function FeedScreenInner() {
                   accessibilityRole="button"
                 >
                   <Bell size={20} color={colors.foreground} strokeWidth={1.6} />
-                  <View style={[styles.bellDot, { backgroundColor: colors.accent }]} />
+                  <View style={[styles.bellDot, { backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.card }]} />
                 </PressableOpacity>
               </View>
 
@@ -875,13 +877,11 @@ const styles = StyleSheet.create({
 
   bellDot: {
     position: 'absolute',
-    top: 7,
-    right: 8,
+    top: 10,
+    right: 10,
     width: 7,
     height: 7,
     borderRadius: 999,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
 
   searchRow: {
@@ -891,8 +891,8 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    height: 48,
-    borderRadius: 18,
+    height: 50,
+    borderRadius: 999,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -908,8 +908,8 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   iconBtn: {
-    width: 38,
-    height: 38,
+    width: 44,
+    height: 44,
     borderRadius: 999,
     borderWidth: 1,
     alignItems: 'center',
@@ -942,7 +942,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1.3,
+    letterSpacing: 0.7,
     textTransform: 'uppercase',
     lineHeight: 15,
   },
@@ -1029,7 +1029,7 @@ const styles = StyleSheet.create({
   // ── Filtered grid rows ──
   gridRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     paddingHorizontal: 22,
   },
 
