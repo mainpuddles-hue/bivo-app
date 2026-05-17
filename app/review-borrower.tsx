@@ -159,16 +159,13 @@ function ReviewBorrowerScreenInner() {
             <Text style={[s.heroMeta, { color: colors.mutedForeground }]}>{meta}</Text>
           </View>
 
-          {/* Stars card — radius 14, padding 18×16 per handoff */}
-          <View style={[s.starsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[s.starsLabel, { color: colors.mutedForeground }]}>
-              {t('reviewBorrower.overallRating') ?? 'YLEISARVIO'}
-            </Text>
-            <StarRating value={rating} onChange={setRating} size={30} gap={10} />
-            <Text style={[s.starsHint, { color: colors.mutedForeground }]}>
-              {ratingWord(rating, t)}
-            </Text>
+          {/* Stars row — standalone, not in a card, per handoff §4 */}
+          <View style={s.starsRow}>
+            <StarRating value={rating} onChange={setRating} size={34} gap={14} />
           </View>
+          <Text style={[s.starsHint, { color: colors.mutedForeground }]}>
+            {ratingWord(rating, t)}
+          </Text>
 
           {/* Tags */}
           <Text style={[s.sectionLabel, { color: colors.mutedForeground, marginTop: 18 }]}>
@@ -284,25 +281,15 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
 
-  starsCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
+  starsRow: {
     alignItems: 'center',
-    gap: 12,
-  },
-  starsLabel: {
-    fontSize: 11,
-    fontFamily: fonts.bodySemi,
-    fontWeight: '600',
-    letterSpacing: 0.88,
-    textTransform: 'uppercase',
+    paddingVertical: 10,
   },
   starsHint: {
     fontSize: 12,
     fontFamily: fonts.body,
-    marginTop: -2,
+    textAlign: 'center',
+    marginBottom: 18,
   },
 
   sectionLabel: {

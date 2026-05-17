@@ -56,8 +56,9 @@ export function StickyCTA({ label, onPress, disabled, loading, bottomInset = 22 
 const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
-    left: 16,
-    right: 16,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 22,
   },
   btn: {
     height: 56,

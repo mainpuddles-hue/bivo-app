@@ -699,7 +699,7 @@ function BookingDetailScreenInner() {
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.loan')} />
 
-        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 140 }]} showsVerticalScrollIndicator={false}>
           {/* Lifecycle stepper */}
           <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
 
@@ -775,7 +775,7 @@ function BookingDetailScreenInner() {
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.loan')} />
 
-        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 140 }]} showsVerticalScrollIndicator={false}>
           {/* Lifecycle stepper */}
           <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
 
@@ -851,7 +851,7 @@ function BookingDetailScreenInner() {
           subtitle={booking.start_date && booking.end_date ? formatDateRange(booking.start_date, booking.end_date, locale) : undefined}
         />
 
-        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 140 }]} showsVerticalScrollIndicator={false}>
           {/* Lifecycle stepper */}
           <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
 
@@ -1069,7 +1069,7 @@ function BookingDetailScreenInner() {
         <BarHeader colors={colors} t={t} insets={insets} router={router} title={t('booking.reviewTitle')} />
 
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false} keyboardDismissMode="interactive">
+        <ScrollView contentContainerStyle={[s.scrollPadded, { paddingBottom: insets.bottom + 140 }]} showsVerticalScrollIndicator={false} keyboardDismissMode="interactive">
           {/* Lifecycle stepper */}
           <BookingLifecycleStepper booking={booking} colors={colors} isDark={isDark} t={t} />
 
