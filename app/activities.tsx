@@ -10,7 +10,7 @@ import { getBlockedUserIds } from '@/lib/blockedUsers'
 import { isValidUUID } from '@/lib/validation'
 import * as Haptics from 'expo-haptics'
 import {
-  ArrowLeft, Plus, MapPin, Users, X, Clock,
+  ChevronLeft, Plus, MapPin, Users, X, Clock,
   Dumbbell, Palette, Baby, Home, Sparkles, HeartPulse, Grid2x2,
   RefreshCw, Check,
 } from 'lucide-react-native'
@@ -524,7 +524,7 @@ function ActivitiesScreenInner() {
       {/* ── Header ── */}
       <View style={[st.header, { borderBottomColor: colors.border }]}>
         <PressableOpacity onPress={() => router.back()} hitSlop={12} style={[st.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]} accessibilityRole="button" accessibilityLabel={t('common.back')}>
-          <ArrowLeft size={20} color={colors.foreground} strokeWidth={1.8} />
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <Text style={[st.headerTitle, { color: colors.foreground }]} accessibilityRole="header">
           {t('activities.title')}
@@ -865,7 +865,7 @@ const st = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
@@ -879,8 +879,9 @@ const st = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 14,
-    letterSpacing: -0.3,
-    fontFamily: fonts.headingSemi,
+    fontWeight: '600',
+    letterSpacing: -0.15,
+    fontFamily: fonts.bodySemi,
     lineHeight: 22,
   },
 

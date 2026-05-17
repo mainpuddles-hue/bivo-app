@@ -1568,7 +1568,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 16,
+    borderRadius: 14,
   },
   errorText: { fontSize: 13, flex: 1 },
   errorRetry: { fontSize: 13, marginLeft: 12 },
@@ -1578,7 +1578,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
   },
   searchBar: {
@@ -1655,7 +1655,7 @@ const s = StyleSheet.create({
   resultsCount: {
     fontSize: 12,
     textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    letterSpacing: 0.88,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
@@ -1734,7 +1734,7 @@ const s = StyleSheet.create({
   similarSectionLabel: {
     fontSize: 12,
     textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    letterSpacing: 0.88,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
@@ -1779,7 +1779,7 @@ const s = StyleSheet.create({
   // ── Discovery sections ──
   section: { gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 1.4, flex: 1 },
+  sectionTitle: { fontSize: 12, fontFamily: fonts.bodySemi, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.88, flex: 1 },
   clearHistoryLink: { fontSize: 12, lineHeight: 16 },
   recentChipsRow: { flexDirection: 'row', gap: 8 },
   recentChip: {

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { ArrowLeft, Receipt, ChevronRight, CreditCard, RefreshCw } from 'lucide-react-native'
+import { ChevronLeft, Receipt, ChevronRight, CreditCard, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -232,14 +232,14 @@ function PaymentHistoryScreenInner() {
           accessibilityLabel={t('common.back')}
           style={[styles.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={18} color={colors.foreground} />
+          <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t('payment.history')}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
       {loading ? (
-        <View style={{ paddingHorizontal: 16, paddingTop: 24 }}>
+        <View style={{ paddingHorizontal: 22, paddingTop: 24 }}>
           <SectionSkeleton count={5} />
         </View>
       ) : fetchError && payments.length === 0 ? (
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
@@ -316,23 +316,24 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 14,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.3,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
     lineHeight: 22,
   },
   headerSpacer: { width: 36 },
-  listContent: { padding: 16, gap: 16, paddingBottom: 40 },
+  listContent: { padding: 22, gap: 16, paddingBottom: 40 },
   sectionLabel: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1,
+    letterSpacing: 0.88,
     textTransform: 'uppercase',
     marginBottom: 8,
     paddingHorizontal: 4,
   },
   sectionCards: { gap: 8 },
   paymentRow: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
   },

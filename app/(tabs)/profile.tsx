@@ -885,7 +885,7 @@ const s = StyleSheet.create({
   errorBannerText: { fontSize: 13, fontFamily: fonts.bodySemi, flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 12,
+    paddingHorizontal: 22, paddingBottom: 12,
   },
   headerTitle: { fontSize: 14, fontWeight: '600', letterSpacing: -0.2, fontFamily: fonts.heading, lineHeight: 20 },
   headerIcons: { flexDirection: 'row', gap: 8 },

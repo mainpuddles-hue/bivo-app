@@ -363,15 +363,15 @@ export default function PublicProfileScreen() {
   // --- Monochrome bar header (mockup 27) ---
   const renderBar = (title: string) => (
     <View style={[s.bar, { paddingTop: insets.top + 16 }]}>
-      <Pressable
+      <PressableOpacity
         onPress={() => router.back()}
         hitSlop={12}
         accessibilityRole="button"
         accessibilityLabel={t('common.back')}
-        style={({ pressed }) => [s.barCircle, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+        style={[s.barCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
-        <ChevronLeft size={16} color={colors.foreground} strokeWidth={2.2} />
-      </Pressable>
+        <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
+      </PressableOpacity>
       <View style={s.barCenter}>
         <Text style={[s.barTitle, { color: colors.foreground }]} numberOfLines={1}>{title}</Text>
       </View>
@@ -1062,7 +1062,7 @@ const s = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -1094,7 +1094,7 @@ const s = StyleSheet.create({
 
   // ── Scroll content ──
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 100,
   },
 
@@ -1174,7 +1174,7 @@ const s = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     paddingVertical: 14,
     paddingHorizontal: 10,
@@ -1273,7 +1273,7 @@ const s = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
-    letterSpacing: 0.9,
+    letterSpacing: 0.88,
     textTransform: 'uppercase',
     lineHeight: 14,
   },
@@ -1320,7 +1320,7 @@ const s = StyleSheet.create({
   },
   listingGridCard: {
     width: '48%' as any,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
     minHeight: 44,
@@ -1340,7 +1340,7 @@ const s = StyleSheet.create({
 
   // ── Review card (mockup 27) ──
   reviewCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 14,
     gap: 8,
@@ -1387,11 +1387,11 @@ const bs = StyleSheet.create({
   },
   heroImage: {
     height: HERO_IMAGE_HEIGHT,
-    borderRadius: 16,
+    borderRadius: 14,
   },
   heroPlaceholder: {
     height: HERO_IMAGE_HEIGHT,
-    borderRadius: 16,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -1421,7 +1421,7 @@ const bs = StyleSheet.create({
 
   // Info card
   infoCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 16,
     gap: 12,
     borderWidth: 1,
@@ -1514,7 +1514,7 @@ const bs = StyleSheet.create({
 
   // Location card
   locationCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 16,
     gap: 12,
     borderWidth: 1,
@@ -1554,7 +1554,7 @@ const bs = StyleSheet.create({
 
   // Contact card
   contactCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 16,
     gap: 12,
     borderWidth: 1,

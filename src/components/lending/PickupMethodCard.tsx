@@ -49,7 +49,7 @@ export function PickupMethodCard({
   }
 
   const fg = selected ? colors.primaryForeground : colors.foreground
-  const muted = selected ? (colors.onInkMuted ?? '#B8BCC0') : colors.mutedForeground
+  const muted = selected ? colors.onInkMuted : colors.mutedForeground
 
   return (
     <PressableOpacity

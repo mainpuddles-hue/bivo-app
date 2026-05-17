@@ -8,7 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import {
-  ArrowLeft, Heart, CalendarDays, MapPin, Bookmark,
+  ChevronLeft, Heart, CalendarDays, MapPin, Bookmark,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -247,22 +247,21 @@ function SavedScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* ── Bar header: circle back + centered title ── */}
       <View style={[s.header, { paddingTop: insets.top + 16 }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => router.back()}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
-          style={({ pressed }) => [
+          style={[
             s.backCircle,
             {
               backgroundColor: colors.card,
               borderColor: colors.border,
             },
-            pressed && { opacity: 0.7 },
           ]}
         >
-          <ArrowLeft size={13} color={colors.foreground} />
-        </Pressable>
+          <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
+        </PressableOpacity>
         <View style={s.headerTitleWrap}>
           <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">
             {t('saved.title')}
@@ -532,7 +531,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -554,7 +553,7 @@ const s = StyleSheet.create({
   headerTitle: {
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: fonts.display,
+    fontFamily: fonts.bodySemi,
     letterSpacing: -0.15,
   },
   headerSpacer: {
@@ -676,7 +675,7 @@ const s = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 12,
-    letterSpacing: 1.4,
+    letterSpacing: 0.88,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',

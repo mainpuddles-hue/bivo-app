@@ -443,7 +443,7 @@ function Header({ colors, router }: { colors: any; router: any }) {
         accessibilityRole="button"
         accessibilityLabel={t('common.back')}
       >
-        <ChevronLeft size={20} color={colors.foreground} />
+        <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
       </PressableOpacity>
 
       {/* Title */}
@@ -484,7 +484,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingVertical: 10,
   },
   headerCircle: {
@@ -493,12 +493,13 @@ const s = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
   },
   headerTitle: {
     fontSize: 14,
     fontFamily: fonts.bodySemi,
-    letterSpacing: -0.1,
+    fontWeight: '600',
+    letterSpacing: -0.15,
   },
 
   // Segment tabs

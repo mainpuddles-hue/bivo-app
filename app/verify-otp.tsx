@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { View, Text, TextInput, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ArrowLeft, Info } from 'lucide-react-native'
+import { ChevronLeft, Info } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -295,7 +295,7 @@ export default function VerifyOtpScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('common.back')}
           >
-            <ArrowLeft size={16} color={colors.foreground} strokeWidth={2.2} />
+            <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
         </View>
 
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingVertical: 12,
     gap: 12,
   },
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   digitBox: {
     width: 54,
     height: 72,
-    borderRadius: 16,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
   },
   infoBox: {
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 14,
     flexDirection: 'row',
     gap: 10,

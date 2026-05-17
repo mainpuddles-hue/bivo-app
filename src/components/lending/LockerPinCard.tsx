@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   validity: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: fonts.body,
     marginTop: 6,
   },

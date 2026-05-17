@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, ChevronDown, ChevronLeft, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink, Phone, Plus, DollarSign, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native'
+import { Send, ImageIcon, ChevronDown, ChevronLeft, ChevronRight, CheckCheck, Check, Trash2, Copy, Flag, ExternalLink, Phone, Plus, DollarSign, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import * as Clipboard from 'expo-clipboard'
 import { useTheme } from '@/hooks/useTheme'
@@ -789,11 +789,11 @@ function ConversationScreenInner() {
           <PressableOpacity
             onPress={() => safeBack(router, '/(tabs)/messages')}
             hitSlop={12}
-            style={[s.circleBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
+            style={[s.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
             accessibilityRole="button"
             accessibilityLabel={t('common.back') ?? 'Go back'}
           >
-            <ChevronLeft size={14} color={colors.foreground} strokeWidth={2.5} />
+            <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
           <Text style={[s.headerName, { color: colors.foreground }]}>{t('messages.title')}</Text>
         </View>
@@ -830,12 +830,12 @@ function ConversationScreenInner() {
         <PressableOpacity
           onPress={() => safeBack(router, '/(tabs)/messages')}
           hitSlop={12}
-          style={[s.circleBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
+          style={[s.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
           accessibilityRole="button"
           accessibilityLabel={t('common.back') ?? 'Go back'}
           accessibilityHint={t('messages.backToConversations') ?? 'Returns to conversations list'}
         >
-          <ChevronLeft size={14} color={colors.foreground} strokeWidth={2.5} />
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <PressableOpacity onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}` as any)} hitSlop={8} accessibilityRole="button" accessibilityLabel={otherUser?.name ?? t('messages.unknownUser')}>
           <Avatar url={otherUser?.avatar_url} name={otherUser?.name} size={40} />
@@ -1114,7 +1114,7 @@ const s = StyleSheet.create({
   // ── Header — Monochrome 06 (surface bg, 1px bottom border) ──
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1,
+    paddingHorizontal: 22, paddingBottom: 12, borderBottomWidth: 1,
   },
   circleBtn: {
     width: 38, height: 38, borderRadius: 999,
@@ -1145,7 +1145,7 @@ const s = StyleSheet.create({
   msgRowTheirs: { justifyContent: 'flex-start' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, marginTop: 4 },
   bubble: { maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 10 },
-  msgImage: { width: 200, height: 150, borderRadius: 16, marginBottom: 4 },
+  msgImage: { width: 200, height: 150, borderRadius: 14, marginBottom: 4 },
   msgText: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05, fontFamily: fonts.body },
   deletedText: { fontStyle: 'italic' },
   msgMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end', marginTop: 4 },

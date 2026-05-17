@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, Plus, X, BarChart3 } from 'lucide-react-native'
+import { ChevronLeft, Plus, X, BarChart3 } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -118,17 +118,23 @@ function CreatePollInner() {
     >
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <PressableOpacity onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} accessibilityRole="button">
-          <ArrowLeft size={22} color={colors.foreground} />
+        <PressableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityLabel={t('common.back')}
+          accessibilityRole="button"
+          style={[styles.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>
           {t('polls.createTitle')}
         </Text>
-        <View style={{ width: 22 }} />
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 24 }}
         keyboardShouldPersistTaps="handled"
       >
         {/* Question */}
@@ -270,18 +276,27 @@ export default function CreatePollScreen() {
 }
 
 const styles = StyleSheet.create({
+  backCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     borderBottomWidth: 1,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    fontFamily: fonts.heading,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
     lineHeight: 22,
   },
   section: {
@@ -291,12 +306,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     fontFamily: fonts.bodyMedium,
-    letterSpacing: 0.8,
+    letterSpacing: 0.88,
     textTransform: 'uppercase',
     lineHeight: 14,
   },
   questionInput: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 14,

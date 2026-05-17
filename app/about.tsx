@@ -3,7 +3,7 @@ declare const __DEV__: boolean
 import { View, Text, ScrollView, StyleSheet, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, ExternalLink, FileText, Lock, HelpCircle } from 'lucide-react-native'
+import { ChevronLeft, ExternalLink, FileText, Lock, HelpCircle } from 'lucide-react-native'
 import Constants from 'expo-constants'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -27,9 +27,10 @@ function AboutScreenInner() {
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
+          hitSlop={12}
           style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={18} color={colors.foreground} />
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('about.title')}</Text>
         <View style={s.headerSpacer} />
@@ -106,7 +107,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 14,
   },
   circleBack: {
@@ -121,11 +122,12 @@ const s = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 14,
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: -0.1,
+    letterSpacing: -0.15,
   },
   headerSpacer: { width: 36 },
-  content: { padding: 16, gap: 12, paddingBottom: 40 },
+  content: { padding: 22, gap: 12, paddingBottom: 40 },
   logoSection: { alignItems: 'center', paddingVertical: 24, gap: 6 },
   logoPlaceholder: {
     width: 72,
@@ -142,13 +144,13 @@ const s = StyleSheet.create({
     fontSize: 12,
     fontFamily: fonts.bodySemi,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 0.88,
     marginTop: 8,
     marginBottom: 4,
     paddingHorizontal: 4,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
   },

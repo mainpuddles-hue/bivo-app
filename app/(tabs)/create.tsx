@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Switch, Share, Animated as RNAnimated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, Crown, CheckCircle, ImageIcon, BarChart3 } from 'lucide-react-native'
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Camera, X, Check, Clock, MapPin, Users, EyeOff, Lock, Zap, Crown, CheckCircle, ImageIcon, BarChart3 } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
@@ -1494,7 +1494,7 @@ const mk = StyleSheet.create({
   container: { flex: 1 },
 
   // v3 Header
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 22, paddingBottom: 12 },
   headerCloseBtn: { width: 44, height: 44, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '500', letterSpacing: -0.3, fontFamily: fonts.displayMedium },
   headerDraft: { width: 56, fontSize: 14, fontWeight: '600', textAlign: 'right', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },
@@ -1505,7 +1505,7 @@ const mk = StyleSheet.create({
   stepLabel: { fontSize: 12, fontWeight: '500' as const, marginLeft: 4, fontFamily: fonts.bodyMedium },
 
   // v3 Section label — uppercase, bold, wide tracking
-  sectionLabel: { fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: '700', fontFamily: fonts.bodySemi, marginBottom: 12 },
+  sectionLabel: { fontSize: 12, letterSpacing: 0.88, textTransform: 'uppercase', fontWeight: '700', fontFamily: fonts.bodySemi, marginBottom: 12 },
 
   // Scroll
   scrollPad: { paddingBottom: 120 },
@@ -1518,9 +1518,9 @@ const mk = StyleSheet.create({
 
   // v3 Category grid — icon-cards
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 },
-  catCard: { width: '47%' as any, borderRadius: 16 },
+  catCard: { width: '47%' as any, borderRadius: 14 },
   catCardFull: { width: '100%' as any },
-  catCardInner: { padding: 14, gap: 8, alignItems: 'center', minHeight: 110, justifyContent: 'center', borderRadius: 16 },
+  catCardInner: { padding: 14, gap: 8, alignItems: 'center', minHeight: 110, justifyContent: 'center', borderRadius: 14 },
   catIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   lockBadge: { position: 'absolute', top: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   catName: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi, lineHeight: 18, textAlign: 'center', letterSpacing: -0.1 },
@@ -1528,7 +1528,7 @@ const mk = StyleSheet.create({
 
   // v3 Photo uploader
   photoWrap: { paddingHorizontal: 20, paddingTop: 12 },
-  photoDashed: { aspectRatio: 1.25, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  photoDashed: { aspectRatio: 1.25, borderRadius: 14, borderWidth: 2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
   photoCircle: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   photoMainText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
   photoSubText: { fontSize: 12, fontFamily: fonts.body },
@@ -1549,8 +1549,8 @@ const mk = StyleSheet.create({
 
   // v3 Form fields
   fieldWrap: { gap: 6, paddingHorizontal: 20, paddingTop: 14 },
-  input: { minHeight: 52, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, fontSize: 16, fontWeight: '500', fontFamily: fonts.bodyMedium, letterSpacing: -0.2 },
-  textarea: { minHeight: 110, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 22, fontFamily: fonts.body, textAlignVertical: 'top' },
+  input: { minHeight: 52, borderRadius: 14, borderWidth: 1, paddingHorizontal: 16, fontSize: 16, fontWeight: '500', fontFamily: fonts.bodyMedium, letterSpacing: -0.2 },
+  textarea: { minHeight: 110, borderRadius: 14, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, lineHeight: 22, fontFamily: fonts.body, textAlignVertical: 'top' },
   charCount: { fontSize: 12, textAlign: 'right', fontFamily: fonts.body },
 
   // 2-column
@@ -1589,7 +1589,7 @@ const mk = StyleSheet.create({
   urgencyOptText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // v3 Sticky publish
-  stickyWrap: { position: 'absolute', left: 14, right: 14 },
+  stickyWrap: { position: 'absolute', left: 0, right: 0, paddingHorizontal: 22 },
   formError: { fontSize: 13, fontFamily: fonts.bodyMedium, textAlign: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, marginBottom: 8, overflow: 'hidden' },
   publishBtn: { flex: 1, height: 56, borderRadius: 26, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
   publishText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.1 },

@@ -640,12 +640,12 @@ export default function SettingsScreen() {
       <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <PressableOpacity
           onPress={() => router.back()}
-          hitSlop={6}
+          hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
           style={[s.headerBackCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ChevronLeft size={15} color={colors.foreground} strokeWidth={2.2} />
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <View style={s.headerCenter}>
           <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('settings.title')}</Text>
@@ -1198,7 +1198,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -1215,9 +1215,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    fontFamily: fonts.display,
+    fontFamily: fonts.bodySemi,
     letterSpacing: -0.15,
   },
   headerRightSpacer: {
@@ -1317,7 +1317,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   input: {
-    borderRadius: 16,
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 14,
@@ -1450,7 +1450,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
   },
   deleteInput: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 16,

@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft } from 'lucide-react-native'
+import { ChevronLeft } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -22,9 +22,10 @@ function PrivacyScreenInner() {
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
+          hitSlop={12}
           style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={18} color={colors.foreground} />
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('privacy.title')}</Text>
         <View style={s.headerSpacer} />
@@ -121,7 +122,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 14,
   },
   circleBack: {
@@ -136,13 +137,14 @@ const s = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 14,
+    fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: -0.1,
+    letterSpacing: -0.15,
   },
   headerSpacer: { width: 36 },
-  content: { padding: 20, paddingBottom: 40 },
+  content: { padding: 22, paddingBottom: 40 },
   updated: { fontSize: 12, fontFamily: fonts.body, marginBottom: 16 },
-  disclaimer: { borderRadius: 16, padding: 14, marginBottom: 20 },
+  disclaimer: { borderRadius: 14, padding: 14, marginBottom: 20 },
   disclaimerText: { fontSize: 13, fontFamily: fonts.body, fontStyle: 'italic', lineHeight: 19 },
   sectionTitle: { fontSize: 14, fontFamily: fonts.bodySemi, marginTop: 24, marginBottom: 6, letterSpacing: -0.1 },
   paragraph: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22 },
@@ -150,7 +152,7 @@ const s = StyleSheet.create({
   listItem: { fontSize: 14, fontFamily: fonts.body, lineHeight: 22 },
   link: { fontSize: 14, fontFamily: fonts.bodySemi, marginTop: 8, textDecorationLine: 'underline' },
   ctaCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 16,
     marginTop: 32,

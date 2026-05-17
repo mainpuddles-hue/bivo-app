@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   label: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontFamily: fonts.bodyMedium,
     fontWeight: '500',
   },

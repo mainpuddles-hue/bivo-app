@@ -157,13 +157,13 @@ function LockerPickerScreenInner() {
             {item.location_name}
           </Text>
           <View style={s.metaRow}>
-            <MapPin size={11} color={isSelected ? (colors.onInkMuted ?? '#B8BCC0') : colors.mutedForeground} strokeWidth={2} />
-            <Text style={[s.address, { color: isSelected ? (colors.onInkMuted ?? '#B8BCC0') : colors.mutedForeground }]} numberOfLines={1}>
+            <MapPin size={11} color={isSelected ? (colors.onInkMuted) : colors.mutedForeground} strokeWidth={2} />
+            <Text style={[s.address, { color: isSelected ? (colors.onInkMuted) : colors.mutedForeground }]} numberOfLines={1}>
               {item.address}
             </Text>
           </View>
           {item.size && SIZE_LABELS[item.size] && (
-            <Text style={[s.sizeLine, { color: isSelected ? (colors.onInkMuted ?? '#B8BCC0') : colors.tertiaryForeground }]}>
+            <Text style={[s.sizeLine, { color: isSelected ? (colors.onInkMuted) : colors.tertiaryForeground }]}>
               {SIZE_LABELS[item.size]}
             </Text>
           )}

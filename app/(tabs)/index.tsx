@@ -1061,7 +1061,7 @@ const styles = StyleSheet.create({
   allLoadedWrap: { alignItems: 'center', gap: 16, paddingVertical: 44 },
   allLoadedLine: { height: StyleSheet.hairlineWidth, width: '40%' },
   allLoadedContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  allLoadedText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 1.6, textTransform: 'uppercase' as const, lineHeight: 15 },
+  allLoadedText: { fontSize: 11, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: 0.88, textTransform: 'uppercase' as const, lineHeight: 15 },
 })
 
 export default function FeedScreen() {

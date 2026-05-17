@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  View, Text, ScrollView, Pressable, TextInput, StyleSheet,
+  View, Text, ScrollView, TextInput, StyleSheet,
   ActivityIndicator, Alert, RefreshControl, KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { PressableOpacity } from '@/components/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { ArrowLeft, Shield, Search, Ban, EyeOff, Check, AlertTriangle, Users, BarChart3, Flag } from 'lucide-react-native'
+import { ChevronLeft, Shield, Search, Ban, EyeOff, Check, AlertTriangle, Users, BarChart3, Flag } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { useSupabase } from '@/hooks/useSupabase'
@@ -227,13 +227,13 @@ function AdminScreenInner() {
     return (
       <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
         <View style={[s.header, { borderBottomColor: colors.border }]}>
-          <Pressable
+          <PressableOpacity
             onPress={() => safeBack(router, '/(tabs)')}
             hitSlop={12}
             style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
-            <ArrowLeft size={20} color={colors.foreground} />
-          </Pressable>
+            <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
+          </PressableOpacity>
           <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('admin.accessDenied')}</Text>
           <View style={{ width: 36 }} />
         </View>
@@ -255,13 +255,13 @@ function AdminScreenInner() {
     <View style={[s.container, { backgroundColor: colors.background, paddingTop: insets.top + 8 }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => safeBack(router, '/(tabs)')}
           hitSlop={12}
           style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={20} color={colors.foreground} />
-        </Pressable>
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
+        </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('admin.title')}</Text>
         <View style={{ width: 36 }} />
       </View>
@@ -474,7 +474,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
@@ -488,15 +488,16 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 14,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.3,
+    fontFamily: fonts.bodySemi,
+    fontWeight: '600',
+    letterSpacing: -0.15,
     lineHeight: 22,
     textAlign: 'center',
     flex: 1,
   },
   tabs: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     gap: 8,
     paddingTop: 12,
     marginBottom: 12,
@@ -517,10 +518,10 @@ const s = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
   },
   card: {
-    borderRadius: 20,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 16,
     marginBottom: 8,
@@ -655,7 +656,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   statCard: {
-    borderRadius: 20,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 16,
     alignItems: 'center',

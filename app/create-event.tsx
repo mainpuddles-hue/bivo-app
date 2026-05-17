@@ -419,6 +419,7 @@ function CreateEventScreenInner() {
       >
         <PressableOpacity
           onPress={() => router.back()}
+          hitSlop={12}
           style={[styles.closeButton, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
@@ -718,7 +719,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   closeButton: {
@@ -734,7 +735,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
     textAlign: 'center',
-    letterSpacing: -0.1,
+    letterSpacing: -0.15,
   },
   headerSpacer: {
     width: 36,
@@ -785,7 +786,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     fontWeight: '600',
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1,
+    letterSpacing: 0.88,
     textTransform: 'uppercase',
     marginTop: 16,
     marginBottom: 8,
@@ -882,12 +883,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingTop: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   submitButton: {
     borderRadius: 999,
-    height: 54,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },

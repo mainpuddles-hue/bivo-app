@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import {
-  ArrowLeft, CreditCard, Smartphone, CheckCircle, XCircle,
+  ChevronLeft, CreditCard, Smartphone, CheckCircle, XCircle,
   Landmark, ChevronRight, ShieldCheck, Info, History,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
@@ -102,7 +102,7 @@ function PaymentSettingsScreenInner() {
           accessibilityLabel={t('common.back')}
           style={[s.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={18} color={colors.foreground} />
+          <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('payment.settings')}</Text>
         <View style={s.headerSpacer} />
@@ -261,7 +261,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
@@ -277,17 +277,18 @@ const s = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 14,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.3,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
     lineHeight: 22,
   },
   headerSpacer: { width: 36 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  content: { padding: 16, gap: 8, paddingBottom: 40 },
+  content: { padding: 22, gap: 8, paddingBottom: 40 },
   section: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
-    letterSpacing: 1,
+    letterSpacing: 0.88,
     textTransform: 'uppercase',
     marginTop: 12,
     paddingHorizontal: 4,

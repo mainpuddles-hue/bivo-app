@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
 import {
-  ArrowLeft, CalendarDays, Plus, Home, Coffee, Leaf,
+  ChevronLeft, CalendarDays, Plus, Home, Coffee, Leaf,
 } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
@@ -348,7 +348,7 @@ function CommunityEventsScreenInner() {
           accessibilityLabel={t('common.back')}
           style={[s.circleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={20} color={colors.foreground} />
+          <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('events.communityEventsTitle')}</Text>
         <PressableOpacity
@@ -460,7 +460,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -475,8 +475,8 @@ const s = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 14,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.2,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
     lineHeight: 24,
     textAlign: 'center',
   },
@@ -531,7 +531,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 0.88,
     fontWeight: '600',
   },
   sectionAction: {
@@ -578,7 +578,7 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 0.88,
     fontWeight: '600',
     paddingHorizontal: 16,
     paddingTop: 12,
@@ -589,7 +589,7 @@ const s = StyleSheet.create({
   templateSection: { paddingTop: 12, gap: 8 },
   templateSectionTitle: {
     fontSize: 12, lineHeight: 16, textTransform: 'uppercase',
-    letterSpacing: 1, paddingHorizontal: 16,
+    letterSpacing: 0.88, paddingHorizontal: 16,
   },
   templateRow: { gap: 8, paddingHorizontal: 16, paddingBottom: 4 },
   templateChip: {

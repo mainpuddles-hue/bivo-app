@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ArrowLeft, Send, ImageIcon, Users, CalendarDays, RefreshCw } from 'lucide-react-native'
+import { ChevronLeft, Send, ImageIcon, Users, CalendarDays, RefreshCw } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -247,21 +247,21 @@ function EventChatScreenInner() {
     >
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 4, borderBottomColor: colors.border }]}>
-        <Pressable
+        <PressableOpacity
           onPress={() => safeBack(router, '/community-events')}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
           style={[s.circleBack, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={20} color={colors.foreground} />
-        </Pressable>
+          <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
+        </PressableOpacity>
 
         <Pressable
           style={s.headerInfo}
           onPress={() => eventInfo && router.push(`/event/${eventInfo.id}` as any)}
         >
-          <Text style={[s.headerTitle, { color: colors.foreground, fontFamily: fonts.headingSemi }]} numberOfLines={1}>
+          <Text style={[s.headerTitle, { color: colors.foreground }]} numberOfLines={1}>
             {eventInfo?.title ?? t('eventChat.title')}
           </Text>
           <View style={s.headerMeta}>
@@ -394,7 +394,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
@@ -412,7 +412,9 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 14,
-    fontFamily: fonts.headingSemi,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
     lineHeight: 22,
   },
   headerMeta: {

@@ -3,7 +3,7 @@ import { View, Text, SectionList, RefreshControl, StyleSheet, Alert, Animated } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { ImageWithFallback } from '@/components/ImageWithFallback'
-import { ArrowLeft, Package, ShoppingBag, RefreshCw } from 'lucide-react-native'
+import { ChevronLeft, Package, ShoppingBag, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { EmptyState } from '@/components/EmptyState'
@@ -368,7 +368,7 @@ function BookingsScreenInner() {
           accessibilityLabel={t('common.back')}
           style={[styles.circleBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={20} color={colors.foreground} />
+          <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
         </PressableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]} accessibilityRole="header">{t('bookings.title')}</Text>
         <View style={styles.headerSpacer} />
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
@@ -513,8 +513,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 14,
-    letterSpacing: -0.2,
-    fontFamily: fonts.headingSemi,
+    fontWeight: '600',
+    letterSpacing: -0.15,
+    fontFamily: fonts.bodySemi,
     lineHeight: 24,
     textAlign: 'center',
   },
@@ -524,7 +525,7 @@ const styles = StyleSheet.create({
   roleTabRow: {
     flexDirection: 'row',
     gap: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 10,
   },
   roleChip: {
@@ -581,18 +582,18 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 12,
-    letterSpacing: 0.9,
+    letterSpacing: 0.88,
     textTransform: 'uppercase',
     fontFamily: fonts.bodySemi,
     lineHeight: 16,
   },
 
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 100,
   },
   skeletonWrap: {
-    padding: 16,
+    padding: 22,
     gap: 10,
   },
 

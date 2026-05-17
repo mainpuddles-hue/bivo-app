@@ -5,7 +5,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
-import { ArrowLeft, TrendingUp, ChevronRight, Archive, RefreshCw } from 'lucide-react-native'
+import { ChevronLeft, TrendingUp, ChevronRight, Archive, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -152,7 +152,7 @@ function PayoutsScreenInner() {
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
         >
-          <ArrowLeft size={13} color={colors.foreground} />
+          <ChevronLeft size={20} strokeWidth={1.8} color={colors.foreground} />
         </PressableOpacity>
         <View style={s.headerTitleWrap}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
@@ -312,10 +312,10 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 12, gap: 12,
+    paddingHorizontal: 22, paddingBottom: 12, gap: 12,
   },
   backCircle: {
-    width: 38, height: 38, borderRadius: 999, borderWidth: 1,
+    width: 36, height: 36, borderRadius: 999, borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
   },
   headerTitleWrap: { flex: 1, alignItems: 'center' },
@@ -371,7 +371,7 @@ const s = StyleSheet.create({
   /* Section */
   sectionLabel: {
     fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi,
-    letterSpacing: 1, textTransform: 'uppercase',
+    letterSpacing: 0.88, textTransform: 'uppercase',
     paddingHorizontal: 4, marginBottom: 8,
   },
 

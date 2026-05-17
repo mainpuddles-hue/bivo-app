@@ -9,7 +9,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import {
-  ArrowLeft, Camera, Check, Plus, Info,
+  ChevronLeft, Camera, Check, Plus, Info,
 } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -137,7 +137,7 @@ function ReturnItemScreenInner() {
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
         >
-          <ArrowLeft size={13} color={colors.foreground} />
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <View style={s.headerTitleWrap}>
           <Text style={[s.headerTitle, { color: colors.foreground }]}>
@@ -150,7 +150,7 @@ function ReturnItemScreenInner() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 140 }]}
         keyboardDismissMode="interactive"
       >
         {/* Item strip */}
@@ -279,19 +279,19 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     gap: 12,
   },
   backCircle: {
-    width: 38, height: 38, borderRadius: 999, borderWidth: 1,
+    width: 36, height: 36, borderRadius: 999, borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
   },
   headerTitleWrap: { flex: 1, alignItems: 'center' },
   headerTitle: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, letterSpacing: -0.15 },
   headerSpacer: { width: 36, height: 36 },
 
-  content: { paddingHorizontal: 16 },
+  content: { paddingHorizontal: 22 },
 
   /* Item strip */
   itemStrip: {
@@ -308,7 +308,7 @@ const s = StyleSheet.create({
   /* Sections */
   sectionLabel: {
     fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi,
-    letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10,
+    letterSpacing: 0.88, textTransform: 'uppercase', marginBottom: 10,
   },
   optionalTag: { textTransform: 'none', fontWeight: '400', fontFamily: fonts.body, letterSpacing: 0 },
 
@@ -348,7 +348,7 @@ const s = StyleSheet.create({
   /* CTA */
   ctaWrap: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    paddingHorizontal: 16, paddingTop: 14,
+    paddingHorizontal: 22, paddingTop: 14,
     borderTopWidth: 1,
   },
   ctaBtn: {

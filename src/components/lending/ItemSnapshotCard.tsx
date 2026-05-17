@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   title: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontFamily: fonts.bodySemi,
     fontWeight: '600',
     lineHeight: 18,

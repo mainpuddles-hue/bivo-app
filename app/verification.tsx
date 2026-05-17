@@ -107,7 +107,7 @@ function VerificationScreenInner() {
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
-          <ChevronLeft size={18} color={colors.foreground} strokeWidth={2} />
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
 
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('verification.title')}</Text>
@@ -266,7 +266,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 14,
   },
   headerBackBtn: {
@@ -297,7 +297,7 @@ const s = StyleSheet.create({
 
   // Scroll
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
   },
 
   // Hero
@@ -338,7 +338,7 @@ const s = StyleSheet.create({
   stepCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 14,
     gap: 12,

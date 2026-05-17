@@ -117,14 +117,14 @@ function HubPickerScreenInner() {
           </Text>
           {item.address && (
             <View style={s.metaRow}>
-              <MapPin size={11} color={isSelected ? (colors.onInkMuted ?? '#B8BCC0') : colors.mutedForeground} strokeWidth={2} />
-              <Text style={[s.address, { color: isSelected ? (colors.onInkMuted ?? '#B8BCC0') : colors.mutedForeground }]} numberOfLines={1}>
+              <MapPin size={11} color={isSelected ? (colors.onInkMuted) : colors.mutedForeground} strokeWidth={2} />
+              <Text style={[s.address, { color: isSelected ? (colors.onInkMuted) : colors.mutedForeground }]} numberOfLines={1}>
                 {item.address}
               </Text>
             </View>
           )}
           {item.type && (
-            <Text style={[s.type, { color: isSelected ? (colors.onInkMuted ?? '#B8BCC0') : colors.tertiaryForeground }]} numberOfLines={1}>
+            <Text style={[s.type, { color: isSelected ? (colors.onInkMuted) : colors.tertiaryForeground }]} numberOfLines={1}>
               {item.type}
             </Text>
           )}

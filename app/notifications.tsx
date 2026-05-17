@@ -3,7 +3,7 @@ import { View, Text, SectionList, RefreshControl, StyleSheet, Animated, Alert } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { getBlockedUserIds } from '@/lib/blockedUsers'
-import { Bell, ArrowLeft, LogIn, RefreshCw } from 'lucide-react-native'
+import { Bell, ChevronLeft, LogIn, RefreshCw } from 'lucide-react-native'
 import { Avatar } from '@/components/Avatar'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
@@ -533,12 +533,12 @@ function NotificationsScreenInner() {
         <View style={styles.headerLeft}>
           <PressableOpacity
             onPress={() => safeBack(router, '/(tabs)')}
-            hitSlop={8}
+            hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={t('common.back')}
             style={[styles.headerBackBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
-            <ArrowLeft size={18} color={colors.foreground} />
+            <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
           </PressableOpacity>
           <Text style={[styles.pageTitle, { color: colors.foreground }]} accessibilityRole="header">
             {t('nav.notifications')}
@@ -750,7 +750,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '600',
-    letterSpacing: 1.4,
+    letterSpacing: 0.88,
     textTransform: 'uppercase',
     fontFamily: fonts.bodySemi,
     lineHeight: 14,
@@ -873,7 +873,7 @@ const styles = StyleSheet.create({
   expandedGroup: {
     marginLeft: 38,
     marginRight: 20,
-    borderRadius: 16,
+    borderRadius: 14,
     paddingVertical: 4,
     marginBottom: 4,
   },

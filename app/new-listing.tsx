@@ -1203,7 +1203,7 @@ const s = StyleSheet.create({
   wizTitle: { fontSize: 24, fontWeight: '600', letterSpacing: -0.6, lineHeight: 29, fontFamily: fonts.bodySemi, marginBottom: 16 },
 
   // ── CTA ──
-  ctaArea: { position: 'absolute', left: 16, right: 16, bottom: 0 },
+  ctaArea: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 22 },
   ctaRow: { flexDirection: 'row', gap: 8 },
   ctaPrimary: { flex: 1, height: 56, borderRadius: 999, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   ctaPrimaryText: { fontSize: 15, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
@@ -1212,7 +1212,7 @@ const s = StyleSheet.create({
 
   // ── Section ──
   section: { paddingHorizontal: 22, marginBottom: 16 },
-  sectionLabel: { fontSize: 12, letterSpacing: 0.9, textTransform: 'uppercase', fontWeight: '600', fontFamily: fonts.bodySemi, paddingHorizontal: 4, paddingBottom: 8 },
+  sectionLabel: { fontSize: 12, letterSpacing: 0.88, textTransform: 'uppercase', fontWeight: '600', fontFamily: fonts.bodySemi, paddingHorizontal: 4, paddingBottom: 8 },
 
   // ── Step 1: Templates ──
   templateGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -1241,7 +1241,7 @@ const s = StyleSheet.create({
   photoHint: { fontSize: 12, marginTop: 8, paddingHorizontal: 4, fontFamily: fonts.body },
 
   // ── Description ──
-  descCard: { borderRadius: 16, borderWidth: 1, minHeight: 140, padding: 16 },
+  descCard: { borderRadius: 14, borderWidth: 1, minHeight: 140, padding: 16 },
   descInput: { fontSize: 14, lineHeight: 20, letterSpacing: -0.05 },
 
   // ── Tags ──
@@ -1256,10 +1256,10 @@ const s = StyleSheet.create({
   pricingCard: { width: '48%', borderRadius: 12, padding: 12 },
   pricingLabel: { fontSize: 13, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
   pricingSub: { fontSize: 12, marginTop: 4, fontFamily: fonts.body },
-  priceInputCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginTop: 8 },
+  priceInputCard: { borderRadius: 14, borderWidth: 1, padding: 16, marginTop: 8 },
 
   // ── Deposit ──
-  depositCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
+  depositCard: { borderRadius: 14, borderWidth: 1, padding: 16 },
   depositRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   depositAmount: { fontSize: 32, fontWeight: '600', letterSpacing: -1.2, lineHeight: 40, fontFamily: fonts.bodySemi },
   depositCurrency: { fontSize: 18, fontWeight: '600', fontFamily: fonts.bodySemi },
@@ -1279,7 +1279,7 @@ const s = StyleSheet.create({
   weekdayText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // ── Calendar ──
-  calendarCard: { borderRadius: 16, borderWidth: 1, padding: 12 },
+  calendarCard: { borderRadius: 14, borderWidth: 1, padding: 12 },
   calendarRow: { flexDirection: 'row' },
   calendarCell: { flex: 1, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
   calendarDayBtn: { margin: 4 },
@@ -1291,13 +1291,13 @@ const s = StyleSheet.create({
   legendText: { fontSize: 12, fontFamily: fonts.body },
 
   // ── Time windows ──
-  timeCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
+  timeCard: { borderRadius: 14, borderWidth: 1, padding: 16 },
   timeRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
   timeLabel: { fontSize: 14, fontWeight: '500', fontFamily: fonts.bodyMedium },
   timeValue: { fontSize: 14, fontFamily: fonts.body },
 
   // ── Step 5: Location ──
-  locationCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  locationCard: { borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
   miniMap: { height: 120, alignItems: 'center', justifyContent: 'center' },
   locationInfo: { padding: 12 },
   locationAddress: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi, padding: 0, minHeight: 20 },
@@ -1305,7 +1305,7 @@ const s = StyleSheet.create({
 
   // ── Pickup methods ──
   pickupMethods: { gap: 8 },
-  pickupCard: { borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  pickupCard: { borderRadius: 14, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
   radioOuter: { width: 20, height: 20, borderRadius: 999, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   radioInner: { width: 9, height: 9, borderRadius: 999 },
   pickupLabel: { fontSize: 14, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
@@ -1317,7 +1317,7 @@ const s = StyleSheet.create({
   segmentTabText: { fontSize: 12, fontWeight: '600', fontFamily: fonts.bodySemi },
 
   // ── Checklist items ──
-  checkItem: { borderRadius: 16, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  checkItem: { borderRadius: 14, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   checkItemDashed: { borderStyle: 'dashed', backgroundColor: 'transparent' },
   checkNum: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   checkNumDashed: { borderWidth: 1.5, borderStyle: 'dashed', backgroundColor: 'transparent' },
@@ -1331,7 +1331,7 @@ const s = StyleSheet.create({
   suggestPillText: { fontSize: 12, fontWeight: '500', fontFamily: fonts.bodyMedium },
 
   // ── Step 7: Rules ──
-  rulesCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  rulesCard: { borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
   ruleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12 },
   ruleDot: { width: 6, height: 6, borderRadius: 999 },
   ruleText: { fontSize: 14, fontFamily: fonts.body },
@@ -1340,13 +1340,13 @@ const s = StyleSheet.create({
   addRuleInput: { fontSize: 12, paddingVertical: 8, minHeight: 32 },
 
   // ── Damage card ──
-  damageCard: { borderRadius: 16, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  damageCard: { borderRadius: 14, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   damageIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   damageTitle: { fontSize: 13, fontWeight: '600', fontFamily: fonts.bodySemi },
   damageSub: { fontSize: 12, marginTop: 4, lineHeight: 16, fontFamily: fonts.body },
 
   // ── Preview card ──
-  previewCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden', maxWidth: '62%' },
+  previewCard: { borderRadius: 14, borderWidth: 1, overflow: 'hidden', maxWidth: '62%' },
   previewImage: { height: 140 },
   previewImagePlaceholder: { height: 140, alignItems: 'center', justifyContent: 'center' },
   previewInfo: { padding: 8 },

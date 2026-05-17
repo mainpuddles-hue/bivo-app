@@ -902,7 +902,7 @@ const s = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },

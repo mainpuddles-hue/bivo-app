@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert
 // Alert kept for destructive unblock confirmation
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ArrowLeft, ShieldOff, RefreshCw } from 'lucide-react-native'
+import { ChevronLeft, ShieldOff, RefreshCw } from 'lucide-react-native'
 import { useTheme } from '@/hooks/useTheme'
 import { useI18n } from '@/lib/i18n'
 import { fonts } from '@/lib/fonts'
@@ -105,7 +105,7 @@ function BlockedUsersScreenInner() {
           accessibilityLabel={t('common.back')}
           style={[s.backCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <ArrowLeft size={18} color={colors.foreground} />
+          <ChevronLeft size={20} color={colors.foreground} strokeWidth={1.8} />
         </PressableOpacity>
         <Text style={[s.headerTitle, { color: colors.foreground }]}>{t('blocked.title')}</Text>
         <View style={s.headerSpacer} />
@@ -187,7 +187,7 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
@@ -203,18 +203,18 @@ const s = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 14,
-    fontFamily: fonts.headingSemi,
-    letterSpacing: -0.3,
-    lineHeight: 22,
+    fontWeight: '600',
+    fontFamily: fonts.bodySemi,
+    letterSpacing: -0.15,
   },
   headerSpacer: { width: 36 },
-  content: { padding: 16, gap: 8, paddingBottom: 40 },
+  content: { padding: 22, gap: 8, paddingBottom: 40 },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
   },
   userInfo: { flex: 1, gap: 2 },
