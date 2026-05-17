@@ -2095,7 +2095,7 @@ const styles = StyleSheet.create({
   proText: { fontSize: 13, fontFamily: fonts.bodySemi, lineHeight: 18 },
   eventDate: { fontSize: 14, fontFamily: fonts.bodyMedium, lineHeight: 20 },
   // v3 Description — 15px, generous line-height
-  description: { fontSize: 14, fontFamily: fonts.body, lineHeight: 24, maxWidth: 560 },
+  description: { fontSize: 15, fontFamily: fonts.body, lineHeight: 24, maxWidth: 560 },
   communityEventsLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
   communityEventsLinkText: { fontSize: 14, fontFamily: fonts.bodySemi, lineHeight: 20 },
 

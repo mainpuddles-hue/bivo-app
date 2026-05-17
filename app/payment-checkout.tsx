@@ -419,7 +419,7 @@ const s = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18, shadowRadius: 28, elevation: 8,
   },
-  ctaBtnText: { fontSize: 15, fontWeight: '600', fontFamily: fonts.bodySemi },
+  ctaBtnText: { fontSize: 16, fontWeight: '600', fontFamily: fonts.bodySemi },
 })
 
 export default function PaymentCheckoutScreen() {

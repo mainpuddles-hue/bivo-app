@@ -1206,7 +1206,7 @@ const s = StyleSheet.create({
   ctaArea: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 22 },
   ctaRow: { flexDirection: 'row', gap: 8 },
   ctaPrimary: { flex: 1, height: 56, borderRadius: 999, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
-  ctaPrimaryText: { fontSize: 15, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
+  ctaPrimaryText: { fontSize: 16, fontWeight: '600', letterSpacing: -0.1, fontFamily: fonts.bodySemi },
   ctaSecondary: { paddingHorizontal: 20, height: 56, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   ctaSecondaryText: { fontSize: 14, fontWeight: '600', fontFamily: fonts.bodySemi },
 
