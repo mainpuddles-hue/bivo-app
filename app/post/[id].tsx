@@ -1390,7 +1390,7 @@ function PostDetailScreenInner() {
             </View>
             <View style={styles.factLast}>
               <Text style={[styles.factLabel, { color: colors.mutedForeground }]}>{t('post.responseTime') ?? 'VASTAUSAIKA'}</Text>
-              <Text style={[styles.factValue, { color: colors.foreground }]}>{'~min'}</Text>
+              <Text style={[styles.factValue, { color: colors.foreground }]}>{'< 24h'}</Text>
             </View>
           </View>
 
@@ -1567,7 +1567,13 @@ function PostDetailScreenInner() {
                     <PressableOpacity key={rp.id} onPress={() => router.push(`/post/${rp.id}` as any)} style={[styles.relatedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                       <View style={styles.relatedImageWrap}>
                         {rp.image_url ? (
-                          <Image source={{ uri: getImageUrl(rp.image_url, 'thumbnail')! }} style={styles.relatedImage} contentFit="cover" cachePolicy="memory-disk" />
+                          <View style={styles.relatedImage}>
+                            <Image source={{ uri: getImageUrl(rp.image_url, 'thumbnail')! }} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" />
+                            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center', zIndex: -1 }]}>
+                              {rpCat && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: rpCat.color, marginBottom: 4 }} />}
+                              <Text style={{ fontSize: 14, fontFamily: fonts.heading, color: colors.foreground }} numberOfLines={1}>{rp.title.charAt(0).toUpperCase()}</Text>
+                            </View>
+                          </View>
                         ) : (
                           <View style={[styles.relatedImage, { backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' }]}>
                             {rpCat && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: rpCat.color, marginBottom: 4 }} />}
@@ -2206,7 +2212,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 64, // leave room for the heroNav buttons underneath
-    paddingBottom: 12,
+    paddingBottom: 32,
     borderBottomWidth: StyleSheet.hairlineWidth,
     zIndex: 15,
   },
