@@ -1148,7 +1148,10 @@
     "showPassword": "Show password",
     "invalidEmail": "Invalid email address",
     "sessionError": "Session Error",
-    "sessionErrorDetail": "Failed to read login state. You may need to log in again."
+    "sessionErrorDetail": "Failed to read login state. You may need to log in again.",
+    "welcomeHeadline": "Your neighborhood community",
+    "welcomeSubtitle": "Discover, share and lend — right in your neighborhood.",
+    "createAccount": "Create account"
   },
   "onboarding": {
     "welcome": "Welcome to Bivo!",

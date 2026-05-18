@@ -1148,7 +1148,10 @@
     "showPassword": "Visa lösenord",
     "invalidEmail": "Ogiltig e-postadress",
     "sessionError": "Sessionsfel",
-    "sessionErrorDetail": "Kunde inte läsa inloggningsstatus. Du kan behöva logga in igen."
+    "sessionErrorDetail": "Kunde inte läsa inloggningsstatus. Du kan behöva logga in igen.",
+    "welcomeHeadline": "Ditt grannskap",
+    "welcomeSubtitle": "Upptäck, dela och låna — precis i ditt grannskap.",
+    "createAccount": "Skapa konto"
   },
   "onboarding": {
     "welcome": "Välkommen till Bivo!",
